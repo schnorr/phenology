@@ -16,7 +16,9 @@ sudo apt-get install cmake libjpeg-dev r-base
 
 ** Cloning, compilation and installation
 
-You might want to customize the `CMAKE_INSTALL_PREFIX` variable to your machine.
+You might want to customize the =CMAKE_INSTALL_PREFIX= variable to your
+machine. In the example below, this project will be made available in
+the =/tmp/phenology/= directory.
 
 #+begin_src sh :results output :session :exports both
 git clone https://github.com/schnorr/phenology.git
