@@ -24,8 +24,15 @@ This repository contains the following programs:
   #+RESULTS:
   : 0,0,0,0,0,0,82807,783737,362094,29447,1686,109,11,3,0,0,0,0,0,0
 
-
-+ =pga_palette=:
++ =pga_palette=: This program takes as input seven parameters - an image
+  (JPG), a mask (JPG), a palette in the file format specified below,
+  the lowest and the highest bin identifier to consider, the
+  granularity of the histogram and the output image file (that will be
+  encoded as JPG in the RGB file format using the colors available in
+  the palette). A crucial semantic rule is that the different between
+  the high and lowest bin identifiers should be smaller than the
+  number of available colors of the palette provided. The program is
+  expected to fail otherwise.
 
 ** Requirements
 
