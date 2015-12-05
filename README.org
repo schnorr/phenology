@@ -1,4 +1,4 @@
-* Phenology Scripts
+* Phenology Programs and Scripts
 
 This repository is my attempt to organize some programs and scripts
 related to phenology, the study of plant evolution through digital
@@ -27,3 +27,26 @@ cmake -DCMAKE_INSTALL_PREFIX=/tmp/phenology/ .. ; make install
 #+end_src
 
 ** Image Directory Organization
+
+The digital images have to be in the JPG file format. No other format
+is accepted as of now. They should be organized in the following
+directory structure: =db/year/year_sequence.jpg=, where =db= is the name
+of the database, it can be anything you want (or need); =year= is a
+diretory that will hold all that year's images; =year_sequence.jpg= is
+the name of the file: the year part should be preferably the same as
+the directory name holding the file and the sequence is a integer or
+floating-point number that indicates the sequence of images within
+that year. Some examples:
+
+1. This first example has four images (we can notice that the image
+   003 is missing - that is okay).
+
+   #+BEGIN_EXAMPLE
+   db01/2004/2004_001.jpg
+   db01/2004/2004_002.jpg
+   db01/2004/2004_004.jpg
+   db01/2004/2004_005.jpg
+   #+END_EXAMPLE
+
+
+
