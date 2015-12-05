@@ -3,10 +3,25 @@
 This repository is my attempt to organize some programs and scripts
 related to phenology, the study of plant evolution through digital
 images. Below you'll find the requirements to make this project useful
-for you.
+for you. All code available here is released under the GPLv3. Feel
+free to copy, modify and do whatever you want. Contributions are
+welcomed to improve the robustness. In case of problems, use the
+"Issues" link to report.
+
+** Requirements
+
+#+begin_src sh :results output :session :exports both
+sudo apt-get install cmake libjpeg-dev r-base
+#+end_src
+
+** Cloning, compilation and installation
+
+You might want to customize the `CMAKE_INSTALL_PREFIX` variable to your machine.
 
 #+begin_src sh :results output :session :exports both
 git clone https://github.com/schnorr/phenology.git
+cd phenology ; mkdir build ; cd build
+cmake -DCMAKE_INSTALL_PREFIX=/tmp/phenology/ .. ; make install
 #+end_src
 
 ** Image Directory Organization
