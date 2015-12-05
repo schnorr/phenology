@@ -5,8 +5,8 @@ related to phenology, the study of plant evolution through digital
 images. Below you'll find the requirements to make this project useful
 for you. All code available here is released under the GPLv3. Feel
 free to copy, modify and do whatever you want. Contributions are
-welcomed to improve the robustness. In case of problems, (report
-here)[https://github.com/schnorr/phenology/issues].
+welcomed to improve the robustness. In case of problems,
+[[https://github.com/schnorr/phenology/issues][report here].
 
 ** Requirements
 
