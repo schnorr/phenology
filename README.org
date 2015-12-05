@@ -33,6 +33,7 @@ cmake -DCMAKE_INSTALL_PREFIX=/tmp/phenology/ .. ; make install
 The digital images have to be in the JPG file format. No other format
 is accepted as of now. All of them should have the exactly same size
 (=width= per =height=) and be encoded as RGB (with no alpha channel).
+organized image base.
 
 *Directories*
 
@@ -65,3 +66,13 @@ indicates the sequence of images within that year. Some examples:
    #+END_EXAMPLE
 
 ** The mask
+
+You probably need to mask your images. A mask image should be also in
+the JPG file format. It should have the exactly same size (=width= per
+=height=) as the digital photos of the database, and also be encoded as
+RGB (with no alpha channel).
+
+Here I provide two examples:
+
+#+ATTR_HTML: :alt "Cerrado mask" :title Action! :align right
+[[./masks/cerrado.jpg]]
