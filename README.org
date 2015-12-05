@@ -73,5 +73,6 @@ the JPG file format. It should have the exactly same size (=width= per
 RGB (with no alpha channel). The white color selects the regions you
 are interested to. Here I provide two examples:
 
-#+ATTR_HTML: width="300"
-[[{{{./masks/cerrado.jpg}}}]]
+[[./masks/cerrado.jpg]] [[./masks/tky.jpg]]
+
+
