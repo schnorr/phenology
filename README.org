@@ -49,11 +49,13 @@ that year. Some examples:
    #+END_EXAMPLE
 
 2. This example shows another type of sequencing, using floating-point
-   numbers. You can use this to organize multiple photos per day.
+   numbers. You can use this to organize multiple photos per day. Note
+   that is up to you to give semantics to the sequencing scheme.
    #+BEGIN_EXAMPLE
    mybase/2015/2015_1.1.jpg
    mybase/2015/2015_1.2.jpg
    mybase/2015/2015_1.3.jpg
+   mybase/2015/2015_2.jpg
    #+END_EXAMPLE
 
 
