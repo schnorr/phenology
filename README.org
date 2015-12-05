@@ -34,6 +34,15 @@ This repository contains the following programs:
   number of available colors of the palette provided. The program is
   expected to fail otherwise.
 
+This repository contains the following scripts:
+
++ =pga_csv=: This program takes as input a path to a directory that
+  follows the organization specified below, a mask (JPG) and the
+  granularity of the histogram. It prints in the standard output the
+  histogram for every image in the CSV file format. This CSV should be
+  used with the CPM generation tool, written in R and described below.
+
+
 ** Requirements
 
 #+begin_src sh :results output :session :exports both
