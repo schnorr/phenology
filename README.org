@@ -8,6 +8,12 @@ free to copy, modify and do whatever you want. Contributions are very
 welcomed to improve the robustness or anything else you might find
 important. In case of problems, [[https://github.com/schnorr/phenology/issues][report here]].
 
+This repository contains the following programs:
+
++ =pga_hist=: 
+
++ =pga_palette=:
+
 ** Requirements
 
 #+begin_src sh :results output :session :exports both
@@ -74,5 +80,9 @@ RGB (with no alpha channel). The white color selects the regions you
 are interested to. Here I provide two examples:
 
 [[./masks/cerrado.jpg]] [[./masks/tky.jpg]]
+
+** Usage
+
+
 
 
