@@ -8,6 +8,16 @@ free to copy, modify and do whatever you want. Contributions are very
 welcomed to improve the robustness or anything else you might find
 important. In case of problems, [[https://github.com/schnorr/phenology/issues][report here]].
 
+This repository contains the following scripts:
+
++ =pga_csv=: This program takes as input a path to a directory that
+  follows the organization specified below, a mask (JPG) and the
+  granularity of the histogram. It prints in the standard output the
+  histogram for every image in the CSV file format. This CSV should be
+  used with the CPM generation tool, written in R and described
+  below. It assumes that the program =pga_hist= is in the PATH.
+
+
 This repository contains the following programs:
 
 + =pga_hist=: This program takes as input three parameters - an image
@@ -33,15 +43,6 @@ This repository contains the following programs:
   the high and lowest bin identifiers should be smaller than the
   number of available colors of the palette provided. The program is
   expected to fail otherwise.
-
-This repository contains the following scripts:
-
-+ =pga_csv=: This program takes as input a path to a directory that
-  follows the organization specified below, a mask (JPG) and the
-  granularity of the histogram. It prints in the standard output the
-  histogram for every image in the CSV file format. This CSV should be
-  used with the CPM generation tool, written in R and described
-  below. It assumes that the program =pga_hist= is in the PATH.
 
 
 ** Requirements
