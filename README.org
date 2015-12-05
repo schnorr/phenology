@@ -101,7 +101,48 @@ are interested to. Here I provide two examples:
 
 [[./masks/cerrado.jpg]] [[./masks/tky.jpg]]
 
+** The palette file format
+
+The expected file format for a palette configuration file is the
+following: each line has one color coded as in the HTML-style color
+identification =#c0c0c0=. Empty lines and lines starting with the
+question mark are considered comments and are ignored. Here as an
+example of a palette with 20 colors:
+
+#+BEGIN_EXAMPLE
+?lines starting with ? are comments
+?one color per line in hex format
+?number of lines with colors indicates palette size
+#99540f
+#b26f2c
+#cc8e51
+#e5b17e
+#ffd8b2
+
+#6b990f
+#85b22c
+#a3cc51
+#c3e57e
+#e5ffb2
+
+#0f6b99
+#2c85b2
+#51a3cc
+#7ec3e5
+#b2e5ff
+
+#260f99
+#422cb2
+#6551cc
+#8f7ee5
+#bfb2ff
+#+END_EXAMPLE
+
+
+
 ** Usage
+
+
 
 
 
