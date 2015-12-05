@@ -70,9 +70,8 @@ indicates the sequence of images within that year. Some examples:
 You probably need to mask your images. A mask image should be also in
 the JPG file format. It should have the exactly same size (=width= per
 =height=) as the digital photos of the database, and also be encoded as
-RGB (with no alpha channel).
+RGB (with no alpha channel). The white color selects the regions you
+are interested to. Here I provide two examples:
 
-Here I provide two examples:
-
-#+ATTR_HTML: width="100px"
+#+ATTR_HTML: width="300" style="border:2px solid black;"
 [[./masks/cerrado.jpg]]
