@@ -26,17 +26,23 @@ cd phenology ; mkdir build ; cd build
 cmake -DCMAKE_INSTALL_PREFIX=/tmp/phenology/ .. ; make install
 #+end_src
 
-** Image Directory Organization
+** Directory Organization and Photo Specifications
+
+*Images*
 
 The digital images have to be in the JPG file format. No other format
-is accepted as of now. They should be organized in the following
-directory structure: =db/year/year_sequence.jpg=, where =db= is the name
-of the database, it can be anything you want (or need); =year= is a
-diretory that will hold all that year's images; =year_sequence.jpg= is
-the name of the file: the year part should be preferably the same as
-the directory name holding the file and the sequence is a integer or
-floating-point number that indicates the sequence of images within
-that year. Some examples:
+is accepted as of now. All of them should have the exactly same size
+(=width= per =height=) and be encoded as RGB (with no alpha channel).
+
+*Directories*
+
+Images should be organized in the following directory structure:
+=db/year/year_sequence.jpg=, where =db= is the name of the database, it
+can be anything you want (or need); =year= is a diretory that will hold
+all that year's images; =year_sequence.jpg= is the name of the file: the
+year part should be preferably the same as the directory name holding
+the file and the sequence is a integer or floating-point number that
+indicates the sequence of images within that year. Some examples:
 
 1. This example has four images. We can notice that the image 003 is
    missing, that is okay. You can use this king of sequencing if you
@@ -58,4 +64,4 @@ that year. Some examples:
    mybase/2015/2015_2.jpg
    #+END_EXAMPLE
 
-
+** The mask
