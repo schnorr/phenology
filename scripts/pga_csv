@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# This file is part of Phenology
+#
+# Phenology is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Phenology is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Public License for more details.
+#
+# You should have received a copy of the GNU Public License
+# along with Phenology. If not, see <http://www.gnu.org/licenses/>.
+#
+
+DIR=$1
+shift
+MASK=$1
+shift
+GRAIN=$1
+#
+# Check arguments
+#
+function usage ()
+{
+  echo "Usage: ./pga_csv <dir> <mask> <grain>"
+}
+if [ ! -d $DIR ]; then
+   echo "$DIR provided is not a directory."
+   usage
+   exit 0
+fi
+if [ ! -f $MASK ]; then
+   echo "$MASK is not a regular file."
+   usage
+   exit 0
+fi
+if [ -z "$GRAIN" ]; then
+   echo "Grain was not provided."
+   usage
+   exit 0
+fi
+
+#
+# Generate CSV header
+#
+FINAL=`echo $GRAIN - 1 | bc`
+echo -n "sequence,year,"
+for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
+echo ""
+#
+# Process images
+#
+for file in `find $DIR | grep jpg$ | sort`; do
+   FILE=`basename $file .jpg`
+   YEAR=`echo $FILE | cut -d"_" -f1`
+   SEQUENCE=`echo $FILE | cut -d"_" -f2`
+   echo "$SEQUENCE,$YEAR,`./pga_hist $file $MASK $GRAIN`";
+done
