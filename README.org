@@ -38,9 +38,9 @@ the directory name holding the file and the sequence is a integer or
 floating-point number that indicates the sequence of images within
 that year. Some examples:
 
-1. This first example has four images (we can notice that the image
-   003 is missing - that is okay).
-
+1. This example has four images. We can notice that the image 003 is
+   missing, that is okay. You can use this king of sequencing if you
+   have one digital photo per day, for instance.
    #+BEGIN_EXAMPLE
    db01/2004/2004_001.jpg
    db01/2004/2004_002.jpg
@@ -48,5 +48,12 @@ that year. Some examples:
    db01/2004/2004_005.jpg
    #+END_EXAMPLE
 
+2. This example shows another type of sequencing, using floating-point
+   numbers. You can use this to organize multiple photos per day.
+   #+BEGIN_EXAMPLE
+   mybase/2015/2015_1.1.jpg
+   mybase/2015/2015_1.2.jpg
+   mybase/2015/2015_1.3.jpg
+   #+END_EXAMPLE
 
 
