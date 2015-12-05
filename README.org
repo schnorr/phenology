@@ -149,11 +149,21 @@ example of a palette with 20 colors:
 #bfb2ff
 #+END_EXAMPLE
 
-
-
 ** Usage
 
+*** Generating histograms with =pga_csv=
 
+Let's suppose you have a database with organized images (=db-cerrado=)
+in your home directory, a mask image (=cerrado-mask.jpg=) and you want
+to have 100 bins for your histogram. After having everything installed
+(as described above), just type:
+
+#+begin_src sh :results output :session :exports both
+pga_csv /home/researcher/db-cerrado/ /home/researched/cerrado-mask.jpg 100 > db-cerrado.csv
+#+end_src 
+
+The program will launch =pga_hist= a number of types, one for each input
+image. All histograms are redirected to the =db-cerrado.csv= file.
 
 
 
