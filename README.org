@@ -40,7 +40,8 @@ This repository contains the following scripts:
   follows the organization specified below, a mask (JPG) and the
   granularity of the histogram. It prints in the standard output the
   histogram for every image in the CSV file format. This CSV should be
-  used with the CPM generation tool, written in R and described below.
+  used with the CPM generation tool, written in R and described
+  below. It assumes that the program =pga_hist= is in the PATH.
 
 
 ** Requirements
