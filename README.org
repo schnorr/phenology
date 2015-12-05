@@ -74,5 +74,5 @@ RGB (with no alpha channel).
 
 Here I provide two examples:
 
-#+ATTR_HTML: :alt "Cerrado mask" :title Action! :align right :width 200px
+#+ATTR_HTML: width="100px"
 [[./masks/cerrado.jpg]]
