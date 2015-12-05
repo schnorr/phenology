@@ -10,7 +10,20 @@ important. In case of problems, [[https://github.com/schnorr/phenology/issues][r
 
 This repository contains the following programs:
 
-+ =pga_hist=: 
++ =pga_hist=: This program takes as input three parameters - an image
+  (JPG), a mask (JPG) and the granularity of the histogram of pixel's
+  green average metric, which is basically =G/(R+G+B)=. The granularity
+  tells you the amount of bins in the histogram. The output is one
+  line with the count for every bin, separated by comma as in the CSV
+  file format. See an example of it in action:
+
+  #+begin_src sh :results output :session :exports both
+  pga_hist ./images/tky.jpg ./masks/tky.jpg 20
+  #+end_src
+
+  #+RESULTS:
+  : 0,0,0,0,0,0,82807,783737,362094,29447,1686,109,11,3,0,0,0,0,0,0
+
 
 + =pga_palette=:
 
