@@ -24,3 +24,4 @@ target_link_libraries(pga_palette jpeg m)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_palette DESTINATION bin)
 
 install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_csv DESTINATION bin)
+install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_cpm DESTINATION bin)

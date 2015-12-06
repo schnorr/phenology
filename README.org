@@ -18,6 +18,13 @@ This repository contains the following scripts:
   used with the CPM generation tool, written in R and described
   below. It assumes that the program =pga_hist= is in the PATH.
 
++ =pga_cpm=: This program takes as input the CSV file created with
+  =pga_csv=, a file with the palette (as described below), the low and
+  high limit of the histogram bins. It creates as output a
+  Chronological Percentage Map (CPM) for each year contained in the
+  input, and also an overview with facets. The CPM draws the green
+  average histogram as a function of an input image, using stacked
+  bars.
 
 This repository contains the following programs:
 

@@ -1,0 +1,93 @@
+#!/usr/bin/Rscript
+#
+# This file is part of Phenology
+#
+# Phenology is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Phenology is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Public License for more details.
+#
+# You should have received a copy of the GNU Public License
+# along with Phenology. If not, see <http://www.gnu.org/licenses/>.
+#
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args) != 4) {
+  stop("Usage: pga_cpm <FILE.csv> <PALETTE> <L_LIMIT> <H_LIMIT>", call.=FALSE)
+}
+
+#
+# parse arguments
+#
+csvFilename = args[1];
+paletteFilename = args[2];
+lowLimit = as.integer(args[3]);
+highLimit = as.integer(args[4]);
+
+#
+# read the palette, create the appropriate dataframe
+#
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+
+if (length(palette) != (highLimit - lowLimit)){
+  stop("Usage: The difference between highLimit and lowLimit should be equal to the length of the palette.", call.=FALSE)
+}
+
+#
+# load necessary libraries
+#
+library(reshape)
+library(ggplot2)
+library(plyr);
+
+#
+# read the data
+#
+df <- read.csv(csvFilename);
+dfm <- melt(df, id.vars=c("sequence", "year"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+
+#
+# function to do the plot
+#
+cpmYear <- function (data)
+{
+  pdf(paste(data$year, ".pdf", sep=""));
+  p <- ggplot(data[data$variable > lowLimit  &
+            data$variable < highLimit &
+            data$value != 0,],
+       aes(x = sequence, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       theme_bw() +
+       scale_fill_manual(values=palette) +
+       facet_wrap(~year);
+  print(p);
+  dev.off();
+  data.frame(MIN=min(data$sequence), MAX=max(data$sequence));
+}
+
+k <- ddply(dfm, .(year), cpmYear);
+
+#
+# one-page PDF with an overview
+#
+pdf("overview.pdf");
+p <- ggplot(dfm[dfm$variable > lowLimit  &
+          dfm$variable < highLimit &
+          dfm$value != 0,],
+     aes(x = sequence, y = value, fill=as.factor(variable))) +
+     geom_bar(stat='identity', width=1) +
+     ylim(0,NA) +
+     theme_bw() +
+     scale_fill_manual(values=palette) +
+     facet_wrap(~year);
+print(p);
+dev.off();
+
+k;
