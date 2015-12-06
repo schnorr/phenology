@@ -48,7 +48,7 @@ This repository contains the following programs:
 ** Requirements
 
 #+begin_src sh :results output :session :exports both
-sudo apt-get install cmake libjpeg-dev r-base
+sudo apt-get install cmake libjpeg-dev r-base r-cran-ggplot2 r-cran-reshape plyrr-cran-plyr
 #+end_src
 
 ** Cloning, compilation and installation
