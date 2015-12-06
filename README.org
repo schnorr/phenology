@@ -6,7 +6,8 @@ images. Below you'll find the requirements to make this project useful
 for you. All code available here is released under the GPLv3. Feel
 free to copy, modify and do whatever you want. Contributions are very
 welcomed to improve the robustness or anything else you might find
-important. In case of problems, [[https://github.com/schnorr/phenology/issues][report here]].
+important. In case of problems, [[https://github.com/schnorr/phenology/issues][report here]]. In all these programs,
+=pga= stands for /Phenological Green Average/.
 
 This repository contains the following scripts:
 
