@@ -114,22 +114,41 @@ int is_black (unsigned char r, unsigned char g, unsigned char b)
   return !(r+g+b);
 }
 
+int get_bin (int grain, int i, image_t *image)
+{
+  unsigned char *iimage = image->image;
+  unsigned char r, g, b;
+  r = iimage[i+0];
+  g = iimage[i+1];
+  b = iimage[i+2];
+  if (is_black(r, g, b)) return -1;
+  float value = get_green_average (r, g, b) * grain;
+  if (value >= grain) value = grain - 1;
+  return (int)value;
+}
+
 int *get_metric(int grain, image_t *image)
 {
   int *ret = (int*)malloc(grain * sizeof(int));
   bzero(ret, grain*sizeof(int));
-  int i;
-  for (i = 0; i < image->size; i = i+3) {
-    unsigned char r, g, b;
-    r = image->image[i+0];
-    g = image->image[i+1];
-    b = image->image[i+2];
-    if (is_black(r, g, b)) continue;
+
+#pragma omp parallel shared(image, ret) firstprivate(grain)
+  {
+    int *hist_private;
+    int size = grain * sizeof(int);
+    hist_private = (int*) malloc (size);
+    bzero(hist_private, size);
     
-    float value = get_green_average (r, g, b) * grain;
-    if (value >= grain) value = grain - 1;
-//    printf("%d %d\n", grain,  (int)floor(value));
-    ret[(int)floor(value)]++;
+#pragma omp for nowait schedule(dynamic, 32*1024)
+    for (int i = 0; i < image->size; i = i+3){
+      int x = get_bin (grain, i, image);
+      if (x >= 0) hist_private[x]++;
+    }
+
+    for (int i = 0; i < grain; i++){
+#pragma omp atomic
+      ret[i] += hist_private[i];
+    }
   }
   return ret;
 }
@@ -140,7 +159,7 @@ int main (int argc, char **argv)
     printf("Usage: %s <IMAGE.jpg> <MASK.jpg> <GRAIN>\n", argv[0]);
     return 0;
   }
-  
+
   image_t *image = load_jpeg_image(argv[1]);
   image_t *mask = load_jpeg_image(argv[2]);
   apply_mask (image, mask);
