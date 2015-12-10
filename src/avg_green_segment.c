@@ -132,7 +132,8 @@
   {
     if (image->width == mask->width && image->height == image->height) {
       int i;
-      for (i = 0; i < mask->size; i = i+3) {
+#pragma parallel for shared(mask, image)
+      for (int i = 0; i < mask->size; i = i+3) {
         unsigned char r = mask->image[i+0];
         unsigned char g = mask->image[i+1];
         unsigned char b = mask->image[i+2];
