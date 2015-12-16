@@ -220,7 +220,9 @@
 
     image_t *image = load_jpeg_image(argv[1]);
     image_t *mask = load_jpeg_image(argv[2]);
-    apply_mask (image, mask);
+    if (mask){
+      apply_mask (image, mask);
+    }
 
     palette_t *palette = read_palette_from_file (argv[3]);
 
