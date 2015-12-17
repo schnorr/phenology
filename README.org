@@ -36,7 +36,7 @@ This repository contains the following programs:
   file format. See an example of it in action:
 
   #+begin_src sh :results output :session :exports both
-  pga_hist ./images/tky.jpg ./masks/tky.jpg 20
+  pga_hist ./examples/tky.jpg ./masks/tky.jpg 20
   #+end_src
 
   #+RESULTS:
