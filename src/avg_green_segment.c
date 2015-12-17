@@ -190,6 +190,8 @@
 
       float value = get_green_average (r, g, b) * grain;
       int selected = truncf(value);
+
+      //original implementation
       if (selected >= low && selected < high){
         //change pixel color according to palette and selected index
         int index = selected - low - 1;
