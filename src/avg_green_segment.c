@@ -210,6 +210,19 @@
         image->image[i+1] = 0;
         image->image[i+2] = 0;
       }
+
+      //gray
+      if (selected < low){
+        image->image[i+0] = 200;
+        image->image[i+1] = 200;
+        image->image[i+2] = 200;
+      }
+      //black
+      if (selected >= high){
+        image->image[i+0] = 0;
+        image->image[i+1] = 0;
+        image->image[i+2] = 0;
+      }
     }
   }
 
