@@ -36,7 +36,7 @@ This repository contains the following programs:
   file format. See an example of it in action:
 
   #+begin_src sh :results output :session :exports both
-  pga_hist ./examples/tky.jpg ./masks/tky.jpg 20
+  pga_hist ./examples/cerrado.jpg ./masks/cerrado.jpg 20
   #+end_src
 
   #+RESULTS:
@@ -116,9 +116,9 @@ You probably need to mask your images. A mask image should be also in
 the JPG file format. It should have the exactly same size (=width= per
 =height=) as the digital photos of the database, and also be encoded as
 RGB (with no alpha channel). The white color selects the regions you
-are interested to. Here I provide two examples:
+are interested to. Here an example:
 
-[[./masks/cerrado.jpg]] [[./masks/tky.jpg]]
+[[./masks/cerrado.jpg]]
 
 ** The palette file format
 
