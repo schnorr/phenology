@@ -24,4 +24,4 @@ typedef struct palette {
   unsigned char *colors;
 } palette_t;
 
-  palette_t *read_palette_from_file (const char *filename);
+palette_t *read_palette_from_file (const char *filename);
