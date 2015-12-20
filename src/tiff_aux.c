@@ -127,17 +127,6 @@ void save_pixels (TIFF *tif, uint32 *raster, size_t len)
   }
 }
 
-#define TIFFSetR(abgr,x) ((abgr) & 0xff)=x
-#define TIFFSetG(abgr,x) (((abgr) >> 8) & 0xff)=x
-#define TIFFSetB(abgr,x) (((abgr) >> 16) & 0xff)=x
-#define TIFFSetA(abgr,x) (((abgr) >> 24) & 0xff)=x
-
-/* #define TIFFGetR(abgr) ((abgr) & 0xff) */
-/* #define TIFFGetG(abgr) (((abgr) >> 8) & 0xff) */
-/* #define TIFFGetB(abgr) (((abgr) >> 16) & 0xff) */
-/* #define TIFFGetA(abgr) (((abgr) >> 24) & 0xff) */
-
-
 uint32 *calc_pga_pixels (uint32 *raster, size_t len, int grain, int low, int high, tiff_palette_t *palette)
 {
   if (!raster) return NULL;
