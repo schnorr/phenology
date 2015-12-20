@@ -14,7 +14,7 @@
     You should have received a copy of the GNU Public License
     along with Phenology. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "read_palette.h"
+#include "palette.h"
 
 palette_t *read_palette_from_file (const char *filename)
 {
@@ -76,3 +76,57 @@ palette_t *read_palette_from_file (const char *filename)
 /*    free(palette->colors); */
 /*    free(palette); */
 /* } */
+
+
+tiff_palette_t *read_tiff_palette_from_file (const char *filename)
+{
+  palette_t *palette = read_palette_from_file (filename);
+
+  tiff_palette_t *tpalette = NULL;
+  tpalette = (tiff_palette_t*)malloc(sizeof(tiff_palette_t));
+  tpalette->size = palette->size;
+  tpalette->colors = (uint32*)malloc(sizeof(uint32)*tpalette->size);
+
+  for (int i = 0; i < palette->size; i++){
+    unsigned char r, g, b;
+    r = palette->colors[i*3+0];
+    g = palette->colors[i*3+1];
+    b = palette->colors[i*3+2];
+
+    uint32 color = 0;
+    color |= r;
+    color |= g << 8;
+    color |= b << 16;
+    color |= 255 << 24;
+    tpalette->colors[i] = color;
+  }
+  free(palette->colors);
+  free(palette);
+  return tpalette;
+}
+
+uint32 get_tiff_color_from_palette (int selected, tiff_palette_t *palette)
+{
+  if (!palette) return tiff_black();
+  if (selected > palette->size){
+    return tiff_black();
+  }
+  return palette->colors[selected];
+}
+
+uint32 tiff_gray (void)
+{
+  uint32 gray = 0;
+  gray |= 200;
+  gray |= 200 << 8;
+  gray |= 200 << 16;
+  gray |= 255 << 24;
+  return gray;
+}
+
+uint32 tiff_black (void)
+{
+  uint32 black = 0;
+  black |= 255 << 24;
+  return black;
+}

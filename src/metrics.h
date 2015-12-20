@@ -14,14 +14,5 @@
     You should have received a copy of the GNU Public License
     along with Phenology. If not, see <http://www.gnu.org/licenses/>.
 */
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct palette {
-  int size;
-  unsigned char *colors;
-} palette_t;
-
-palette_t *read_palette_from_file (const char *filename);
+float get_green_average (unsigned char r, unsigned char g, unsigned char b);
+int is_black (unsigned char r, unsigned char g, unsigned char b);

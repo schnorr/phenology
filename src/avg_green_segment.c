@@ -27,7 +27,8 @@
   #include <sys/time.h>
   #include <math.h>
   #include <strings.h>
-  #include "read_palette.h"
+  #include "palette.h"
+#include "metrics.h"
 
   typedef struct image {
     unsigned char *image;
@@ -149,15 +150,6 @@
     }
   }
 
-  float get_green_average (unsigned char r, unsigned char g, unsigned char b)
-  {
-    return (r+g+b) == 0 ? 0 : (float)g/(float)(r+g+b);
-  }
-
-  int is_black (unsigned char r, unsigned char g, unsigned char b)
-  {
-    return !(r+g+b);
-  }
 
   int *get_metric(int grain, image_t *image)
   {
