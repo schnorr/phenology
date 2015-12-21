@@ -17,8 +17,8 @@
 #
 
 args = commandArgs(trailingOnly=TRUE)
-if (length(args) != 3) {
-  stop("Usage: pga_palette <PALETTE> <L_LIMIT> <H_LIMIT>", call.=FALSE)
+if (length(args) != 4) {
+  stop("Usage: pga_palette <PALETTE> <L_LIMIT> <H_LIMIT> <GRAIN>", call.=FALSE)
 }
 
 #
@@ -27,6 +27,7 @@ if (length(args) != 3) {
 paletteFilename = args[1];
 lowLimit = as.integer(args[2]);
 highLimit = as.integer(args[3]);
+grain = as.integer(args[4]);
 
 #
 # read the palette, create the appropriate dataframe
@@ -37,9 +38,10 @@ palette
 
 library(oce);
 
-tks=seq(lowLimit, highLimit);
+tks=seq(lowLimit, highLimit)/grain*100;
+ats=seq(lowLimit, highLimit);
 pdf("palette_ga.pdf", height=1);
-drawPalette(c(lowLimit, highLimit), zlab="Palette GA", at=tks, labels=tks, col=palette, pos=3);
+drawPalette(c(lowLimit, highLimit), zlab="Palette GA", at=ats, labels=tks, col=palette, pos=3);
 dev.off();
 
 
