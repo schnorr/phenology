@@ -20,6 +20,7 @@
 #include <sys/time.h>
 #include <math.h>
 #include <strings.h>
+#include "metrics.h"
 
 typedef struct image {
   unsigned char *image;
@@ -102,16 +103,6 @@ int apply_mask (image_t *image, image_t *mask)
     printf ("Image and Mask have different dimensions. Error.\n");
     exit(1);
   }
-}
-
-float get_green_average (unsigned char r, unsigned char g, unsigned char b)
-{
-  return (r+g+b) == 0 ? 0 : (float)g/(float)(r+g+b);
-}
-
-int is_black (unsigned char r, unsigned char g, unsigned char b)
-{
-  return !(r+g+b);
 }
 
 int get_bin (int grain, int i, image_t *image)
