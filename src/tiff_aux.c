@@ -203,17 +203,18 @@ int main (int argc, char **argv)
     }
 
     //read pixels from TIFF file
+    printf("Reading pixels...\n");
     size_t len;
     uint32 *raster = read_pixels(tif, &len);
     if (!raster){
       printf("Read pixels failed.\n");
       return 1;
     }
-    printf("Calculate pixels...\n");
+    printf("Calculating GA pixels...\n");
     //calculate GA, then apply the palette according to parameters
     raster = calc_pga_pixels(raster, len, grain, l_limit, h_limit, palette);
-    printf("Save pixels...\n");
-
+    
+    printf("Saving pixels...\n");
     //save new colors to the same TIFF file
     save_pixels (tif, raster, len);
     
