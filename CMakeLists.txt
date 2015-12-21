@@ -38,7 +38,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${GEOTIFF_INCLUDE_DIR}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GEOTIFF_INCLUDE_DIR}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GEOTIFF_LIBRARIES}")
 endif()
-add_executable(pga_hist ../src/get_green_average.c)
+add_executable(pga_hist ../src/get_green_average.c ../src/metrics.c)
 target_link_libraries(pga_hist jpeg m)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_hist DESTINATION bin)
 
@@ -50,6 +50,11 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_palette DESTINATION bin)
 add_executable(pga_tiff_palette ../src/tiff_palette.c ../src/metrics.c ../src/palette.c)
 target_link_libraries(pga_tiff_palette tiff geotiff m)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_tiff_palette DESTINATION bin)
+
+add_executable(pga_tiff_hist ../src/tiff_hist.c ../src/metrics.c ../src/palette.c)
+target_link_libraries(pga_tiff_hist tiff geotiff m)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_tiff_hist DESTINATION bin)
+
 
 
 install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_csv DESTINATION bin)
