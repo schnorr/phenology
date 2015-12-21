@@ -1,0 +1,45 @@
+#!/usr/bin/Rscript
+#
+# This file is part of Phenology
+#
+# Phenology is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Phenology is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Public License for more details.
+#
+# You should have received a copy of the GNU Public License
+# along with Phenology. If not, see <http://www.gnu.org/licenses/>.
+#
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args) != 3) {
+  stop("Usage: pga_palette <PALETTE> <L_LIMIT> <H_LIMIT>", call.=FALSE)
+}
+
+#
+# parse arguments
+#
+paletteFilename = args[1];
+lowLimit = as.integer(args[2]);
+highLimit = as.integer(args[3]);
+
+#
+# read the palette, create the appropriate dataframe
+#
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+
+palette
+
+library(oce);
+
+tks=seq(lowLimit, highLimit);
+pdf("palette_ga.pdf", height=1);
+drawPalette(c(30, 50), zlab="Palette GA", at=tks, labels=tks, col=palette, pos=3);
+dev.off();
+
+

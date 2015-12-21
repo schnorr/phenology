@@ -53,3 +53,4 @@ target_link_libraries(pga_tiff_palette tiff geotiff m)
 
 install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_csv DESTINATION bin)
 install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_cpm DESTINATION bin)
+install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_palette DESTINATION bin)
