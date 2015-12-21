@@ -162,7 +162,9 @@ int main (int argc, char **argv)
 
   image_t *image = load_jpeg_image(argv[1]);
   image_t *mask = load_jpeg_image(argv[2]);
-  apply_mask (image, mask);
+  if (mask){
+    apply_mask (image, mask);
+  }
 
   int NUMBER_OF_BUCKETS = atoi(argv[3]);
   int *histogram = get_metric (NUMBER_OF_BUCKETS, image);
@@ -176,7 +178,9 @@ int main (int argc, char **argv)
     }
   }
   free(histogram);
-  free(mask->image);
+  if (mask){
+    free(mask->image);
+  }
   free(mask);
   free(image->image);
   free(image);
