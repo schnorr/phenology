@@ -143,7 +143,7 @@ uint32 *calc_pga_pixels (uint32 *raster, size_t len, int grain, int low, int hig
     }
 
     //calculate GA, truncf
-    float value = get_green_average (r, g, b) * 100;
+    float value = get_green_average (r, g, b) * grain;
     int selected = truncf(value);
 
     if (selected < low){
