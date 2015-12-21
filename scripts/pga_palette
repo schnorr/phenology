@@ -39,7 +39,7 @@ library(oce);
 
 tks=seq(lowLimit, highLimit);
 pdf("palette_ga.pdf", height=1);
-drawPalette(c(30, 50), zlab="Palette GA", at=tks, labels=tks, col=palette, pos=3);
+drawPalette(c(lowLimit, highLimit), zlab="Palette GA", at=tks, labels=tks, col=palette, pos=3);
 dev.off();
 
 
