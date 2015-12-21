@@ -49,6 +49,7 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_palette DESTINATION bin)
 
 add_executable(pga_tiff_palette ../src/tiff_aux.c ../src/metrics.c ../src/palette.c)
 target_link_libraries(pga_tiff_palette tiff geotiff m)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/pga_tiff_palette DESTINATION bin)
 
 
 install(PROGRAMS ${CMAKE_HOME_DIRECTORY}/scripts/pga_csv DESTINATION bin)
