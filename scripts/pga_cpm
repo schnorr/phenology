@@ -66,6 +66,7 @@ cpmYear <- function (data)
        ylim(0,NA) +
        theme_bw() +
        scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
        facet_wrap(~year);
   print(p);
   dev.off();
@@ -86,6 +87,7 @@ p <- ggplot(dfm[dfm$variable > lowLimit  &
      ylim(0,NA) +
      theme_bw() +
      scale_fill_manual(values=palette) +
+     theme(legend.position="none") +
      facet_wrap(~year);
 print(p);
 dev.off();
