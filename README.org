@@ -42,6 +42,8 @@ This repository contains the following programs:
   #+RESULTS:
   : 0,0,0,0,0,0,82807,783737,362094,29447,1686,109,11,3,0,0,0,0,0,0
 
++ =pga_tiff_hist=: same as =pga_hist=, but for TIFF files.
+
 + =pga_palette=: This program takes as input seven parameters - an image
   (JPG), a mask (JPG), a palette in the file format specified below,
   the lowest and the highest bin identifier to consider, the
@@ -52,6 +54,7 @@ This repository contains the following programs:
   number of available colors of the palette provided. The program is
   expected to fail otherwise.
 
++ =pga_tiff_palette=: same as =pga_palette=, but for TIFF files.
 
 ** Requirements
 
