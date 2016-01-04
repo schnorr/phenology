@@ -170,7 +170,7 @@
     return ret;
   }
 
-  void segment (image_t *image, palette_t *palette, int low, int high, int grain)
+  void segment (image_t *image, palette_t *palette, int low, int high)
   {
     int i;
     for (i = 0; i < image->size; i = i+3) {
@@ -180,13 +180,13 @@
       b = image->image[i+2];
       if (is_black(r, g, b)) continue;
 
-      float value = get_green_average (r, g, b) * grain;
-      int selected = truncf(value);
-
+      float value = get_green_average (r, g, b) * 100;
       //original implementation
-      if (selected >= low && selected < high){
+      if (value >= low && value < high){
         //change pixel color according to palette and selected index
-        int index = selected - low - 1;
+        float dif = high - low;
+        int index = (value - (float)low)/(dif/(float)palette->size);
+        
         unsigned char r, g, b;
         r = palette->colors[index*3+0];
         g = palette->colors[index*3+1];
@@ -204,13 +204,13 @@
       }
 
       //gray
-      if (selected < low){
+      if (value < low){
         image->image[i+0] = 200;
         image->image[i+1] = 200;
         image->image[i+2] = 200;
       }
       //black
-      if (selected >= high){
+      if (value >= high){
         image->image[i+0] = 0;
         image->image[i+1] = 0;
         image->image[i+2] = 0;
@@ -220,8 +220,8 @@
 
   int main (int argc, char **argv)
   {
-    if (argc != 8){
-      printf("Usage: %s <IMAGE.jpg> <MASK.jpg> <PALETTE> <L_LIMIT> <H_LIMIT> <GRAIN> <OUTPUT.jpg>\n", argv[0]);
+    if (argc != 7){
+      printf("Usage: %s <IMAGE.jpg> <MASK.jpg> <PALETTE> <L_LIMIT> <H_LIMIT> <OUTPUT.jpg>\n", argv[0]);
       exit(1);
     }
 
@@ -235,15 +235,10 @@
 
     int l_limit = atoi(argv[4]);
     int h_limit = atoi(argv[5]);
-    int grain = atoi(argv[6]);
 
-    if (h_limit - l_limit != palette->size){
-      printf("Error: range (size %d) and palette size (%d) are different.\n", h_limit - l_limit, palette->size);
-    }
+    segment (image, palette, l_limit, h_limit);
 
-    segment (image, palette, l_limit, h_limit, grain);
-
-    convert_to_jpg (image, argv[7]);
+    convert_to_jpg (image, argv[6]);
 
     free(mask->image);
     free(mask);

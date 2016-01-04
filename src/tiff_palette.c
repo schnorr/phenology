@@ -127,7 +127,7 @@ void save_pixels (TIFF *tif, uint32 *raster, size_t len)
   }
 }
 
-uint32 *calc_pga_pixels (uint32 *raster, size_t len, int grain, int low, int high, tiff_palette_t *palette)
+uint32 *calc_pga_pixels (uint32 *raster, size_t len, int low, int high, tiff_palette_t *palette)
 {
   if (!raster) return NULL;
 
@@ -142,19 +142,21 @@ uint32 *calc_pga_pixels (uint32 *raster, size_t len, int grain, int low, int hig
       continue;
     }
 
-    //calculate GA, truncf
-    float value = get_green_average (r, g, b) * grain;
-    int selected = truncf(value);
+    //calculate GA, multiply by 100
+    float value = get_green_average (r, g, b) * 100;
 
-    if (selected < low){
+
+    if (value < low){
       raster[i] = tiff_gray();
     }
-    if (selected >= high){
+    if (value >= high){
       raster[i] = tiff_black();
     }
-    if (selected >= low && selected < high){
-    
-      int index = selected - low - 1;
+    if (value >= low && value < high){
+
+      float dif = high - low;
+      int index = (value - (float)low)/(dif/(float)palette->size);
+      
       if (index < palette->size && index >= 0){
         raster[i] = get_tiff_color_from_palette (index, palette);
       }else{
@@ -167,22 +169,17 @@ uint32 *calc_pga_pixels (uint32 *raster, size_t len, int grain, int low, int hig
 
 int main (int argc, char **argv)
 {
-  if (argc != 7){
-    printf("Usage: %s <IMAGE.tif> <PALETTE> <L_LIMIT> <H_LIMIT> <GRAIN> <OUTPUT.tif>\n", argv[0]);
+  if (argc != 6){
+    printf("Usage: %s <IMAGE.tif> <PALETTE> <L_LIMIT> <H_LIMIT> <OUTPUT.tif>\n", argv[0]);
     exit(1);
   }
   
   const char *source = argv[1];
-  const char *dest = argv[6];
+  const char *dest = argv[5];
   tiff_palette_t *palette = read_tiff_palette_from_file (argv[2]);
 
   int l_limit = atoi(argv[3]);
   int h_limit = atoi(argv[4]);
-  int grain = atoi(argv[5]);
-  
-  if (palette && h_limit - l_limit != palette->size){
-    printf("Warning: range (size %d) and palette size (%d) are different.\n", h_limit - l_limit, palette->size);
-  }
 
   if (cp(dest, source)){
     printf ("Copy failed\n");
@@ -212,7 +209,7 @@ int main (int argc, char **argv)
     }
     printf("Calculating GA pixels...\n");
     //calculate GA, then apply the palette according to parameters
-    raster = calc_pga_pixels(raster, len, grain, l_limit, h_limit, palette);
+    raster = calc_pga_pixels(raster, len, l_limit, h_limit, palette);
     
     printf("Saving pixels...\n");
     //save new colors to the same TIFF file
