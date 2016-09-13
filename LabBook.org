@@ -367,9 +367,7 @@ ggplot(dfm[dfm$variable >= lowLimit &
 
 #+RESULTS:
 [[file:img/comba_2015_cpm_redo.jpg]]
-
-
-
+** Identify the problem
 Count the number of pixels:
 #+begin_src sh :results output
 for line in `cat dc_TKY_y18_n_2015_grain100_masked.csv | grep -v database | cut -d, -f4-`
@@ -402,3 +400,24 @@ ggplot(df, aes(x=V1, y=V2)) + geom_point() + ylim(0,NA) + theme_bw();
 [[file:img/verif_number_of_pixels.png]]
 
 The number of pixels is indeed different. I should check the reason in =pga_hist=.
+** Problem is fixed, here's the results
+Count the number of pixels:
+#+begin_src sh :results output
+for line in `cat dc_TKY_y18_n_2015_grain100_masked.csv | grep -v database | cut -d, -f4-`
+do
+  echo $line | sed "s/,/+/g" | bc -l
+done | cat -n > x.csv
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file img/verif_number_of_pixels_after_fix.png :exports both :width 600 :height 400 :session
+library(ggplot2);
+df <- read.csv("x.csv", head=F, sep="\t");
+ggplot(df, aes(x=V1, y=V2)) + geom_point() + ylim(0,NA) + theme_bw();
+#+end_src
+
+#+RESULTS:
+[[file:img/verif_number_of_pixels_after_fix.png]]
+
+The number of pixels is the same.
