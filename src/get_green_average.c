@@ -44,12 +44,13 @@ image_t *load_jpeg_image (const char *filename)
   struct jpeg_decompress_struct info; //for our jpeg info
   struct jpeg_error_mgr err;          //the error handler
   FILE *file = fopen(filename, "rb");  //open the file
-  info.err = jpeg_std_error(&err);
-  jpeg_create_decompress(&info);   //fills info structure
   if(!file) {
      fprintf(stderr, "Error reading JPEG file %s!\n", filename);
      return NULL;
   }
+  info.err = jpeg_std_error(&err);
+  jpeg_create_decompress(&info);   //fills info structure
+
   jpeg_stdio_src(&info, file);    
   jpeg_read_header(&info, TRUE);   // read jpeg file header
   jpeg_start_decompress(&info);    // decompress the file
