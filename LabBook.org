@@ -63,3 +63,140 @@ Resulting GIF animations are here:
 https://www.dropbox.com/sh/15rztbpcknrbk8k/AABVV3GkT8idTNR4s9_dwnbFa/2016-02-23_Test_Gray_Black_Limits/GIF?dl=0
 
 In my opinion, the way it is done right now is correct.
+* 2016-09-13 Create CPM for =dc_TKY_btp_n=
+I've created a mask with =gimp= and stored it in the following
+folder. The mask has been created with gimp. Black areas are not
+considered when masking, as the file:README.org indicates.
+#+begin_src sh :results output
+ls -lh ~/svn/phenology/dc_TKY_btp_n/mask.jpg
+#+end_src
+
+#+RESULTS:
+: -rw-r--r-- 1 schnorr schnorr 51K Sep 13 14:21 /home/schnorr/svn/phenology/dc_TKY_btp_n/mask.jpg
+
+Looks like the file:./scripts/pga_csv is not working correctly. It
+stills execute and call =pga_hist= correctly with the good mask, but the
+CSV generated in the standard output is wrong. Here's a customized
+script for this data set.
+
+#+begin_src sh :results output
+DIRWITHIMAGES=~/svn/phenology/dc_TKY_btp_n/
+for file in $(find ${DIRWITHIMAGES} | grep "jpg$" | sort); do
+  echo $file
+done | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_100_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_101_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_102_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_103_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_104_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_105_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_106_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_107_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_108_1203+0900_TKY__btp_n.jpg
+/home/schnorr/svn/phenology/dc_TKY_btp_n/dc_2005_109_1203+0900_TKY__btp_n.jpg
+#+end_example
+
+So, it looks like the *year* is the second field, while the *sequence* is
+the third one of the base filename. So, let's consider that.
+
+#+begin_src sh :results output
+MASK=~/svn/phenology/dc_TKY_btp_n/mask.jpg
+GRAIN=20
+DIRWITHIMAGES=~/svn/phenology/dc_TKY_btp_n/
+for file in $(find ${DIRWITHIMAGES} | grep "jpg$" | sort); do
+   FILE=`basename $file .jpg`
+   YEAR=`echo $FILE | cut -d"_" -f2`
+   SEQUENCE=`echo $FILE | cut -d"_" -f3`
+   echo "$SEQUENCE,$YEAR,`./b/pga_hist $file $MASK $GRAIN`";
+done | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+100,2005,0,0,0,0,0,198,2649782,712377,57830,1597,25,0,0,0,0,0,0,0,0,0
+101,2005,0,0,0,0,0,335,2618647,763818,38778,231,0,0,0,0,0,0,0,0,0,0
+102,2005,0,0,0,0,0,2,3366166,55641,0,0,0,0,0,0,0,0,0,0,0,0
+103,2005,0,0,0,0,0,415,2621272,758190,41661,271,0,0,0,0,0,0,0,0,0,0
+104,2005,0,0,0,0,0,1036,2445733,856557,110928,6917,562,64,12,0,0,0,0,0,0,0
+105,2005,0,0,0,0,0,816,2448674,852383,114970,4730,217,18,1,0,0,0,0,0,0,0
+106,2005,0,0,0,0,0,18,2656676,734337,30707,71,0,0,0,0,0,0,0,0,0,0
+107,2005,0,0,0,0,0,327,2426587,874102,116417,4208,165,3,0,0,0,0,0,0,0,0
+108,2005,0,0,0,0,0,125,2476115,836275,107405,1869,20,0,0,0,0,0,0,0,0,0
+109,2005,0,0,0,0,0,132,2524490,824063,72277,842,5,0,0,0,0,0,0,0,0,0
+#+end_example
+
+Great, it has worked. Now, let's put all this in a file. I'll execute
+in a terminal so I can edit this file. Here's exactly what I've
+executed in the terminal (copy paste entirely after customizing
+paths):
+
+#+BEGIN_EXAMPLE
+DATABASE=dc_TKY_btp_n
+MASK=~/svn/phenology/dc_TKY_btp_n/mask.jpg
+GRAIN=20
+DIRWITHIMAGES=~/svn/phenology/dc_TKY_btp_n/
+PGA_HIST_LOCATION=./b/pga_hist
+
+{
+#
+# Generate CSV header
+#
+FINAL=`echo $GRAIN - 1 | bc`
+echo -n "database,sequence,year,"
+for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
+echo ""
+
+#
+# Call pga_hist for each file, aplying the $MASK
+#
+for file in $(find ${DIRWITHIMAGES} | grep "jpg$" | grep -v mask | sort); do
+   FILE=`basename $file .jpg`
+   YEAR=`echo $FILE | cut -d"_" -f2`
+   SEQUENCE=`echo $FILE | cut -d"_" -f3`
+   echo "$DATABASE,$SEQUENCE,$YEAR,`${PGA_HIST_LOCATION} $file $MASK $GRAIN`";
+done
+} > dc_TKY_btp_n_grain20_masked.csv
+#+END_EXAMPLE
+
+I've commited the =dc_TKY_btp_n_grain20_masked.csv= in the experiments directory.
+
+Let's run the same code with 100 as GRAIN (to obtain a 100-bucket histogram).
+
+#+BEGIN_EXAMPLE
+DATABASE=dc_TKY_btp_n
+MASK=~/svn/phenology/dc_TKY_btp_n/mask.jpg
+GRAIN=100
+DIRWITHIMAGES=~/svn/phenology/dc_TKY_btp_n/
+PGA_HIST_LOCATION=./b/pga_hist
+
+{
+#
+# Generate CSV header
+#
+FINAL=`echo $GRAIN - 1 | bc`
+echo -n "database,sequence,year,"
+for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
+echo ""
+
+#
+# Call pga_hist for each file, aplying the $MASK
+#
+for file in $(find ${DIRWITHIMAGES} | grep "jpg$" | grep -v mask | sort); do
+   FILE=`basename $file .jpg`
+   YEAR=`echo $FILE | cut -d"_" -f2`
+   SEQUENCE=`echo $FILE | cut -d"_" -f3`
+   echo "$DATABASE,$SEQUENCE,$YEAR,`${PGA_HIST_LOCATION} $file $MASK $GRAIN`";
+done
+} > dc_TKY_btp_n_grain100_masked.csv
+#+END_EXAMPLE
+
+100 buckets should sufficient since we can get the GA betweem 30% and
+40%, with a resolution of 0.5%.
+
+#+begin_src sh :results output
+ls -lh experiments
+#+end_src
