@@ -64,6 +64,7 @@ https://www.dropbox.com/sh/15rztbpcknrbk8k/AABVV3GkT8idTNR4s9_dwnbFa/2016-02-23_
 
 In my opinion, the way it is done right now is correct.
 * 2016-09-13 Create CPM for =dc_TKY_btp_n=
+** Mask creation
 I've created a mask with =gimp= and stored it in the following
 folder. The mask has been created with gimp. Black areas are not
 considered when masking, as the file:README.org indicates.
@@ -73,7 +74,7 @@ ls -lh ~/svn/phenology/dc_TKY_btp_n/mask.jpg
 
 #+RESULTS:
 : -rw-r--r-- 1 schnorr schnorr 51K Sep 13 14:21 /home/schnorr/svn/phenology/dc_TKY_btp_n/mask.jpg
-
+** Calculating the histograms for all images
 Looks like the file:./scripts/pga_csv is not working correctly. It
 stills execute and call =pga_hist= correctly with the good mask, but the
 CSV generated in the standard output is wrong. Here's a customized
@@ -200,3 +201,9 @@ done
 #+begin_src sh :results output
 ls -lh experiments
 #+end_src
+
+#+RESULTS:
+: total 1.4M
+: -rw-r--r-- 1 schnorr schnorr 1.1M Sep 13 16:17 dc_TKY_btp_n_grain100_masked.csv
+: -rw-r--r-- 1 schnorr schnorr 309K Sep 13 14:38 dc_TKY_btp_n_grain20_masked.csv
+
