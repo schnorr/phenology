@@ -206,4 +206,193 @@ ls -lh experiments
 : total 1.4M
 : -rw-r--r-- 1 schnorr schnorr 1.1M Sep 13 16:17 dc_TKY_btp_n_grain100_masked.csv
 : -rw-r--r-- 1 schnorr schnorr 309K Sep 13 14:38 dc_TKY_btp_n_grain20_masked.csv
+** Creating the CPM
+Reading the palette
+#+begin_src R :results output :session :exports both
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+palette
+#+end_src
 
+#+RESULTS:
+:  [1] "#99540F" "#B26F2C" "#CC8E51" "#E5B17E" "#FFD8B2" "#6B990F" "#85B22C"
+:  [8] "#A3CC51" "#C3E57E" "#E5FFB2" "#0F6B99" "#2C85B2" "#51A3CC" "#7EC3E5"
+: [15] "#B2E5FF" "#260F99" "#422CB2" "#6551CC" "#8F7EE5" "#BFB2FF"
+
+Read the CSV
+#+begin_src R :results output :session :exports both
+library(reshape);
+df <- read.csv("experiments/dc_TKY_btp_n_grain100_masked.csv");
+dfm <- melt(df, id.vars=c("database", "sequence", "year"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+#+end_src
+
+#+RESULTS:
+:       database sequence year variable value
+: 1 dc_TKY_btp_n      100 2005        0     0
+: 2 dc_TKY_btp_n      101 2005        0     0
+: 3 dc_TKY_btp_n      102 2005        0     0
+: 4 dc_TKY_btp_n      103 2005        0     0
+: 5 dc_TKY_btp_n      104 2005        0     0
+: 6 dc_TKY_btp_n      105 2005        0     0
+
+Let's do the plot
+
+#+begin_src R :results output graphics :file img/cpm.jpg :exports both :width 1200 :height 800 :session
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+ggplot(dfm[dfm$variable >= lowLimit & 
+            dfm$variable < highLimit &
+            dfm$value != 0,],
+       aes(x = sequence, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       theme_bw() +
+       scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
+       facet_wrap(~year);
+#+end_src
+
+#+RESULTS:
+[[file:img/cpm.jpg]]
+
+* 2016-09-13 CSV created by Comba
+** With 2015.csv file sent by Comba
+#+begin_src R :results output :session :exports both
+df <- read.csv("~/Downloads/2015.csv");
+dfm <- melt(df, id.vars=c("sequence", "year"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+#+end_src
+
+#+RESULTS:
+:   sequence year variable value
+: 1        1 2015        0  4246
+: 2        2 2015        0  5392
+: 3        3 2015        0  5472
+: 4        4 2015        0  5496
+: 5        5 2015        0  5047
+: 6        6 2015        0  2944
+
+
+#+begin_src R :results output graphics :file img/comba_2015_cpm.jpg :exports both :width 1200 :height 800 :session
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+ggplot(dfm[dfm$variable >= lowLimit & 
+            dfm$variable < highLimit &
+            dfm$value != 0,], # & dfm$value > 2e+,],
+       aes(x = sequence, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       theme_bw() +
+       scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
+       facet_wrap(~year);
+#+end_src
+
+#+RESULTS:
+[[file:img/comba_2015_cpm.jpg]]
+** Trying to reproduce
+- Histograms are not normalized
+
+#+BEGIN_EXAMPLE
+DATABASE=dc_TKY_y18_d
+MASK=~/svn/phenology/dc_TKY_y18_d/mask1.jpeg
+GRAIN=100
+DIRWITHIMAGES=~/svn/phenology/dc_TKY_y18_d/
+PGA_HIST_LOCATION=./b/pga_hist
+
+{
+#
+# Generate CSV header
+#
+FINAL=`echo $GRAIN - 1 | bc`
+echo -n "database,sequence,year,"
+for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
+echo ""
+
+#
+# Call pga_hist for each file, aplying the $MASK
+#
+for file in $(find ${DIRWITHIMAGES} | grep "jpg$" | grep 2015 | grep -v mask | sort); do
+   FILE=`basename $file .jpg`
+   YEAR=`echo $FILE | cut -d"_" -f2`
+   SEQUENCE=`echo $FILE | cut -d"_" -f3`
+   echo "$DATABASE,$SEQUENCE,$YEAR,`${PGA_HIST_LOCATION} $file $MASK $GRAIN`";
+done
+} > dc_TKY_y18_n_2015_grain100_masked.csv
+#+END_EXAMPLE
+** Creating the CPM again
+#+begin_src R :results output :session :exports both
+library(reshape);
+df <- read.csv("dc_TKY_y18_n_2015_grain100_masked.csv");
+dfm <- melt(df, id.vars=c("database", "sequence", "year"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+#+end_src
+
+#+RESULTS:
+:       database sequence year variable value
+: 1 dc_TKY_y18_d        1 2015        0  4385
+: 2 dc_TKY_y18_d        2 2015        0  4868
+: 3 dc_TKY_y18_d        3 2015        0  5356
+: 4 dc_TKY_y18_d        4 2015        0  5413
+: 5 dc_TKY_y18_d        5 2015        0  4944
+: 6 dc_TKY_y18_d        6 2015        0  2982
+
+#+begin_src R :results output graphics :file  img/comba_2015_cpm_redo.jpg :exports both :width 1200 :height 800 :session
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+ggplot(dfm[dfm$variable >= lowLimit & 
+            dfm$variable < highLimit &
+            dfm$value != 0,], # & dfm$variable != 33,],
+       aes(x = sequence, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       theme_bw() +
+       scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
+       facet_wrap(~year);
+#+end_src
+
+#+RESULTS:
+[[file:img/comba_2015_cpm_redo.jpg]]
+
+
+
+Count the number of pixels:
+#+begin_src sh :results output
+for line in `cat dc_TKY_y18_n_2015_grain100_masked.csv | grep -v database | cut -d, -f4-`
+do
+  echo $line | sed "s/,/+/g" | bc -l
+done | cat -n > x.csv
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output :session :exports both
+head(df);
+#+end_src
+
+#+RESULTS:
+:   V1      V2
+: 1  1 2966555
+: 2  2 2005224
+: 3  3 1990250
+: 4  4 2024096
+: 5  5 2108453
+: 6  6 2987872
+
+#+begin_src R :results output graphics :file img/verif_number_of_pixels.png :exports both :width 600 :height 400 :session
+df <- read.csv("x.csv", head=F, sep="\t");
+ggplot(df, aes(x=V1, y=V2)) + geom_point() + ylim(0,NA) + theme_bw();
+#+end_src
+
+#+RESULTS:
+[[file:img/verif_number_of_pixels.png]]
+
+The number of pixels is indeed different. I should check the reason in =pga_hist=.
