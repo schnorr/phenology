@@ -47,7 +47,7 @@ image_t *load_jpeg_image (const char *filename)
   info.err = jpeg_std_error(&err);
   jpeg_create_decompress(&info);   //fills info structure
   if(!file) {
-     fprintf(stderr, "Error reading JPEG file %s!", filename);
+     fprintf(stderr, "Error reading JPEG file %s!\n", filename);
      return NULL;
   }
   jpeg_stdio_src(&info, file);    
