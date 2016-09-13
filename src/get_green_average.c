@@ -88,22 +88,25 @@ void convert_to_ppm (image_t *image)
 
 int apply_mask (image_t *image, image_t *mask)
 {
-  if (image->width == mask->width && image->height == image->height) {
-#pragma omp parallel for shared(mask, image)
-    for (int i = 0; i < mask->size; i = i+3) {
-      unsigned char r = mask->image[i+0];
-      unsigned char g = mask->image[i+1];
-      unsigned char b = mask->image[i+2];
-      if (!(r == 255 && g == 255 && b == 255)){
-        image->image[i+0] = 0;
-        image->image[i+1] = 0;
-        image->image[i+2] = 0;
-      }
-    }
-  } else {
+  if (image->width != mask->width || image->height != image->height) {
     printf ("Image and Mask have different dimensions. Error.\n");
     exit(1);
   }
+
+  int total_after_mask = 0;
+  for (int i = 0; i < mask->size; i = i+3) {
+    unsigned char r = mask->image[i+0];
+    unsigned char g = mask->image[i+1];
+    unsigned char b = mask->image[i+2];
+    if (!(r == 255 && g == 255 && b == 255)){
+      image->image[i+0] = 0;
+      image->image[i+1] = 0;
+      image->image[i+2] = 0;
+    }else{
+      total_after_mask++;
+    }
+  }
+  return total_after_mask;
 }
 
 int get_bin (int grain, int i, image_t *image)
