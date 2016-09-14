@@ -421,3 +421,121 @@ ggplot(df, aes(x=V1, y=V2)) + geom_point() + ylim(0,NA) + theme_bw();
 [[file:img/verif_number_of_pixels_after_fix.png]]
 
 The number of pixels is the same.
+* 2016-09-14 One plot for all years
+** Transform day of the year + year in a R date type
+Each day image is tagged with the year combined with the day of the
+year. To read such information into a proper date type in R I do as
+follows:
+#+begin_src R :results output :session :exports both
+as.Date('2016.258', format="%Y.%j");
+#+end_src
+
+#+RESULTS:
+: [1] "2016-09-14"
+
+For further details, see:
+- http://www.stat.berkeley.edu/classes/s133/dates.html
+** CSV creation for the three databases
+#+begin_src sh :results output
+NGRAIN=100
+PGA_HIST_LOCATION=./b/pga_hist
+DIRWITHDATABASES=~/svn/phenology/
+
+#
+# Generate CSV header
+#
+{
+FINAL=`echo $NGRAIN - 1 | bc`
+echo -n "database,year,sequence,"
+for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
+echo ""
+
+for DATABASE in dc_TKY_btp_n dc_TKY_y18_d dc_TKY_y18bb; do
+    MASK=${DIRWITHDATABASES}/${DATABASE}/mask.jpg
+    for file in $(find ${DIRWITHDATABASES}/${DATABASE}/ | grep "jpg$" | grep -v mask | sort); do
+	      FILE=`basename $file .jpg`
+	      YEAR=`echo $FILE | cut -d"_" -f2`
+	      SEQUENCE=`echo $FILE | cut -d"_" -f3`
+	      echo "$DATABASE,$YEAR,$SEQUENCE,`${PGA_HIST_LOCATION} $file $MASK $NGRAIN`";
+    done
+done
+} > experiments/dc_all_grain100_masked.csv
+#+end_src
+** Read, create DOY, plot everything
+#+begin_src R :results output :session :exports both
+library(reshape);
+df <- read.csv("experiments/dc_all_grain100_masked.csv");
+df$doy <- as.Date(paste(df$year, df$sequence),  format="%Y %j");
+df$year <- NULL;
+df$sequence <- NULL;
+dfm <- melt(df, id.vars=c("database", "doy"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+#+end_src
+
+#+RESULTS:
+:       database        doy variable value
+: 1 dc_TKY_btp_n 2005-04-10        0     0
+: 2 dc_TKY_btp_n 2005-04-11        0     0
+: 3 dc_TKY_btp_n 2005-04-12        0     0
+: 4 dc_TKY_btp_n 2005-04-13        0     0
+: 5 dc_TKY_btp_n 2005-04-14        0     0
+: 6 dc_TKY_btp_n 2005-04-15        0     0
+
+Now plot it
+#+begin_src R :results output graphics :file img/dc_all_grain100_masked.png :exports both :width 600 :height 400 :session
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+ggplot(dfm[dfm$variable >= lowLimit & 
+            dfm$variable < highLimit &
+            dfm$value != 0,],
+       aes(x = doy, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       theme_bw() +
+       scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
+       facet_wrap(~database, ncol=1);
+#+end_src
+
+#+RESULTS:
+[[file:img/dc_all_grain100_masked.png]]
+
+
+Looks like we have a scale issue: the Y scale differs for each
+database. That's normal because masks are different. I can free the Y
+scale when facetting. That should fix and not undermine the
+interpretation since everything is normalized anyway. So here's for
+version 2. I also improve other aspects, tick labels, axis labels,
+font size.
+
+#+begin_src R :results output graphics :file img/dc_all_grain100_masked_v2.png :exports both :width 1200 :height 800 :session
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+ggplot(dfm[dfm$variable >= lowLimit & 
+            dfm$variable < highLimit &
+            dfm$value != 0,],
+       aes(x = doy, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       ylab ("Green Average Histogram (per-facet, normalized)") +
+       xlab ("Time (each day along the years)") +
+       scale_x_date(date_breaks="1 year", date_labels="%Y") +
+       theme_bw(base_size=22) +
+       scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
+       facet_wrap(~database, ncol=1, scale="free_y");
+#+end_src
+
+#+RESULTS:
+[[file:img/dc_all_grain100_masked_v2.png]]
+
+
