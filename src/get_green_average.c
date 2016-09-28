@@ -193,7 +193,6 @@ int main (int argc, char **argv)
     free(histogram);
     free(image->image);
     free(image);
-    
   }
   if (mask){
     free(mask->image);
