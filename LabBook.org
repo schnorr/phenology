@@ -538,4 +538,142 @@ ggplot(dfm[dfm$variable >= lowLimit &
 #+RESULTS:
 [[file:img/dc_all_grain100_masked_v2.png]]
 
+* 2016-09-28 Meeting with Comba and attempt with new palette
+The problem is the lack of normalization because I discard data if
+there is not enough colors to map to the values.
+
+I just realized I can re-use the previously calculated data. They are
+here:
+#+begin_src sh :results output
+head experiments/dc_all_grain100_masked.csv
+#+end_src
+
+#+RESULTS:
+#+begin_example
+database,year,sequence,X0,X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20,X21,X22,X23,X24,X25,X26,X27,X28,X29,X30,X31,X32,X33,X34,X35,X36,X37,X38,X39,X40,X41,X42,X43,X44,X45,X46,X47,X48,X49,X50,X51,X52,X53,X54,X55,X56,X57,X58,X59,X60,X61,X62,X63,X64,X65,X66,X67,X68,X69,X70,X71,X72,X73,X74,X75,X76,X77,X78,X79,X80,X81,X82,X83,X84,X85,X86,X87,X88,X89,X90,X91,X92,X93,X94,X95,X96,X97,X98,X99
+dc_TKY_btp_n,2005,100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,188,3939,95294,766327,1284631,499591,276537,186994,121724,80301,46821,29435,14826,7739,3892,1938,918,408,156,82,33,16,4,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,101,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,326,8584,138093,835451,1169693,466826,284257,203629,138448,90150,47334,24171,9271,3508,1316,512,167,46,14,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,102,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,458,61731,1527881,1538384,237712,47153,7563,854,68,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,103,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,33,381,10727,180539,934053,1058607,437346,281169,199613,137916,90709,48783,25261,10217,4073,1553,557,195,64,8,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,104,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,31,59,228,707,8211,174174,923617,896089,443642,283054,222054,164345,113560,73544,51559,28908,16255,9176,5030,3097,1832,1076,627,285,286,126,81,44,25,17,17,15,11,4,3,2,3,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,105,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,9,37,126,641,5719,133844,907311,949266,452534,283706,217511,159970,114207,76989,54611,30281,16760,8610,4708,2427,1196,642,325,140,117,48,24,16,12,10,5,2,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,106,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,2482,90566,937508,1206032,420088,258408,195150,141634,93412,45733,20802,6900,2207,614,184,48,15,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,107,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,8,13,44,261,3846,111532,863809,985515,461885,286958,222757,165612,119132,79643,56030,31191,16527,8374,4295,2184,1103,522,267,132,95,40,21,5,4,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+dc_TKY_btp_n,2005,108,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,12,103,2325,90606,858745,1061053,463386,278986,205025,151662,116641,83961,56351,28355,13615,6328,2756,1112,488,177,64,28,15,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+#+end_example
+
+Let's first read this in R:
+
+#+begin_src R :results output :session :exports both
+library(reshape);
+df <- read.csv("experiments/dc_all_grain100_masked.csv");
+df$doy <- as.Date(paste(df$year, df$sequence),  format="%Y %j");
+df$sequence <- NULL;
+dfm <- melt(df, id.vars=c("database", "year", "doy"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+#+end_src
+
+#+RESULTS:
+:       database year        doy variable value
+: 1 dc_TKY_btp_n 2005 2005-04-10        0     0
+: 2 dc_TKY_btp_n 2005 2005-04-11        0     0
+: 3 dc_TKY_btp_n 2005 2005-04-12        0     0
+: 4 dc_TKY_btp_n 2005 2005-04-13        0     0
+: 5 dc_TKY_btp_n 2005 2005-04-14        0     0
+: 6 dc_TKY_btp_n 2005 2005-04-15        0     0
+
+Great, let's do the plot. Configurations:
+- use the ~viridis.palette~ sent by comba
+- The low and hig limit should be 0 and 100 because now we have 100
+  colors in the palette
+
+Load the palette:
+#+begin_src R :results output :session :exports both
+paletteFilename = "palette/viridis.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+#+end_src
+
+#+RESULTS:
+
+Function to draw a year:
+
+#+begin_src R :results output :session :exports both
+library(ggplot2);
+
+plot_year <- function (lowLimit, highLimit, database, year, palette)
+{
+    ggplot(dfm[dfm$database == database & dfm$year == year ,],
+       aes(x = doy, y = value, fill=as.factor(variable))) +
+       geom_bar(stat='identity', width=1) +
+       ylim(0,NA) +
+       theme_bw() +
+#       ggtitle(paste(database, year, sep=" ")) +
+       scale_fill_manual(values=palette) +
+       theme(legend.position="none") +
+       xlab(NULL) + ylab(NULL) +
+       theme(axis.title.x=element_blank(),
+                  axis.text=element_blank(),
+                  axis.ticks=element_blank(),
+                  panel.grid=element_blank(),
+                  panel.border=element_blank());
+}
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output :session :exports both
+database = "dc_TKY_y18_d";
+base = "img/"
+for (year in 2004:2016) {
+   png(paste(base, database, "_", year, ".png", sep=""), width = 1920, height = 1080);
+   print(plot_year(0, 100, database, year, palette));
+   dev.off();
+   pdf(paste(base, database, "_", year, ".pdf", sep=""), width = 19.20, height = 10.80);
+   print(plot_year(0, 100, database, year, palette));
+   dev.off();
+}
+#+end_src
+
+#+RESULTS:
+
+PDF crop of everything
+
+#+begin_src sh :results output
+cd img
+rm dc_TKY_y18_d_*-crop.pdf
+for file in $(ls dc_TKY_y18_d_*.pdf); do
+  pdfcrop $file
+done
+#+end_src
+
+#+RESULTS:
+#+begin_example
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2004-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18_d_2016-crop.pdf'.
+#+end_example
 
