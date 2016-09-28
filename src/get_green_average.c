@@ -21,6 +21,7 @@
 #include <math.h>
 #include <strings.h>
 #include "metrics.h"
+#include "args.h"
 
 typedef struct image {
   unsigned char *image;
@@ -36,6 +37,16 @@ static double gettime (void)
   gettimeofday(&tr, NULL);
   return (double)tr.tv_sec+(double)tr.tv_usec/1000000;
 }
+
+static char doc[] = "Calculate the histogram of FILE, dumping a CSV-like output";
+static char args_doc[] = "FILE [FILES]";
+static struct argp_option options[] = {
+  {"metric", 'm', "METRIC", 0, "Either RED, GREEN or BLUE"},
+  {"mask", 's', "MASK", 0, "The image mask that should be used"},
+  {"grain", 'g', "GRAIN", 0, "The number of buckets of the histogram"},
+  { 0 }
+};
+struct argp argp = { options, parse_options, args_doc, doc };
 
 image_t *load_jpeg_image (const char *filename)
 {
@@ -109,7 +120,7 @@ int apply_mask (image_t *image, image_t *mask)
   return total_after_mask;
 }
 
-int get_bin (int grain, int i, image_t *image)
+int get_bin (PGAMetricType type, int grain, int i, image_t *image)
 {
   unsigned char *iimage = image->image;
   unsigned char r, g, b;
@@ -117,12 +128,12 @@ int get_bin (int grain, int i, image_t *image)
   g = iimage[i+1];
   b = iimage[i+2];
   if (is_black(r, g, b)) return -1;
-  float value = get_green_average (r, g, b) * grain;
+  float value = get_average (type, r, g, b) * grain;
   if (value >= grain) value = grain - 1;
   return (int)value;
 }
 
-int *get_metric(int grain, image_t *image)
+int *get_metric(int grain, PGAMetricType type, image_t *image)
 {
   int *ret = (int*)malloc(grain * sizeof(int));
   bzero(ret, grain*sizeof(int));
@@ -136,7 +147,7 @@ int *get_metric(int grain, image_t *image)
     
 #pragma omp for nowait schedule(dynamic, 32*1024)
     for (int i = 0; i < image->size; i = i+3){
-      int x = get_bin (grain, i, image);
+      int x = get_bin (type, grain, i, image);
       if (x >= 0) hist_private[x]++;
     }
 
@@ -150,34 +161,43 @@ int *get_metric(int grain, image_t *image)
 
 int main (int argc, char **argv)
 {
-  if (argc != 4){
-    printf("Usage: %s <IMAGE.jpg> <MASK.jpg> <GRAIN>\n", argv[0]);
-    return 0;
+  struct arguments arguments;
+  bzero (&arguments, sizeof(struct arguments));
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) == ARGP_KEY_ERROR){
+    fprintf(stderr, "%s, error during the parsing of parameters\n", argv[0]);
+    return 1;
   }
 
-  image_t *image = load_jpeg_image(argv[1]);
-  image_t *mask = load_jpeg_image(argv[2]);
-  if (mask){
-    apply_mask (image, mask);
+  image_t *mask = load_jpeg_image(arguments.mask);
+  if (!mask && arguments.mask){
+    fprintf (stderr, "%s, you provided mask %s, but the file cannot be openned correctly.\n", argv[0], arguments.mask);
+    exit(1);
   }
 
-  int NUMBER_OF_BUCKETS = atoi(argv[3]);
-  int *histogram = get_metric (NUMBER_OF_BUCKETS, image);
-  int i;
-  for (i = 0; i < NUMBER_OF_BUCKETS; i++){
-    printf ("%d", histogram[i]);
-    if((i+1) == NUMBER_OF_BUCKETS){
-      printf("\n");
-    }else{
-      printf(",");
+  int j, i;
+  for (j = 0; j < arguments.ninput; j++){
+    image_t *image = load_jpeg_image(arguments.input[j]);
+    if (mask){
+      apply_mask (image, mask);
     }
+
+    int *histogram = get_metric (arguments.grain, arguments.metric, image);
+    for (i = 0; i < arguments.grain; i++){
+      printf ("%d", histogram[i]);
+      if((i+1) == arguments.grain){
+	printf("\n");
+      }else{
+	printf(",");
+      }
+    }
+    free(histogram);
+    free(image->image);
+    free(image);
+    
   }
-  free(histogram);
   if (mask){
     free(mask->image);
   }
   free(mask);
-  free(image->image);
-  free(image);
   return 0;
 }

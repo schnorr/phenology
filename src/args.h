@@ -14,6 +14,24 @@
     You should have received a copy of the GNU Public License
     along with Phenology. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "args.h"
-float get_average (PGAMetricType type, unsigned char r, unsigned char g, unsigned char b);
-int is_black (unsigned char r, unsigned char g, unsigned char b);
+#ifndef __ARGS_H
+#define __ARGS_H
+#include <stdlib.h>
+#include <string.h>
+#include <argp.h>
+
+#define MAX_INPUTS 1024
+#define VALIDATE_INPUT_SIZE 1
+
+typedef enum { Red, Green, Blue, Undef } PGAMetricType;
+
+struct arguments {
+  char *input[MAX_INPUTS];
+  int ninput;
+  char *mask;
+  int grain;
+  PGAMetricType metric;
+};
+
+error_t parse_options (int key, char *arg, struct argp_state *state);
+#endif

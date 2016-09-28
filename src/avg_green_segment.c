@@ -29,6 +29,7 @@
   #include <strings.h>
   #include "palette.h"
 #include "metrics.h"
+#include "args.h"
 
   typedef struct image {
     unsigned char *image;
@@ -163,7 +164,7 @@
       b = image->image[i+2];
       if (is_black(r, g, b)) continue;
 
-      float value = get_green_average (r, g, b) * grain;
+      float value = get_average (Green, r, g, b) * grain;
       if (value >= grain) value = grain - 1;
       ret[(int)floor(value)]++;
     }
@@ -180,7 +181,7 @@
       b = image->image[i+2];
       if (is_black(r, g, b)) continue;
 
-      float value = get_green_average (r, g, b) * 100;
+      float value = get_average (Green, r, g, b) * 100;
       //original implementation
       if (value >= low && value < high){
         //change pixel color according to palette and selected index

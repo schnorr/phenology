@@ -33,6 +33,7 @@
 
 #include "metrics.h"
 #include "palette.h"
+#include "args.h"
 
 uint32 *read_pixels (TIFF *tif, size_t *len)
 {
@@ -60,7 +61,7 @@ float get_bin (uint32 pixel, int grain)
   g = TIFFGetG(pixel);
   b = TIFFGetB(pixel);
   //calculate GA, truncf
-  float value = get_green_average (r, g, b) * grain;
+  float value = get_average (Green, r, g, b) * grain;
   return value;
 }
 

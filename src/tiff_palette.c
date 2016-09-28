@@ -30,6 +30,7 @@
 
 #include <math.h>
 
+#include "args.h"
 #include "metrics.h"
 #include "palette.h"
 
@@ -143,7 +144,7 @@ uint32 *calc_pga_pixels (uint32 *raster, size_t len, int low, int high, tiff_pal
     }
 
     //calculate GA, multiply by 100
-    float value = get_green_average (r, g, b) * 100;
+    float value = get_average (Green, r, g, b) * 100;
 
     if (value >= low && value < high){
 
