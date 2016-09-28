@@ -694,7 +694,7 @@ DIRWITHDATABASES=~/svn/phenology/
 #
 {
 FINAL=`echo $NGRAIN - 1 | bc`
-echo -n "database,year,sequence,"
+echo -n "database,year,sequence,metric,"
 for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
 echo ""
 
@@ -707,17 +707,19 @@ for DATABASE in dc_TKY_y18_d; do
          if [ "$YEAR" == "2013" ] && [ "$SEQUENCE" ==  "086" ]; then
             MASK=./masks/dc_TKY_y18_d_mask_section_2.jpg
          fi
-	      echo "$DATABASE,$YEAR,$SEQUENCE,`${PGA_HIST_LOCATION} $file $MASK $NGRAIN`";
+	      echo "$DATABASE,$YEAR,$SEQUENCE,Red,`${PGA_HIST_LOCATION} -m RED -s $MASK -g $NGRAIN $file`";
+	      echo "$DATABASE,$YEAR,$SEQUENCE,Green,`${PGA_HIST_LOCATION} -m GREEN -s $MASK -g $NGRAIN $file`";
+	      echo "$DATABASE,$YEAR,$SEQUENCE,Blue,`${PGA_HIST_LOCATION} -m BLUE -s $MASK -g $NGRAIN $file`";
     done
 done
-} > experiments/dc_TKY_y18_d_with_two_masks.csv
+} > experiments/dc_TKY_y18_d_with_two_masks_metrics.csv
 #+end_src
-** Reading ~experiments/dc_TKY_y18_d_with_two_masks.csv~
+** Reading ~experiments/dc_TKY_y18_d_with_two_masks_metrics.csv~
 #+begin_src R :results output :session :exports both
 library(reshape);
-df <- read.csv("experiments/dc_TKY_y18_d_with_two_masks.csv");
+df <- read.csv("experiments/dc_TKY_y18_d_with_two_masks_metrics.csv");
 df$doy <- as.Date(paste(df$year, df$sequence),  format="%Y %j");
-dfm <- melt(df, id.vars=c("database", "year", "sequence", "doy"));
+dfm <- melt(df, id.vars=c("database", "year", "sequence", "metric", "doy"));
 dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
 dfm <- dfm[!(dfm$year == 2015 & dfm$sequence >= 220 & dfm$sequence <= 244),];
 nrow(dfm);
@@ -727,37 +729,34 @@ tail(dfm);
 
 #+RESULTS:
 #+begin_example
-[1] 433000
-      database year sequence        doy variable value
-1 dc_TKY_y18_d 2004       89 2004-03-29        0     0
-2 dc_TKY_y18_d 2004       90 2004-03-30        0     0
-3 dc_TKY_y18_d 2004       91 2004-03-31        0     0
-4 dc_TKY_y18_d 2004       92 2004-04-01        0     0
-5 dc_TKY_y18_d 2004       93 2004-04-02        0     0
-6 dc_TKY_y18_d 2004       94 2004-04-03        0     0
-           database year sequence        doy variable value
-435495 dc_TKY_y18_d 2016      234 2016-08-21       99     0
-435496 dc_TKY_y18_d 2016      235 2016-08-22       99     0
-435497 dc_TKY_y18_d 2016      236 2016-08-23       99     0
-435498 dc_TKY_y18_d 2016      237 2016-08-24       99     0
-435499 dc_TKY_y18_d 2016      238 2016-08-25       99     0
-435500 dc_TKY_y18_d 2016      239 2016-08-26       99     0
+[1] 1299000
+      database year sequence metric        doy variable value
+1 dc_TKY_y18_d 2004       89    Red 2004-03-29        0     0
+2 dc_TKY_y18_d 2004       89  Green 2004-03-29        0     0
+3 dc_TKY_y18_d 2004       89   Blue 2004-03-29        0     0
+4 dc_TKY_y18_d 2004       90    Red 2004-03-30        0     0
+5 dc_TKY_y18_d 2004       90  Green 2004-03-30        0     0
+6 dc_TKY_y18_d 2004       90   Blue 2004-03-30        0     0
+            database year sequence metric        doy variable value
+1306495 dc_TKY_y18_d 2016      238    Red 2016-08-25       99     0
+1306496 dc_TKY_y18_d 2016      238  Green 2016-08-25       99     0
+1306497 dc_TKY_y18_d 2016      238   Blue 2016-08-25       99     0
+1306498 dc_TKY_y18_d 2016      239    Red 2016-08-26       99     0
+1306499 dc_TKY_y18_d 2016      239  Green 2016-08-26       99     0
+1306500 dc_TKY_y18_d 2016      239   Blue 2016-08-26       99     0
 #+end_example
 ** Plot
 #+begin_src R :results output :session :exports both
 paletteFilename = "palette/viridis.palette";
 palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
-
 library(ggplot2);
-
-plot_year <- function (lowLimit, highLimit, database, year, palette)
+plot_year <- function (lowLimit, highLimit, database, year, metric, palette)
 {
-    ggplot(dfm[dfm$database == database & dfm$year == year ,],
+    ggplot(dfm[dfm$database == database & dfm$year == year & dfm$metric == metric,],
        aes(x = doy, y = value, fill=as.factor(variable))) +
        geom_bar(stat='identity', width=1) +
        ylim(0,NA) +
        theme_bw() +
-#       ggtitle(paste(database, year, sep=" ")) +
        scale_fill_manual(values=palette) +
        theme(legend.position="none") +
        xlab(NULL) + ylab(NULL) +
@@ -770,17 +769,55 @@ plot_year <- function (lowLimit, highLimit, database, year, palette)
 
 database = "dc_TKY_y18_d";
 base = "img/"
-for (year in 2004:2016) {
-   png(paste(base, database, "_", year, ".png", sep=""), width = 1920, height = 1080);
-   print(plot_year(0, 100, database, year, palette));
-   dev.off();
-   pdf(paste(base, database, "_", year, ".pdf", sep=""), width = 19.20, height = 10.80);
-   print(plot_year(0, 100, database, year, palette));
-   dev.off();
+for (metric in c("Red", "Green", "Blue")){
+    for (year in 2004:2016) {
+        png(paste(base, database, "_", metric, "_", year, ".png", sep=""), width = 1920, height = 1080);
+        print(plot_year(0, 100, database, year, metric, palette));
+        dev.off();
+        pdf(paste(base, database, "_", metric, "_", year, ".pdf", sep=""), width = 19.20, height = 10.80);
+        print(plot_year(0, 100, database, year, metric, palette));
+        dev.off();
+    }
 }
 #+end_src
 
 #+RESULTS:
+#+begin_example
+[1] "img/dc_TKY_y18_d_Red_2009.png"
+[1] "img/dc_TKY_y18_d_Red_2010.png"
+[1] "img/dc_TKY_y18_d_Red_2011.png"
+[1] "img/dc_TKY_y18_d_Red_2012.png"
+[1] "img/dc_TKY_y18_d_Red_2013.png"
+[1] "img/dc_TKY_y18_d_Red_2014.png"
+[1] "img/dc_TKY_y18_d_Red_2015.png"
+[1] "img/dc_TKY_y18_d_Red_2016.png"
+[1] "img/dc_TKY_y18_d_Green_2004.png"
+[1] "img/dc_TKY_y18_d_Green_2005.png"
+[1] "img/dc_TKY_y18_d_Green_2006.png"
+[1] "img/dc_TKY_y18_d_Green_2007.png"
+[1] "img/dc_TKY_y18_d_Green_2008.png"
+[1] "img/dc_TKY_y18_d_Green_2009.png"
+[1] "img/dc_TKY_y18_d_Green_2010.png"
+[1] "img/dc_TKY_y18_d_Green_2011.png"
+[1] "img/dc_TKY_y18_d_Green_2012.png"
+[1] "img/dc_TKY_y18_d_Green_2013.png"
+[1] "img/dc_TKY_y18_d_Green_2014.png"
+[1] "img/dc_TKY_y18_d_Green_2015.png"
+[1] "img/dc_TKY_y18_d_Green_2016.png"
+[1] "img/dc_TKY_y18_d_Blue_2004.png"
+[1] "img/dc_TKY_y18_d_Blue_2005.png"
+[1] "img/dc_TKY_y18_d_Blue_2006.png"
+[1] "img/dc_TKY_y18_d_Blue_2007.png"
+[1] "img/dc_TKY_y18_d_Blue_2008.png"
+[1] "img/dc_TKY_y18_d_Blue_2009.png"
+[1] "img/dc_TKY_y18_d_Blue_2010.png"
+[1] "img/dc_TKY_y18_d_Blue_2011.png"
+[1] "img/dc_TKY_y18_d_Blue_2012.png"
+[1] "img/dc_TKY_y18_d_Blue_2013.png"
+[1] "img/dc_TKY_y18_d_Blue_2014.png"
+[1] "img/dc_TKY_y18_d_Blue_2015.png"
+[1] "img/dc_TKY_y18_d_Blue_2016.png"
+#+end_example
 ** Crop
 #+begin_src sh :results output
 cd img
@@ -842,7 +879,7 @@ DIRWITHDATABASES=~/svn/phenology/
 #
 {
 FINAL=`echo $NGRAIN - 1 | bc`
-echo -n "database,year,sequence,"
+echo -n "database,year,sequence,metric,"
 for j in `seq 0 $FINAL`; do echo -n "X$j,"; done | sed "s/,$//"
 echo ""
 
@@ -852,17 +889,19 @@ for DATABASE in dc_TKY_btp_n dc_TKY_y18bb; do
 	      FILE=`basename $file .jpg`
 	      YEAR=`echo $FILE | cut -d"_" -f2`
 	      SEQUENCE=`echo $FILE | cut -d"_" -f3`
-	      echo "$DATABASE,$YEAR,$SEQUENCE,`${PGA_HIST_LOCATION} $file $MASK $NGRAIN`";
+	      echo "$DATABASE,$YEAR,$SEQUENCE,Red,`${PGA_HIST_LOCATION} -m RED -s $MASK -g $NGRAIN $file`";
+	      echo "$DATABASE,$YEAR,$SEQUENCE,Green,`${PGA_HIST_LOCATION} -m GREEN -s $MASK -g $NGRAIN $file`";
+	      echo "$DATABASE,$YEAR,$SEQUENCE,Blue,`${PGA_HIST_LOCATION} -m BLUE -s $MASK -g $NGRAIN $file`";
     done
 done
-} > experiments/dc_TKY_btp_n_y18bb.csv
+} > experiments/dc_TKY_btp_n_y18bb_metrics_v2.csv
 #+end_src
-** Read the data written in ~experiments/dc_TKY_btp_n_y18bb.csv~
+** Read the data written in ~experiments/dc_TKY_btp_n_y18bb_metrics.csv~
 #+begin_src R :results output :session :exports both
 library(reshape);
-df <- read.csv("experiments/dc_TKY_btp_n_y18bb.csv");
+df <- read.csv("experiments/dc_TKY_btp_n_y18bb_metrics.csv");
 df$doy <- as.Date(paste(df$year, df$sequence),  format="%Y %j");
-dfm <- melt(df, id.vars=c("database", "year", "sequence", "doy"));
+dfm <- melt(df, id.vars=c("database", "year", "sequence", "metric", "doy"));
 dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
 dfm <- dfm[!(dfm$year == 2015 & dfm$sequence >= 220 & dfm$sequence <= 244),];
 nrow(dfm);
@@ -872,21 +911,21 @@ tail(dfm);
 
 #+RESULTS:
 #+begin_example
-[1] 753300
-      database year sequence        doy variable value
-1 dc_TKY_btp_n 2005      100 2005-04-10        0     0
-2 dc_TKY_btp_n 2005      101 2005-04-11        0     0
-3 dc_TKY_btp_n 2005      102 2005-04-12        0     0
-4 dc_TKY_btp_n 2005      103 2005-04-13        0     0
-5 dc_TKY_btp_n 2005      104 2005-04-14        0     0
-6 dc_TKY_btp_n 2005      105 2005-04-15        0     0
-           database year sequence        doy variable value
-758295 dc_TKY_y18bb 2016      234 2016-08-21       99    23
-758296 dc_TKY_y18bb 2016      235 2016-08-22       99     6
-758297 dc_TKY_y18bb 2016      236 2016-08-23       99    23
-758298 dc_TKY_y18bb 2016      237 2016-08-24       99    19
-758299 dc_TKY_y18bb 2016      238 2016-08-25       99    12
-758300 dc_TKY_y18bb 2016      239 2016-08-26       99    26
+[1] 2259900
+      database year sequence metric        doy variable value
+1 dc_TKY_btp_n 2005      100    Red 2005-04-10        0     0
+2 dc_TKY_btp_n 2005      100  Green 2005-04-10        0     0
+3 dc_TKY_btp_n 2005      100   Blue 2005-04-10        0     0
+4 dc_TKY_btp_n 2005      101    Red 2005-04-11        0     0
+5 dc_TKY_btp_n 2005      101  Green 2005-04-11        0     0
+6 dc_TKY_btp_n 2005      101   Blue 2005-04-11        0     0
+            database year sequence metric        doy variable value
+2274895 dc_TKY_y18bb 2016      238    Red 2016-08-25       99     0
+2274896 dc_TKY_y18bb 2016      238  Green 2016-08-25       99    12
+2274897 dc_TKY_y18bb 2016      238   Blue 2016-08-25       99     1
+2274898 dc_TKY_y18bb 2016      239    Red 2016-08-26       99     0
+2274899 dc_TKY_y18bb 2016      239  Green 2016-08-26       99    26
+2274900 dc_TKY_y18bb 2016      239   Blue 2016-08-26       99     2
 #+end_example
 
 #+begin_src R :results output :session :exports both
@@ -935,9 +974,9 @@ library(ggplot2);
 paletteFilename = "palette/viridis.palette";
 palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
 
-plot_year <- function (lowLimit, highLimit, database, year, palette)
+plot_year <- function (lowLimit, highLimit, database, year, metric, palette)
 {
-    ggplot(dfm[dfm$database == database & dfm$year == year ,],
+    ggplot(dfm[dfm$database == database & dfm$year == year & dfm$metric == metric,],
        aes(x = doy, y = value, fill=as.factor(variable))) +
        geom_bar(stat='identity', width=1) +
        ylim(0,NA) +
@@ -953,23 +992,17 @@ plot_year <- function (lowLimit, highLimit, database, year, palette)
 }
 
 base = "img/"
-database = "dc_TKY_y18bb";
-for (year in 2005:2016) {
-   png(paste(base, database, "_", year, ".png", sep=""), width = 1920, height = 1080);
-   print(plot_year(0, 100, database, year, palette));
-   dev.off();
-   pdf(paste(base, database, "_", year, ".pdf", sep=""), width = 19.20, height = 10.80);
-   print(plot_year(0, 100, database, year, palette));
-   dev.off();
-}
-database = "dc_TKY_btp_n";
-for (year in 2005:2016) {
-   png(paste(base, database, "_", year, ".png", sep=""), width = 1920, height = 1080);
-   print(plot_year(0, 100, database, year, palette));
-   dev.off();
-   pdf(paste(base, database, "_", year, ".pdf", sep=""), width = 19.20, height = 10.80);
-   print(plot_year(0, 100, database, year, palette));
-   dev.off();
+for (metric in c("Red", "Green", "Blue")){
+    for (database in c("dc_TKY_y18bb", "dc_TKY_btp_n")){
+        for (year in 2005:2016) {
+            png(paste(base, database, "_", metric, "_", year, ".png", sep=""), width = 1920, height = 1080);
+            print(plot_year(0, 100, database, year, metric, palette));
+            dev.off();
+            pdf(paste(base, database, "_", metric, "_", year, ".pdf", sep=""), width = 19.20, height = 10.80);
+            print(plot_year(0, 100, database, year, metric, palette));
+            dev.off();
+        }
+    }
 }
 
 
@@ -1013,6 +1046,78 @@ PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_btp_n_2016-crop.pdf'.
 PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Blue_2016-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Green_2016-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_btp_n_Red_2016-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18bb_2005-crop.pdf'.
 PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18bb_2006-crop.pdf'.
@@ -1036,5 +1141,77 @@ PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18bb_2015-crop.pdf'.
 PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18bb_2016-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Blue_2016-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Green_2016-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2005-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2006-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2007-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2008-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2009-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2010-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2011-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2012-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2013-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2014-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2015-crop.pdf'.
+PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
+==> 1 page written on `dc_TKY_y18bb_Red_2016-crop.pdf'.
 #+end_example
 
