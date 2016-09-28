@@ -712,3 +712,15 @@ for DATABASE in dc_TKY_y18_d; do
 done
 } > experiments/dc_TKY_y18_d_with_two_masks.csv
 #+end_src
+* 2016-09-28 Clean-up and mask definition for ~dc_TKY_btp_n~
+** First analysis
+- wrong images
+  - 2010,231
+- masks
+  - 2005,first \to 2005,199 (mask1)
+  - 2005,200 \to 2009,352 (mask2)
+  - 2009,352 \to 2016,240 (mask3)
+** Second analysis
+- wrong images kept as in [[*First analysis][First analysis]], mask gets the whole image
+* 2016-09-28 Clean-up and mask definition for ~dc_TKY_y18bb~
+Same approach as in [[*Second analysis][Second analysis]]
