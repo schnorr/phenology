@@ -1305,3 +1305,36 @@ for (database in unique(dfm$database)){
 : [1] "img/dc_TKY_btp_n.pdf"
 : [1] "img/dc_TKY_y18bb.pdf"
 
+
+** Plot everything with previous palette (but 100 colors - black/beige)
+#+begin_src R :results output :session :exports both
+plot_three_metrics_sequence <- function (df, database)
+{
+    library(ggplot2);
+    paletteFilename = "palette/example100.palette";
+    palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+    ggplot(df[df$database == database,],
+           aes(x = sequence, y = value, fill=as.factor(variable))) +
+        geom_bar(stat='identity', width=1) +
+        ylim(0,NA) +
+        theme_bw(base_size=24) +
+        scale_fill_manual(values=palette) +
+        theme(legend.position="none") +
+        xlab(NULL) + ylab(NULL) +
+        facet_grid (year~metric, scale="free") +
+        theme(axis.title.x=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              panel.grid=element_blank());
+}
+
+base = "img/"
+for (database in unique(dfm$database)){
+    name = paste(base, database, "_example100_palette", ".pdf", sep="");
+    pdf(name, width = 32, height = 48);
+    print(plot_three_metrics_sequence(dfm, database));
+    dev.off();
+}
+#+end_src
+
+#+RESULTS:
