@@ -1215,3 +1215,31 @@ PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18bb_Red_2016-crop.pdf'.
 #+end_example
 
+** Plot using facets (channels versus time) to have a single PDF instead of too many
+#+begin_src R :results output graphics :file img/dc_TKY_y18bb_3metrics.pdf :exports both :width 32.00 :height 28.00 :session
+plot_three_metrics_sequence <- function (database)
+{
+    library(ggplot2);
+    paletteFilename = "palette/viridis.palette";
+    palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+    ggplot(dfm[dfm$database == database,],
+           aes(x = sequence, y = value, fill=as.factor(variable))) +
+        geom_bar(stat='identity', width=1) +
+        ylim(0,NA) +
+        theme_bw() +
+        scale_fill_manual(values=palette) +
+        theme(legend.position="none") +
+        xlab(NULL) + ylab(NULL) +
+        facet_grid (year~metric, scale="free") +
+        theme(axis.title.x=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              panel.grid=element_blank());
+}
+plot_three_metrics_sequence ("dc_TKY_y18bb");
+#+end_src
+
+#+RESULTS:
+[[file:img/dc_TKY_y18bb_3metrics.pdf]]
+
+
