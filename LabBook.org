@@ -677,7 +677,7 @@ PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18_d_2016-crop.pdf'.
 #+end_example
 
-* 2016-09-28 Clean-up and mask definition for ~dc_TKY_y18_d~ (two masks)
+* 2016-09-28 Analysis of ~dc_TKY_y18_d~ (two masks)
 - wrong images
   - 2015,220 \to 2015,244
 - masks
@@ -857,7 +857,7 @@ PDFCROP 1.38, 2012/11/02 - Copyright (c) 2002-2012 by Heiko Oberdiek.
 ==> 1 page written on `dc_TKY_y18_d_2016-crop.pdf'.
 #+end_example
 
-* 2016-09-28 Clean-up and mask definition for ~dc_TKY_btp_n~ and ~dc_TKY_y18bb~
+* 2016-09-28 Analysis of ~dc_TKY_btp_n~ and ~dc_TKY_y18bb~
 ** First analysis
 - wrong images
   - 2010,231
