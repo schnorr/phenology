@@ -1305,7 +1305,6 @@ for (database in unique(dfm$database)){
 : [1] "img/dc_TKY_btp_n.pdf"
 : [1] "img/dc_TKY_y18bb.pdf"
 
-
 ** Plot everything with previous palette (but 100 colors - black/beige)
 #+begin_src R :results output :session :exports both
 plot_three_metrics_sequence <- function (df, database)
@@ -1338,3 +1337,324 @@ for (database in unique(dfm$database)){
 #+end_src
 
 #+RESULTS:
+* 2016-10-11 Explosing histogram for Red/Blue channels
+Comba noticed that Red/Blue channels explose.
+I'll try to investigate why.
+** Read
+#+begin_src R :results output :session :exports both
+library(reshape);
+df1 <- read.csv("experiments/dc_TKY_y18_d_with_two_masks_metrics.csv");
+df1 <- df1[!(df1$year == 2015 & df1$sequence >= 220 & df1$sequence <= 244),];
+df2 <- read.csv("experiments/dc_TKY_btp_n_y18bb_metrics.csv");
+df2 <- df2[!(df2$year == 2010 & df2$sequence == 231),];
+df <- rbind (df1, df2);
+df$doy <- as.Date(paste(df$year, df$sequence),  format="%Y %j");
+dfm <- melt(df, id.vars=c("database", "year", "sequence", "metric", "doy"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+unique(dfm$database);
+#+end_src
+
+#+RESULTS:
+:       database year sequence metric        doy variable value
+: 1 dc_TKY_y18_d 2004       89    Red 2004-03-29        0     0
+: 2 dc_TKY_y18_d 2004       89  Green 2004-03-29        0     0
+: 3 dc_TKY_y18_d 2004       89   Blue 2004-03-29        0     0
+: 4 dc_TKY_y18_d 2004       90    Red 2004-03-30        0     0
+: 5 dc_TKY_y18_d 2004       90  Green 2004-03-30        0     0
+: 6 dc_TKY_y18_d 2004       90   Blue 2004-03-30        0     0
+: [1] dc_TKY_y18_d dc_TKY_btp_n dc_TKY_y18bb
+: Levels: dc_TKY_y18_d dc_TKY_btp_n dc_TKY_y18bb
+
+#+begin_src R :results output :session :exports both
+database = "dc_TKY_y18_d";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$metric == "Blue",];
+head(k);
+#summary(k);
+length(unique(k$sequence));
+nrow(k)/100;
+head(k[k$sequence == 10,]);
+#+end_src
+
+#+RESULTS:
+#+begin_example
+         database year sequence metric        doy variable value
+8136 dc_TKY_y18_d 2012        1   Blue 2012-01-01        0     0
+8139 dc_TKY_y18_d 2012        2   Blue 2012-01-02        0     0
+8142 dc_TKY_y18_d 2012        3   Blue 2012-01-03        0     0
+8145 dc_TKY_y18_d 2012        4   Blue 2012-01-04        0     0
+8148 dc_TKY_y18_d 2012        5   Blue 2012-01-05        0     0
+8151 dc_TKY_y18_d 2012        6   Blue 2012-01-06        0     0
+[1] 338
+[1] 338
+           database year sequence metric        doy variable value
+8163   dc_TKY_y18_d 2012       10   Blue 2012-01-10        0     0
+43896  dc_TKY_y18_d 2012       10   Blue 2012-01-10        1     0
+79629  dc_TKY_y18_d 2012       10   Blue 2012-01-10        2     0
+115362 dc_TKY_y18_d 2012       10   Blue 2012-01-10        3     0
+151095 dc_TKY_y18_d 2012       10   Blue 2012-01-10        4     0
+186828 dc_TKY_y18_d 2012       10   Blue 2012-01-10        5     0
+#+end_example
+
+** Plot
+Showing only green, blue, and red averages whose values (the number of
+pixels) are greater than FILTER (FILTER is 10000) and smaller than
+FILTER*10.
+#+begin_src R :results output graphics :file img/understanding_blue_red_channels_artifact.png :exports both :width 1200 :height 400 :session
+    library(ggplot2);
+    FILTER=10000;
+    database = "dc_TKY_y18_d";
+    palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+    ggplot(dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTER & dfm$value < FILTER*10,],
+           aes(x = sequence, y = variable, fill=value)) + 
+        geom_rect(aes(xmin=sequence, xmax=sequence+1, ymin=variable, ymax=variable+1)) +
+        ylim(0,100) +
+        theme_bw(base_size=16) +
+        scale_fill_gradient2(mid="blue", high="red", name = "Value") + 
+        theme(legend.position="top") +
+        xlab(NULL) + ylab(NULL) +
+        facet_grid (year~metric, scale="free") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank(),
+              panel.grid=element_blank());
+#+end_src
+
+#+RESULTS:
+[[file:img/understanding_blue_red_channels_artifact.png]]
+
+It becomes clear that the histogram for each channel is widely
+different. For the *Blue* channel, for instance, the filled buckets are
+certainly between these values:
+
+#+begin_src R :results output :session :exports both
+metric = "Blue";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTER & dfm$value < FILTER*10 & dfm$metric == metric,];
+summary(k$variable);
+#+end_src
+
+#+RESULTS:
+:    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+:    0.00   17.00   24.00   23.19   30.00   42.00
+
+For the *Green* channel (the one we are more used to), the filled
+buckets are roughly between these values (pretty much in the bucket
+window we already know, from 30 to 50):
+
+#+begin_src R :results output :session :exports both
+metric = "Green";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTER & dfm$value < FILTER*10 & dfm$metric == metric,];
+summary(k$variable);
+#+end_src
+
+#+RESULTS:
+:    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+:   28.00   36.00   43.00   42.65   49.00   64.00
+
+Finally, for the *Red* channel, these are the most common buckets:
+
+#+begin_src R :results output :session :exports both
+metric = "Red";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTER & dfm$value < FILTER*10 & dfm$metric == metric,];
+summary(k$variable);
+#+end_src
+
+#+RESULTS:
+:    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+:    24.0    29.0    34.0    34.1    38.0    53.0
+
+Much more similar to the green channel than the blue one.
+
+For all these reasons, as Comba has noticed, we should select a
+per-channel palette. I'd suggest to adapt the viridis palette (with 20
+colors except the borders) as follows, per channel:
+
+- Red: values between 29 and 49
+- Green: values between ...
+
+All this of course depend on FILTER. To be less ad-hoc, we should
+consider the number of pixels on each image (after masking) and define
+FILTER based on that number.
+
+But what is the number of pixels after masking?
+
+#+begin_src R :results output :session :exports both
+metric = "Red";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$metric == metric & dfm$sequence == 1,];
+FILTERMIN = round(sum(k$value)*0.10); # min of 10% of the number of pixels
+FILTERMAX= round(sum(k$value)*0.90); # max of 90% of the number of pixels
+FILTERMIN
+FILTERMAX
+#+end_src
+
+#+RESULTS:
+: [1] 128893
+: [1] 1160036
+
+So, we should select only the buckets (from 0 to 100) that have values
+within the range specified above. Let's plot again using this less
+ad-hoc methodology.
+
+#+begin_src R :results output graphics :file img/understanding_blue_red_channels_artifact_with-less-adhoc-filters.png :exports both :width 1200 :height 400 :session
+    library(ggplot2);
+    FILTER=10000;
+    database = "dc_TKY_y18_d";
+    palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+    ggplot(dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTERMIN & dfm$value < FILTERMAX,],
+           aes(x = sequence, y = variable, fill=value)) + 
+        geom_rect(aes(xmin=sequence, xmax=sequence+1, ymin=variable, ymax=variable+1)) +
+        ylim(0,100) +
+        theme_bw(base_size=16) +
+        scale_fill_gradient2(mid="blue", high="red", name = "Value") + 
+        theme(legend.position="top") +
+        xlab(NULL) + ylab(NULL) +
+        facet_grid (year~metric, scale="free") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank(),
+              panel.grid=element_blank());
+#+end_src
+
+#+RESULTS:
+[[file:img/understanding_blue_red_channels_artifact_with-less-adhoc-filters.png]]
+
+Looks better, now, let's calculate the min and max buckets that should
+be considered to specify the new per-channel pallette:
+
+#+begin_src R :results output :session :exports both
+metric = "Blue";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTERMIN & dfm$value < FILTERMAX & dfm$metric == metric,];
+metric;
+summary(k$variable);
+metric = "Green";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTERMIN & dfm$value < FILTERMAX & dfm$metric == metric,];
+metric;
+summary(k$variable);
+metric = "Red";
+k <- dfm[dfm$database == database & dfm$year == 2012 & dfm$value > FILTERMIN & dfm$value < FILTERMAX & dfm$metric == metric,];
+metric;
+summary(k$variable);
+#+end_src
+
+#+RESULTS:
+: [1] "Blue"
+:    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+:   20.00   25.00   31.00   30.05   34.00   40.00
+: [1] "Green"
+:    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+:   31.00   33.00   35.00   36.58   41.00   46.00
+: [1] "Red"
+:    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+:   27.00   32.00   33.00   33.24   35.00   40.00
+
+Great, now let's create the new palettes based on the 20 colors
+already available in the viridis (except borders). Extract the 20
+colors (put in the ~/tmp/20colors~ file):
+
+#+begin_src sh :results output
+cat palette/viridis.palette | grep fffacd | uniq > /tmp/before
+cat palette/viridis.palette | grep -v -e ^? -e fffacd -e 00000 > /tmp/20colors
+cat palette/viridis.palette | grep 00000 | uniq > /tmp/after
+#+end_src
+
+#+RESULTS:
+
+#+begin_src shell :results output
+{
+    for i in $(seq 1 19); do
+      cat /tmp/before
+    done
+    cat /tmp/20colors
+    for i in $(seq 61); do
+      cat /tmp/after
+    done
+} > palette/viridis-blue.palette
+
+{
+    for i in $(seq 1 30); do
+      cat /tmp/before
+    done
+    cat /tmp/20colors
+    for i in $(seq 50); do
+      cat /tmp/after
+    done
+} > palette/viridis-green.palette
+
+{
+    for i in $(seq 1 23); do
+      cat /tmp/before
+    done
+    cat /tmp/20colors
+    for i in $(seq 57); do
+      cat /tmp/after
+    done
+} > palette/viridis-red.palette
+#+end_src
+
+#+RESULTS:
+
+
+* 2016-10-13 Facet view for all databases (considering per-channel palettes)
+** Read function
+#+begin_src R :results output :session :exports both
+library(reshape);
+df1 <- read.csv("experiments/dc_TKY_y18_d_with_two_masks_metrics.csv");
+df1 <- df1[!(df1$year == 2015 & df1$sequence >= 220 & df1$sequence <= 244),];
+df2 <- read.csv("experiments/dc_TKY_btp_n_y18bb_metrics.csv");
+df2 <- df2[!(df2$year == 2010 & df2$sequence == 231),];
+df <- rbind (df1, df2);
+df$doy <- as.Date(paste(df$year, df$sequence),  format="%Y %j");
+dfm <- melt(df, id.vars=c("database", "year", "sequence", "metric", "doy"));
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+head(dfm);
+unique(dfm$database);
+#+end_src
+
+#+RESULTS:
+:       database year sequence metric        doy variable value
+: 1 dc_TKY_y18_d 2004       89    Red 2004-03-29        0     0
+: 2 dc_TKY_y18_d 2004       89  Green 2004-03-29        0     0
+: 3 dc_TKY_y18_d 2004       89   Blue 2004-03-29        0     0
+: 4 dc_TKY_y18_d 2004       90    Red 2004-03-30        0     0
+: 5 dc_TKY_y18_d 2004       90  Green 2004-03-30        0     0
+: 6 dc_TKY_y18_d 2004       90   Blue 2004-03-30        0     0
+: [1] dc_TKY_y18_d dc_TKY_btp_n dc_TKY_y18bb
+: Levels: dc_TKY_y18_d dc_TKY_btp_n dc_TKY_y18bb
+** Plot everything
+#+begin_src R :results output :session :exports both
+plot_three_metrics_sequence <- function (df, database, metric)
+{
+    library(ggplot2);
+    paletteFilename = paste("palette/viridis-", tolower(metric), ".palette", sep="");
+    palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+    ggplot(df[df$database == database & df$metric == metric,],
+           aes(x = sequence, y = value, fill=as.factor(variable))) +
+        geom_bar(stat='identity', width=1) +
+        ylim(0,NA) +
+        theme_bw(base_size=24) +
+        scale_fill_manual(values=palette) +
+        theme(legend.position="none") +
+        xlab(NULL) + ylab(NULL) +
+        facet_grid (year~metric, scale="free") +
+        theme(axis.title.x=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              panel.grid=element_blank());
+}
+
+base = "img/"
+for (metric in unique(dfm$metric)){
+    for (database in unique(dfm$database)){
+        name = paste(database, metric, sep="_");
+        name = paste(base, name, ".pdf", sep="");
+        pdf(name, width = 32, height = 48);
+        print(plot_three_metrics_sequence(dfm, database, metric));
+        dev.off();
+    }
+}
+
+#+end_src
+
+#+RESULTS:
+
+
