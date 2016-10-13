@@ -1741,4 +1741,86 @@ do.call(grid.arrange, c(plots, list(ncol=2)));
 #+RESULTS:
 [[file:img/blue-palette-original_lower_drift_1.png]]
 
+* 2016-10-13 Roger's palette (per channel)
+** Creating the per-channel palette
 
+#+begin_src sh :results output
+cat palette/example100.palette | grep fffacd | uniq > /tmp/before
+cat palette/example100.palette | grep -v -e ^? -e ^$ -e fffacd -e 00000 > /tmp/20colors
+cat palette/example100.palette | grep 00000 | uniq > /tmp/after
+#+end_src
+
+#+RESULTS:
+
+#+begin_src shell :results output
+{
+    for i in $(seq 1 19); do
+      cat /tmp/before
+    done
+    cat /tmp/20colors
+    for i in $(seq 61); do
+      cat /tmp/after
+    done
+} > palette/example100-blue.palette
+
+{
+    for i in $(seq 1 30); do
+      cat /tmp/before
+    done
+    cat /tmp/20colors
+    for i in $(seq 50); do
+      cat /tmp/after
+    done
+} > palette/example100-green.palette
+
+{
+    for i in $(seq 1 23); do
+      cat /tmp/before
+    done
+    cat /tmp/20colors
+    for i in $(seq 57); do
+      cat /tmp/after
+    done
+} > palette/example100-red.palette
+#+end_src
+
+#+RESULTS:
+** Read the data
+Run the code here:
+- [[*2016-10-13 Facet view for all databases (considering per-channel palettes)][2016-10-13 Facet view for all databases (considering per-channel palettes)]]
+** Plot everything
+#+begin_src R :results output :session :exports both
+plot_three_metrics_sequence <- function (df, database, metric)
+{
+    library(ggplot2);
+    paletteFilename = paste("palette/example100-", tolower(metric), ".palette", sep="");
+    palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+    ggplot(df[df$database == database & df$metric == metric,],
+           aes(x = sequence, y = value, fill=as.factor(variable))) +
+        geom_bar(stat='identity', width=1) +
+        ylim(0,NA) +
+        theme_bw(base_size=24) +
+        scale_fill_manual(values=palette) +
+        theme(legend.position="none") +
+        xlab(NULL) + ylab(NULL) +
+        facet_grid (year~metric, scale="free") +
+        theme(axis.title.x=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              panel.grid=element_blank());
+}
+
+base = "img/Roger_Palette_"
+for (metric in unique(dfm$metric)){
+    for (database in unique(dfm$database)){
+        name = paste(database, metric, sep="_");
+        name = paste(base, name, ".pdf", sep="");
+        pdf(name, width = 32, height = 48);
+        print(plot_three_metrics_sequence(dfm, database, metric));
+        dev.off();
+    }
+}
+
+#+end_src
+
+#+RESULTS:
