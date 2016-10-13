@@ -1593,7 +1593,6 @@ cat palette/viridis.palette | grep 00000 | uniq > /tmp/after
 
 #+RESULTS:
 
-
 * 2016-10-13 Facet view for all databases (considering per-channel palettes)
 ** Read function
 #+begin_src R :results output :session :exports both
