@@ -1655,5 +1655,90 @@ for (metric in unique(dfm$metric)){
 #+end_src
 
 #+RESULTS:
+* 2016-10-13 Attempt to manually adapt the viridis palette (for the blue channel)
+** Read
+See how to load data in the previous entry:
+- [[*2016-10-13 Facet view for all databases (considering per-channel palettes)][2016-10-13 Facet view for all databases (considering per-channel palettes)]]
+** Plot
+*** Common plot function
+#+begin_src R :results output :session :exports both
+plot_with_specific_palette <- function (palette)
+{
+    ggplot(dfm[dfm$database == "dc_TKY_y18_d" & dfm$metric == "Blue" & dfm$year == 2007,],
+           aes(x = sequence, y = value, fill=as.factor(variable))) +
+        geom_bar(stat='identity', width=1) +
+        ylim(0,NA) +
+        theme_bw(base_size=12) +
+        scale_fill_manual(values=palette) +
+        theme(legend.position="none") +
+        xlab(NULL) + ylab(NULL) +
+#        facet_grid (year~metric, scale="free") +
+    theme(axis.title.x=element_blank(),
+          axis.title.x=element_blank(),
+          axis.text=element_blank(),
+          axis.ticks=element_blank(),
+          panel.grid=element_blank(),
+          panel.border=element_blank());
+}
+#+end_src
+
+#+RESULTS:
+*** With original viridis blue palette
+#+begin_src R :results output graphics :file img/blue-palette-original_drift_0.png :exports both :width 600 :height 400 :session
+library(ggplot2);
+paletteFilename = "palette/viridis-blue.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+plot_with_specific_palette (palette);
+#+end_src
+
+#+RESULTS:
+[[file:img/blue-palette-original_drift_0.png]]
+*** Upper and lower palette drift
+#+begin_src R :results output :session :exports both
+upper_drift <- function (palette, n)
+{
+    if (n == 0){
+        palette;
+    }else{
+        first <- palette[1];
+        palette <- c(rep(first, n), head(palette, -n))
+        palette
+    }
+}
+lower_drift <- function (palette, n)
+{
+    if (n == 0){
+        palette;
+    }else{
+        last <- palette[length(palette)];
+        palette <- c(tail(palette, -n), rep(last, n));
+        palette;
+    }
+}
+#+end_src
+
+#+RESULTS:
+*** Plotting with upper and lower palette drift
+#+begin_src R :results output :session :exports both
+v = 1:10
+l1 <- lapply(rev(v), function(x) plot_with_specific_palette(lower_drift(palette, x)));
+l2 <- lapply(0, function(x) plot_with_specific_palette(lower_drift(palette, x)));
+l3 <- lapply(v, function(x) plot_with_specific_palette(upper_drift(palette, x)));
+plots <- c(l1, l2, l3);
+length(plots);
+#+end_src
+
+#+RESULTS:
+: [1] 21
+
+#+begin_src R :results output graphics :file img/blue-palette-original_lower_drift_1.png :exports both :width 600 :height 800 :session
+library(gridExtra);
+library(grid);
+library(ggplot2);
+do.call(grid.arrange, c(plots, list(ncol=2)));
+#+end_src
+
+#+RESULTS:
+[[file:img/blue-palette-original_lower_drift_1.png]]
 
 
