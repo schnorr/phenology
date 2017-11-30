@@ -113,16 +113,17 @@
 #+BEGIN_EXPORT LaTeX  
 {\setbeamertemplate{footline}{} 
 
-\author{\underline{\textbf{Lucas Mello Schnorr}}, João Comba \newline\newline\newline
+\author{\underline{\textbf{Lucas Mello Schnorr}}, João Comba \newline
+INF/UFRGS
+\newline\newline
 \includegraphics[width=.85\linewidth,height=15mm]{../../img/cpm_2007_v2_frontpage.pdf}}
 
 \date{ePhenology Workshop \newline Campinas, Brazil -- December 1st, 2017}
 
-\titlegraphic{\vspace{-.5cm}
+\titlegraphic{%\vspace{-.5cm}
     \includegraphics[scale=0.99]{./logo/ufrgs2.png}
   %  \includegraphics[scale=0.50]{./logo/capes2.png}
 }
-
 
 \maketitle
 }
