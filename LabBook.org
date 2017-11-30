@@ -1826,8 +1826,7 @@ for (metric in unique(dfm$metric)){
 #+RESULTS:
 * 2016-10-13 
 * 2017-11-30 Create one CPM as in PhenoVis
-** Creating the CPM
-*** Reading the palette
+** Reading the palette
 
 #+begin_src R :results output :session :exports both
 paletteFilename = "palette/example.palette";
@@ -1840,7 +1839,7 @@ palette
 :  [8] "#A3CC51" "#C3E57E" "#E5FFB2" "#0F6B99" "#2C85B2" "#51A3CC" "#7EC3E5"
 : [15] "#B2E5FF" "#260F99" "#422CB2" "#6551CC" "#8F7EE5" "#BFB2FF"
 
-*** Read the CSV
+** Read the CSV
 
 #+begin_src R :results output :session :exports both
 library(tidyverse);
@@ -1852,6 +1851,14 @@ dfm;
 
 #+RESULTS:
 #+begin_example
+── Attaching packages ─────────────────────────────────────── tidyverse 1.2.1 ──
+✔ ggplot2 2.2.1     ✔ purrr   0.2.4
+✔ tibble  1.3.4     ✔ dplyr   0.7.4
+✔ tidyr   0.7.2     ✔ stringr 1.2.0
+✔ readr   1.1.1     ✔ forcats 0.2.0
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
 Parsed with column specification:
 cols(
   .default = col_integer(),
@@ -1875,7 +1882,7 @@ See spec(...) for full column specifications.
 # ... with 391,990 more rows
 #+end_example
 
-*** Let's do the plot for the 2007 year only
+** Let's do the plot for the 2007 year only
 
 #+begin_src R :results output graphics :file img/cpm_2007_v2.pdf :exports both :width 12 :height 5 :session
 lowLimit = 30;
@@ -1888,9 +1895,9 @@ dfm %>%
     ggplot(aes(x = sequence, y = value, fill=as.factor(variable))) +
     geom_bar(stat='identity', width=1) +
     ylim(0,NA) +
-    theme_bw (base_size=24) +
+    theme_bw (base_size=21.5) +
     xlab("Day of the Year") +
-    ylab(NULL) +
+    ylab("Normalized size of bins") +
     scale_fill_manual(values=palette) +
     theme(axis.ticks = element_blank(),
           axis.text = element_blank(),
@@ -1907,4 +1914,70 @@ dfm %>%
 
 #+RESULTS:
 [[file:img/cpm_2007_v2.pdf]]
+
+** Frontpage CPM
+
+#+begin_src R :results output graphics :file img/cpm_2007_v2_frontpage.pdf :exports both :width 12 :height 1.2 :session
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+dfm %>% 
+    filter(year == 2007) %>%
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    ggplot(aes(x = sequence, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=24) +
+    xlab(NULL) +
+    ylab(NULL) +
+    scale_fill_manual(values=palette) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1))
+#+end_src
+
+#+RESULTS:
+[[file:img/cpm_2007_v2_frontpage.pdf]]
+** Example of the recent work (using facetting)
+
+#+begin_src R :results output graphics :file img/cpm_v3_facet.pdf :exports both :width 12 :height 4 :session
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+dfm %>% 
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    ggplot(aes(x = sequence, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=21.5) +
+    xlab("Day of the Year") +
+    ylab("Normalized size of bins") +
+    scale_fill_manual(values=palette) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    facet_wrap(~year, nrow=2)
+#+end_src
+
+#+RESULTS:
+[[file:img/cpm_2007_v3_facet.pdf]]
+
 
