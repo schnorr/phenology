@@ -1842,7 +1842,7 @@ palette
 ** Read the CSV
 
 #+begin_src R :results output :session :exports both
-library(tidyverse);
+suppressMessages(library(tidyverse));
 df <- read_delim("experiments/dc_TKY_btp_n_grain100_masked.csv", delim=",");
 dfm <- df %>% gather(variable, value, -database, -sequence, -year)
 dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
@@ -1978,6 +1978,6 @@ dfm %>%
 #+end_src
 
 #+RESULTS:
-[[file:img/cpm_2007_v3_facet.pdf]]
+[[file:img/cpm_v3_facet.pdf]]
 
 
