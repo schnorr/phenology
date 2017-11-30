@@ -1825,7 +1825,7 @@ for (metric in unique(dfm$metric)){
 
 #+RESULTS:
 * 2016-10-13 
-* 2017-11-30 Create one CPM as in PhenoVis
+* 2017-11-30 Create one CPM as in PhenoVis                       :EPHENOLOGY:
 ** Reading the palette
 
 #+begin_src R :results output :session :exports both
