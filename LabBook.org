@@ -1825,3 +1825,86 @@ for (metric in unique(dfm$metric)){
 
 #+RESULTS:
 * 2016-10-13 
+* 2017-11-30 Create one CPM as in PhenoVis
+** Creating the CPM
+*** Reading the palette
+
+#+begin_src R :results output :session :exports both
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+palette
+#+end_src
+
+#+RESULTS:
+:  [1] "#99540F" "#B26F2C" "#CC8E51" "#E5B17E" "#FFD8B2" "#6B990F" "#85B22C"
+:  [8] "#A3CC51" "#C3E57E" "#E5FFB2" "#0F6B99" "#2C85B2" "#51A3CC" "#7EC3E5"
+: [15] "#B2E5FF" "#260F99" "#422CB2" "#6551CC" "#8F7EE5" "#BFB2FF"
+
+*** Read the CSV
+
+#+begin_src R :results output :session :exports both
+library(tidyverse);
+df <- read_delim("experiments/dc_TKY_btp_n_grain100_masked.csv", delim=",");
+dfm <- df %>% gather(variable, value, -database, -sequence, -year)
+dfm$variable <- as.integer(substr(as.character(dfm$variable), 2, 100));
+dfm;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Parsed with column specification:
+cols(
+  .default = col_integer(),
+  database = col_character(),
+  sequence = col_character()
+)
+See spec(...) for full column specifications.
+# A tibble: 392,000 x 5
+       database sequence  year variable value
+          <chr>    <chr> <int>    <int> <int>
+ 1 dc_TKY_btp_n      100  2005        0     0
+ 2 dc_TKY_btp_n      101  2005        0     0
+ 3 dc_TKY_btp_n      102  2005        0     0
+ 4 dc_TKY_btp_n      103  2005        0     0
+ 5 dc_TKY_btp_n      104  2005        0     0
+ 6 dc_TKY_btp_n      105  2005        0     0
+ 7 dc_TKY_btp_n      106  2005        0     0
+ 8 dc_TKY_btp_n      107  2005        0     0
+ 9 dc_TKY_btp_n      108  2005        0     0
+10 dc_TKY_btp_n      109  2005        0     0
+# ... with 391,990 more rows
+#+end_example
+
+*** Let's do the plot for the 2007 year only
+
+#+begin_src R :results output graphics :file img/cpm_2007_v2.pdf :exports both :width 12 :height 5 :session
+lowLimit = 30;
+highLimit = 50;
+library(ggplot2);
+dfm %>% 
+    filter(year == 2007) %>%
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    ggplot(aes(x = sequence, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=24) +
+    xlab("Day of the Year") +
+    ylab(NULL) +
+    scale_fill_manual(values=palette) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1))
+#+end_src
+
+#+RESULTS:
+[[file:img/cpm_2007_v2.pdf]]
+
