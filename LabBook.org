@@ -1824,7 +1824,6 @@ for (metric in unique(dfm$metric)){
 #+end_src
 
 #+RESULTS:
-* 2016-10-13 
 * 2017-11-30 Create one CPM as in PhenoVis                       :EPHENOLOGY:
 ** Reading the palette
 
