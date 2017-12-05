@@ -9,6 +9,57 @@
 
 This file refers to the PEG dataset analysis.
 
+* Dataset description
+
+We have 5281 JPG images.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | wc -l
+#+end_src
+
+#+RESULTS:
+: 5281
+
+The head.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | head -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_091_10_1.jpg
+Output_PEG/2014/2014_091_10_2.jpg
+Output_PEG/2014/2014_091_10_4.jpg
+Output_PEG/2014/2014_091_10_5.jpg
+Output_PEG/2014/2014_091_11_1.jpg
+Output_PEG/2014/2014_091_11_2.jpg
+Output_PEG/2014/2014_091_11_3.jpg
+Output_PEG/2014/2014_091_12_1.jpg
+Output_PEG/2014/2014_091_12_2.jpg
+Output_PEG/2014/2014_091_12_3.jpg
+#+end_example
+
+The tail.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | tail -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_212_14_2.jpg
+Output_PEG/2014/2014_212_14_4.jpg
+Output_PEG/2014/2014_212_14_5.jpg
+Output_PEG/2014/2014_212_16_1.jpg
+Output_PEG/2014/2014_212_16_3.jpg
+Output_PEG/2014/2014_212_16_4.jpg
+Output_PEG/2014/2014_212_17_1.jpg
+Output_PEG/2014/2014_212_17_2.jpg
+Output_PEG/2014/2014_212_17_4.jpg
+Output_PEG/2014/2014_212_17_5.jpg
+#+end_example
+
 * ROI and Community Masks
 
 Masks have been provided by [[https://www.researchgate.net/profile/Bruna_Alberton][Bruna Alberton]].
