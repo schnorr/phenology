@@ -99,14 +99,15 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
 #+end_example
 
-* 2017-12-05 PhenoVis R Package
-** Creation
+* Temporal entries (for drafting purposes)
+** 2017-12-05 PhenoVis R Package
+*** Creation
 
 #+begin_src R :results output :session :exports both
 Rcpp.package.skeleton("phenovisr");
 #+end_src
 
-** Compile attributes
+*** Compile attributes
 
 #+begin_src R :results output :session :exports both
 library(Rcpp);
@@ -115,7 +116,7 @@ compileAttributes("phenovisr");
 
 #+RESULTS:
 
-** Check and install
+*** Check and install
 
 #+begin_src shell :results output
 #R CMD check phenovisr
@@ -124,8 +125,8 @@ R CMD INSTALL phenovisr
 
 #+RESULTS:
 
-** Get 100 bins
-*** Call the package
+*** Get 100 bins
+**** Call the package
 
 #+begin_src R :results output :exports both :session
 library(phenovisr);
@@ -173,7 +174,7 @@ df;
 #   B90 <int>, B91 <int>, B92 <int>, B93 <int>, B94 <int>, B95 <int>,
 #   B96 <int>, B97 <int>, B98 <int>, B99 <int>
 #+end_example
-*** Gather variables
+**** Gather variables
 #+begin_src R :results output :session :exports both
 df %>%
     gather(variable, value, -Name, -Width, -Height, -Pixels) %>%
@@ -206,7 +207,7 @@ df.2;
 # ... with 9,610 more rows
 #+end_example
 
-*** Plot
+**** Plot
 #+begin_src R :results output graphics :file img/PEG_2014_sequences_1_2_4_5.png :exports both :width 1000 :height 400 :session
 paletteFilename = "palette/example.palette";
 palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
@@ -241,3 +242,10 @@ df.2 %>%
 
 #+RESULTS:
 [[file:img/PEG_2014_sequences_1_2_4_5.png]]
+*** Installing from Github
+#+begin_src R :results output :session :exports both
+library(devtools);
+#+end_src
+
+#+RESULTS:
+: Error in library(devtools) : there is no package called ‘devtools’
