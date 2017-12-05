@@ -9,6 +9,105 @@
 
 This file refers to the PEG dataset analysis.
 
+
+* Dataset description
+
+We have 5281 JPG images.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | wc -l
+#+end_src
+
+#+RESULTS:
+: 5281
+
+The head.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | head -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_091_10_1.jpg
+Output_PEG/2014/2014_091_10_2.jpg
+Output_PEG/2014/2014_091_10_4.jpg
+Output_PEG/2014/2014_091_10_5.jpg
+Output_PEG/2014/2014_091_11_1.jpg
+Output_PEG/2014/2014_091_11_2.jpg
+Output_PEG/2014/2014_091_11_3.jpg
+Output_PEG/2014/2014_091_12_1.jpg
+Output_PEG/2014/2014_091_12_2.jpg
+Output_PEG/2014/2014_091_12_3.jpg
+#+end_example
+
+The tail.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | tail -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_212_14_2.jpg
+Output_PEG/2014/2014_212_14_4.jpg
+Output_PEG/2014/2014_212_14_5.jpg
+Output_PEG/2014/2014_212_16_1.jpg
+Output_PEG/2014/2014_212_16_3.jpg
+Output_PEG/2014/2014_212_16_4.jpg
+Output_PEG/2014/2014_212_17_1.jpg
+Output_PEG/2014/2014_212_17_2.jpg
+Output_PEG/2014/2014_212_17_4.jpg
+Output_PEG/2014/2014_212_17_5.jpg
+#+end_example
+
+* ROI and Community Masks
+
+Masks have been provided by [[https://www.researchgate.net/profile/Bruna_Alberton][Bruna Alberton]].
+
+** ROI                                                              :ATTACH:
+:PROPERTIES:
+:ID:       d0f675a1-3705-49d1-9c00-576025f3142f
+:Attachments: roi1_PEG.bmp roi2_PEG.bmp roi58_PEG.bmp roi60_PEG.bmp roi61_PEG.bmp roi62_PEG.bmp roi65_PEG.bmp roi66_PEG.bmp roi68_PEG.bmp
+:END:
+
+** Community                                                        :ATTACH:
+:PROPERTIES:
+:Attachments: Comunidade-PEG.bmp
+:ID:       70a49c79-ab5d-43f4-99d8-5b9d609da83b
+:END:
+
+** Lists all masks
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.bmp
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
+#+end_example
+
+* Analysis
+** Initial overview
+
+#+begin_src R :results output :session :exports both
+library(phenovisr);
+#+end_src
+
+#+RESULTS:
 * Temporal entries (for drafting purposes)
 ** 2017-12-05 PhenoVis R Package
 *** Creation
@@ -159,94 +258,3 @@ library(devtools);
 
 #+RESULTS:
 : Error in library(devtools) : there is no package called ‘devtools’
-* Dataset description
-
-We have 5281 JPG images.
-
-#+begin_src shell :results output
-find Output_PEG/ | grep jpg$ | sort | wc -l
-#+end_src
-
-#+RESULTS:
-: 5281
-
-The head.
-
-#+begin_src shell :results output
-find Output_PEG/ | grep jpg$ | sort | head -n10
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Output_PEG/2014/2014_091_10_1.jpg
-Output_PEG/2014/2014_091_10_2.jpg
-Output_PEG/2014/2014_091_10_4.jpg
-Output_PEG/2014/2014_091_10_5.jpg
-Output_PEG/2014/2014_091_11_1.jpg
-Output_PEG/2014/2014_091_11_2.jpg
-Output_PEG/2014/2014_091_11_3.jpg
-Output_PEG/2014/2014_091_12_1.jpg
-Output_PEG/2014/2014_091_12_2.jpg
-Output_PEG/2014/2014_091_12_3.jpg
-#+end_example
-
-The tail.
-
-#+begin_src shell :results output
-find Output_PEG/ | grep jpg$ | sort | tail -n10
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Output_PEG/2014/2014_212_14_2.jpg
-Output_PEG/2014/2014_212_14_4.jpg
-Output_PEG/2014/2014_212_14_5.jpg
-Output_PEG/2014/2014_212_16_1.jpg
-Output_PEG/2014/2014_212_16_3.jpg
-Output_PEG/2014/2014_212_16_4.jpg
-Output_PEG/2014/2014_212_17_1.jpg
-Output_PEG/2014/2014_212_17_2.jpg
-Output_PEG/2014/2014_212_17_4.jpg
-Output_PEG/2014/2014_212_17_5.jpg
-#+end_example
-
-* ROI and Community Masks
-
-Masks have been provided by [[https://www.researchgate.net/profile/Bruna_Alberton][Bruna Alberton]].
-
-** ROI                                                              :ATTACH:
-:PROPERTIES:
-:ID:       d0f675a1-3705-49d1-9c00-576025f3142f
-:Attachments: roi1_PEG.bmp roi2_PEG.bmp roi58_PEG.bmp roi60_PEG.bmp roi61_PEG.bmp roi62_PEG.bmp roi65_PEG.bmp roi66_PEG.bmp roi68_PEG.bmp
-:END:
-
-** Community                                                        :ATTACH:
-:PROPERTIES:
-:Attachments: Comunidade-PEG.bmp
-:ID:       70a49c79-ab5d-43f4-99d8-5b9d609da83b
-:END:
-
-** Lists all masks
-
-#+begin_src shell :results output
-find data/d0/f675a1-3705-49d1-9c00-576025f3142f
-find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
-#+end_src
-
-#+RESULTS:
-#+begin_example
-data/d0/f675a1-3705-49d1-9c00-576025f3142f
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.bmp
-data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.bmp
-data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
-data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
-#+end_example
-
-* Analysis
