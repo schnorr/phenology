@@ -101,6 +101,51 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
 #+end_example
 
 * Analysis
+** Masks
+*** Convert all masks to JPG in RGB mode
+
+Masks should be in the JPEG file format using a 24bit depth (24bit RGB
+without alpha). Since the masks that have been provided are in the BMP
+file format in grayscale (8bit only), we need to convert them. This
+procedure is done only once since we are saving the JPEG masks in this
+repository.
+
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep bmp$) $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep bmp$);
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    pushd $DIR
+    convert $FILE -type TrueColor $(basename $FILE .bmp).jpg
+    popd
+done
+#+end_src
+
+List the new JPEG masks after conversion:
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+#+end_example
+
+*** 
+
+
+
 ** Initial overview
 
 #+begin_src R :results output :session :exports both
@@ -108,6 +153,7 @@ library(phenovisr);
 #+end_src
 
 #+RESULTS:
+
 * Temporal entries (for drafting purposes)
 ** 2017-12-05 PhenoVis R Package
 *** Creation
