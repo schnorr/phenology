@@ -216,35 +216,135 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg 1280 x 960   8bit 
 #+name: masks
 #+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse));
-df.masks <- tibble(Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
-    separate(Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
     mutate(Mask = gsub(".jpg", "", Mask)) %>%
     mutate(Mask = gsub("-", "_", Mask)) %>%
-    select(-A, -B, -C) %>%
-    as.data.frame()
+    select(-A, -B, -C)
 df.masks
 #+end_src
 
 #+RESULTS: masks
 #+begin_example
-                                                        Filename           Mask
-1  data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
-2        data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg       roi1_PEG
-3        data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg       roi2_PEG
-4       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg      roi58_PEG
-5       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg      roi60_PEG
-6       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg      roi61_PEG
-7       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg      roi62_PEG
-8       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg      roi65_PEG
-9       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg      roi66_PEG
+# A tibble: 10 x 2
+                                                   Mask.Filename           Mask
+                                                           <chr>          <chr>
+ 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+ 2       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg       roi1_PEG
+ 3       data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg       roi2_PEG
+ 4      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg      roi58_PEG
+ 5      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg      roi60_PEG
+ 6      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg      roi61_PEG
+ 7      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg      roi62_PEG
+ 8      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg      roi65_PEG
+ 9      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg      roi66_PEG
 10      data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg      roi68_PEG
 #+end_example
 
-** Initial overview
+** Pictures
+
+#+name: peg
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse));
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+# A tibble: 5,281 x 2
+                    Picture.Filename       Picture
+                               <chr>         <chr>
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+** Overview
+*** Calculate the histogram for all pictures, all masks            :ATTACH:
+:PROPERTIES:
+:Attachments: PEG_2014.csv.gz
+:ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
+:END:
+
+It uses the default number of bins set to 100.
 
 #+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse));
 library(phenovisr);
+
+gethist <- function(df, grain=100)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>%   
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() -> df.temp;
+    
+p <- proc.time();
+df.temp
+proc.time() - p
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|=====                                                 | 10% ~14 m remaining    |==========                                            | 20% ~12 m remaining    |================                                      | 30% ~10 m remaining    |=====================                                 | 40% ~9 m remaining     |===========================                           | 50% ~7 m remaining     |================================                      | 60% ~6 m remaining     |=====================================                 | 70% ~4 m remaining     |===========================================           | 80% ~3 m remaining     |================================================      | 90% ~1 m remaining     |======================================================|100% ~0 s remaining     > > > # A tibble: 52,810 x 105
+             Mask                              Name Width Height Pixels    B0
+            <chr>                            <fctr> <int>  <int>  <int> <int>
+ 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770  7351
+ 2 Comunidade_PEG Output_PEG/2014/2014_091_10_2.jpg  1280    960 508770  7462
+ 3 Comunidade_PEG Output_PEG/2014/2014_091_10_4.jpg  1280    960 508770  7479
+ 4 Comunidade_PEG Output_PEG/2014/2014_091_10_5.jpg  1280    960 508770  7432
+ 5 Comunidade_PEG Output_PEG/2014/2014_091_11_1.jpg  1280    960 508770  7012
+ 6 Comunidade_PEG Output_PEG/2014/2014_091_11_2.jpg  1280    960 508770  7084
+ 7 Comunidade_PEG Output_PEG/2014/2014_091_11_3.jpg  1280    960 508770  6957
+ 8 Comunidade_PEG Output_PEG/2014/2014_091_12_1.jpg  1280    960 508770  2522
+ 9 Comunidade_PEG Output_PEG/2014/2014_091_12_2.jpg  1280    960 508770  2483
+10 Comunidade_PEG Output_PEG/2014/2014_091_12_3.jpg  1280    960 508770  2559
+# ... with 52,800 more rows, and 99 more variables: B1 <int>, B2 <int>,
+#   B3 <int>, B4 <int>, B5 <int>, B6 <int>, B7 <int>, B8 <int>, B9 <int>,
+#   B10 <int>, B11 <int>, B12 <int>, B13 <int>, B14 <int>, B15 <int>,
+#   B16 <int>, B17 <int>, B18 <int>, B19 <int>, B20 <int>, B21 <int>,
+#   B22 <int>, B23 <int>, B24 <int>, B25 <int>, B26 <int>, B27 <int>,
+#   B28 <int>, B29 <int>, B30 <int>, B31 <int>, B32 <int>, B33 <int>,
+#   B34 <int>, B35 <int>, B36 <int>, B37 <int>, B38 <int>, B39 <int>,
+#   B40 <int>, B41 <int>, B42 <int>, B43 <int>, B44 <int>, B45 <int>,
+#   B46 <int>, B47 <int>, B48 <int>, B49 <int>, B50 <int>, B51 <int>,
+#   B52 <int>, B53 <int>, B54 <int>, B55 <int>, B56 <int>, B57 <int>,
+#   B58 <int>, B59 <int>, B60 <int>, B61 <int>, B62 <int>, B63 <int>,
+#   B64 <int>, B65 <int>, B66 <int>, B67 <int>, B68 <int>, B69 <int>,
+#   B70 <int>, B71 <int>, B72 <int>, B73 <int>, B74 <int>, B75 <int>,
+#   B76 <int>, B77 <int>, B78 <int>, B79 <int>, B80 <int>, B81 <int>,
+#   B82 <int>, B83 <int>, B84 <int>, B85 <int>, B86 <int>, B87 <int>,
+#   B88 <int>, B89 <int>, B90 <int>, B91 <int>, B92 <int>, B93 <int>,
+#   B94 <int>, B95 <int>, B96 <int>, B97 <int>, B98 <int>, B99 <int>
+   user  system elapsed 
+  0.026   0.000   0.057
+#+end_example
+
+Since the procedure above takes a lot of time, we save the results in
+a compressed CSV file and commit the results.
+
+#+begin_src R :results output :session :exports both
+write_csv(df.temp, "PEG_2014.csv.gz");
 #+end_src
 
 #+RESULTS:
