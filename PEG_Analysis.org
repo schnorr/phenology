@@ -109,6 +109,7 @@ file format in grayscale (8bit only), we need to convert them. This
 procedure is done only once since we are saving the JPEG masks in this
 repository.
 
+#+name: mask_bmp2jpg
 #+begin_src shell :results output
 for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep bmp$) $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep bmp$);
 do
@@ -140,6 +141,75 @@ data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
 data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
 #+end_example
+
+*** Convert all masks to 1280 x 960
+
+Masks should have the same dimensions as the pictures in the dataset.
+
+This procedure has already been executed, results have been committed.
+
+#+header: dep0=mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg$ | grep -v "\-2") $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg$ | grep -v "\-2");
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    echo $mask
+    jpeginfo $mask
+    pushd $DIR
+    convert $FILE -resize 1280x960 $(basename $FILE .jpg)-2.jpg
+    mv $(basename $FILE .jpg)-2.jpg $FILE
+    popd
+done
+
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg 1282 x 961  24bit JFIF  N   17735 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg 1282 x 961  24bit JFIF  N   17061 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg 1282 x 961  24bit JFIF  N   16154 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg 1282 x 961  24bit JFIF  N   17076 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg 1282 x 961  24bit JFIF  N   22756 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg 1282 x 961  24bit JFIF  N   16745 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg 1282 x 961  24bit JFIF  N   17880 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg 1282 x 961  24bit JFIF  N   17088 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg 1282 x 961  24bit JFIF  N   20952 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg 1280 x 960  24bit JFIF  N   35389 
+~/dev/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/dev/phenology
+~/dev/phenology
+#+end_example
+
+
 
 *** Masks description in a tibble
 
