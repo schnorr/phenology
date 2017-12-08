@@ -350,7 +350,7 @@ write_csv(df.temp, "PEG_2014.csv.gz");
 #+name: read_peg_data
 #+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse));
-df <- read_csv("data/86/6db30a-fff8-47ef-85bc-fc71e13dc71a/PEG_2014.csv.gz") %>%
+df <- read_csv("data/86/6db30a-fff8-47ef-85bc-fc71e13dc71a/PEG_2014_gcc.csv.gz") %>%
     gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
     mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
     separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
