@@ -1979,4 +1979,81 @@ dfm %>%
 #+RESULTS:
 [[file:img/cpm_v3_facet.pdf]]
 
+* 2017-12-07 Test the phenovisr package with the H metric
 
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400
+suppressMessages(library(tidyverse));
+df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+
+library(phenovisr);
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+suppressMessages(library(tidyverse));
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+suppressMessages(library(tidyverse));
+library(phenovisr);
+
+gethist <- function(df, grain=360)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_histogram(phenovis_H(), df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.masks %>% slice(1) %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% slice(1:200) %>% mutate(dummy=TRUE), by=c("dummy")) %>%   
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() %>%
+    gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
+    mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    mutate(Sequence = gsub(".jpg", "", Sequence)) -> df;
+
+lowLimit = 0;
+highLimit = 360;
+
+library(ggplot2);
+df %>% 
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    filter(Hour == 12) %>% #>= 8, Hour <= 17) %>%
+    filter(Sequence == 1) %>%
+  #  filter(grepl("roi6?1", Mask)) %>%
+    group_by(Mask) %>%
+    mutate(value = value/Pixels) %>%
+    ungroup() %>%
+    ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+#    scale_fill_manual(values=palette) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 4)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-31023Z-s/figure31023I4Q.png]]
