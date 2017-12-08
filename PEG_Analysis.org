@@ -267,10 +267,10 @@ df.peg
 #+end_example
 
 ** Overview
-*** Calculate the histogram for all pictures, all masks            :ATTACH:
+*** Calculate the histogram for all pictures, all masks (gcc)      :ATTACH:
 :PROPERTIES:
-:Attachments: PEG_2014.csv.gz
 :ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
+:Attachments: PEG_2014_gcc.csv.gz
 :END:
 
 It uses the default number of bins set to 100.
@@ -283,10 +283,11 @@ gethist <- function(df, grain=100)
 {
     mask <- df %>% slice(1) %>% pull(Mask.Filename);
     phenovis_read_mask(mask);
-    phenovis_get_histogram(df %>% pull(Picture.Filename), grain) %>%
+    phenovis_get_histogram(phenovis_green(), df %>% pull(Picture.Filename), grain) %>%
         as_tibble()
 }
 
+p <- proc.time();
 df.masks %>%
     mutate(dummy=TRUE) %>%
     group_by(Mask) %>%
@@ -294,15 +295,16 @@ df.masks %>%
     select(-dummy) %>%
     do(gethist(.)) %>%
     ungroup() -> df.temp;
-    
-p <- proc.time();
+proc.time() - p    
+
 df.temp
-proc.time() - p
 #+end_src
 
 #+RESULTS:
 #+begin_example
-|=====                                                 | 10% ~14 m remaining    |==========                                            | 20% ~12 m remaining    |================                                      | 30% ~10 m remaining    |=====================                                 | 40% ~9 m remaining     |===========================                           | 50% ~7 m remaining     |================================                      | 60% ~6 m remaining     |=====================================                 | 70% ~4 m remaining     |===========================================           | 80% ~3 m remaining     |================================================      | 90% ~1 m remaining     |======================================================|100% ~0 s remaining     > > > # A tibble: 52,810 x 105
+|=====                                                 | 10% ~11 m remaining    |==========                                            | 20% ~9 m remaining     |================                                      | 30% ~8 m remaining     |=====================                                 | 40% ~7 m remaining     |===========================                           | 50% ~5 m remaining     |================================                      | 60% ~4 m remaining     |=====================================                 | 70% ~3 m remaining     |===========================================           | 80% ~2 m remaining     |================================================      | 90% ~1 m remaining     |======================================================|100% ~0 s remaining     >    user  system elapsed 
+641.819   3.955 646.572
+# A tibble: 52,810 x 105
              Mask                              Name Width Height Pixels    B0
             <chr>                            <fctr> <int>  <int>  <int> <int>
  1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770  7351
@@ -332,15 +334,16 @@ proc.time() - p
 #   B82 <int>, B83 <int>, B84 <int>, B85 <int>, B86 <int>, B87 <int>,
 #   B88 <int>, B89 <int>, B90 <int>, B91 <int>, B92 <int>, B93 <int>,
 #   B94 <int>, B95 <int>, B96 <int>, B97 <int>, B98 <int>, B99 <int>
-   user  system elapsed 
-  0.026   0.000   0.057
 #+end_example
 
 Since the procedure above takes a lot of time, we save the results in
 a compressed CSV file and commit the results.
 
 #+begin_src R :results output :session :exports both
-write_csv(df.temp, "PEG_2014.csv.gz");
+write_csv(df.temp, "PEG_2014_gcc.csv.gz");
+#+end_src
+
+#+RESULTS:
 #+end_src
 
 #+RESULTS:
