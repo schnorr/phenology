@@ -267,7 +267,8 @@ df.peg
 #+end_example
 
 ** Overview
-*** Calculate the histogram for all pictures, all masks (gcc)      :ATTACH:
+*** gcc
+**** Calculate the histogram for all pictures, all masks (gcc)    :ATTACH:
 :PROPERTIES:
 :ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
 :Attachments: PEG_2014_gcc.csv.gz
@@ -344,7 +345,98 @@ write_csv(df.temp, "PEG_2014_gcc.csv.gz");
 #+end_src
 
 #+RESULTS:
-*** Calculate the histogram for all pictures, all masks (H)        :ATTACH:
+**** Per-mask analysis
+***** Read data and prepare for stacked bar view
+
+#+name: read_peg_data
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse));
+df <- read_csv("data/86/6db30a-fff8-47ef-85bc-fc71e13dc71a/PEG_2014_gcc.csv.gz") %>%
+    gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
+    mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    mutate(Sequence = gsub(".jpg", "", Sequence))
+df;
+#+end_src
+
+#+RESULTS: read_peg_data
+#+begin_example
+Parsed with column specification:
+cols(
+  .default = col_integer(),
+  Mask = col_character(),
+  Name = col_character()
+)
+See spec(...) for full column specifications.
+# A tibble: 5,281,000 x 10
+             Mask  Year   Day  Hour Sequence Width Height Pixels variable value
+            <chr> <int> <int> <int>    <chr> <int>  <int>  <int>    <int> <int>
+ 1 Comunidade_PEG  2014    91    10        1  1280    960 508770        0  7351
+ 2 Comunidade_PEG  2014    91    10        2  1280    960 508770        0  7462
+ 3 Comunidade_PEG  2014    91    10        4  1280    960 508770        0  7479
+ 4 Comunidade_PEG  2014    91    10        5  1280    960 508770        0  7432
+ 5 Comunidade_PEG  2014    91    11        1  1280    960 508770        0  7012
+ 6 Comunidade_PEG  2014    91    11        2  1280    960 508770        0  7084
+ 7 Comunidade_PEG  2014    91    11        3  1280    960 508770        0  6957
+ 8 Comunidade_PEG  2014    91    12        1  1280    960 508770        0  2522
+ 9 Comunidade_PEG  2014    91    12        2  1280    960 508770        0  2483
+10 Comunidade_PEG  2014    91    12        3  1280    960 508770        0  2559
+# ... with 5,280,990 more rows
+#+end_example
+
+***** Read palette
+
+#+name: peg_palette
+#+begin_src R :results output :session :exports both
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+#+end_src
+
+***** Overview (all pictures, all masks, from 8AM to 17PM, only sequence 1)
+
+#+header: :var dep0=peg_palette
+#+begin_src R :results output graphics :file img/PEG_2014_8AM_17PM_Seq1.png :exports both :width 1400 :height 1000 :session
+lowLimit = 30;
+highLimit = 50;
+
+library(ggplot2);
+df %>% 
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    filter(Hour >= 8, Hour <= 17) %>%
+    filter(Sequence == 1) %>%
+  #  filter(grepl("roi6?1", Mask)) %>%
+    group_by(Mask) %>%
+    mutate(value = value/Pixels) %>%
+    ungroup() %>%
+    ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+    scale_fill_manual(values=palette) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:img/PEG_2014_8AM_17PM_Seq1.png]]
+
+*** H
+**** Calculate the histogram for all pictures, all masks (H)      :ATTACH:
 :PROPERTIES:
 :Attachments: PEG_2014_H.csv.gz
 :ID:       25896a89-f562-4386-8272-73b438d0785d
@@ -419,94 +511,4 @@ write_csv(df.temp, "PEG_2014_H.csv.gz");
 #+end_src
 
 #+RESULTS:
-*** Per-mask analysis
-**** Read data and prepare for stacked bar view
-
-#+name: read_peg_data
-#+begin_src R :results output :session :exports both
-suppressMessages(library(tidyverse));
-df <- read_csv("data/86/6db30a-fff8-47ef-85bc-fc71e13dc71a/PEG_2014_gcc.csv.gz") %>%
-    gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
-    mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
-    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
-    select(-Dir, -Year) %>%
-    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
-    mutate(Sequence = gsub(".jpg", "", Sequence))
-df;
-#+end_src
-
-#+RESULTS: read_peg_data
-#+begin_example
-Parsed with column specification:
-cols(
-  .default = col_integer(),
-  Mask = col_character(),
-  Name = col_character()
-)
-See spec(...) for full column specifications.
-# A tibble: 5,281,000 x 10
-             Mask  Year   Day  Hour Sequence Width Height Pixels variable value
-            <chr> <int> <int> <int>    <chr> <int>  <int>  <int>    <int> <int>
- 1 Comunidade_PEG  2014    91    10        1  1280    960 508770        0  7351
- 2 Comunidade_PEG  2014    91    10        2  1280    960 508770        0  7462
- 3 Comunidade_PEG  2014    91    10        4  1280    960 508770        0  7479
- 4 Comunidade_PEG  2014    91    10        5  1280    960 508770        0  7432
- 5 Comunidade_PEG  2014    91    11        1  1280    960 508770        0  7012
- 6 Comunidade_PEG  2014    91    11        2  1280    960 508770        0  7084
- 7 Comunidade_PEG  2014    91    11        3  1280    960 508770        0  6957
- 8 Comunidade_PEG  2014    91    12        1  1280    960 508770        0  2522
- 9 Comunidade_PEG  2014    91    12        2  1280    960 508770        0  2483
-10 Comunidade_PEG  2014    91    12        3  1280    960 508770        0  2559
-# ... with 5,280,990 more rows
-#+end_example
-
-**** Read palette
-
-#+name: peg_palette
-#+begin_src R :results output :session :exports both
-paletteFilename = "palette/example.palette";
-palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
-#+end_src
-
-**** Overview (all pictures, all masks, from 8AM to 17PM, only sequence 1)
-
-#+header: :var dep0=peg_palette
-#+begin_src R :results output graphics :file img/PEG_2014_8AM_17PM_Seq1.png :exports both :width 1400 :height 1000 :session
-lowLimit = 30;
-highLimit = 50;
-
-library(ggplot2);
-df %>% 
-    filter(variable >= lowLimit, variable < highLimit) %>%
-    filter(value != 0) %>%
-    filter(Hour >= 8, Hour <= 17) %>%
-    filter(Sequence == 1) %>%
-  #  filter(grepl("roi6?1", Mask)) %>%
-    group_by(Mask) %>%
-    mutate(value = value/Pixels) %>%
-    ungroup() %>%
-    ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
-    geom_bar(stat='identity', width=1) +
-    ylim(0,NA) +
-    theme_bw (base_size=16) +
-    xlab("Day of the Year (2014)") +
-    ylab("Normalized size of bins") +
-    scale_fill_manual(values=palette) +
-    theme(#axis.ticks = element_blank(),
-          #axis.text = element_blank(),
-          plot.margin = unit(c(0,0,0,0), "cm"),
-          legend.spacing = unit(1, "mm"),
-          panel.grid = element_blank(),
-          legend.position = "top",
-          legend.justification = "left",
-          legend.box.spacing = unit(0, "pt"),
-          legend.box.margin = margin(0,0,0,0),
-          legend.title = element_blank()) +
-    guides(fill = guide_legend(nrow = 1)) +
-    facet_grid(Hour~Mask, scales="free")
-#+end_src
-
-#+RESULTS:
-[[file:img/PEG_2014_8AM_17PM_Seq1.png]]
-
 
