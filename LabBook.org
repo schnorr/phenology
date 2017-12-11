@@ -2635,70 +2635,26 @@ df.masks %>% #slice(1) %>%
     select(-dummy) %>%
     do(gethist(.)) %>%
     ungroup() -> dft;
-dft;
-#+end_src
 
-#+RESULTS:
-#+begin_example
-|=====                                                 | 10% ~6 m remaining     |==========                                            | 20% ~5 m remaining     |================                                      | 30% ~4 m remaining     |=====================                                 | 40% ~4 m remaining     |===========================                           | 50% ~3 m remaining     |================================                      | 60% ~2 m remaining     |=====================================                 | 70% ~2 m remaining     |===========================================           | 80% ~1 m remaining     |================================================      | 90% ~34 s remaining    |======================================================|100% ~0 s remaining     > # A tibble: 4,813,200 x 17
-             Mask                              Name Width Height Pixels     H
-            <chr>                            <fctr> <int>  <int>  <int> <int>
- 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     0
- 2 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     1
- 3 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     2
- 4 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     3
- 5 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     4
- 6 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     5
- 7 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     6
- 8 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     7
- 9 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     8
-10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     9
-# ... with 4,813,190 more rows, and 11 more variables: Count <int>, V0 <int>,
-#   V1 <int>, V2 <int>, V3 <int>, V4 <int>, V5 <int>, V6 <int>, V7 <int>,
-#   V8 <int>, V9 <int>
-#+end_example
+# Convert Name
+dft %>%
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    mutate(Sequence = gsub(".jpg", "", Sequence)) -> dft.x;
+#+end_src
 
 *** Select the V with higher value for each H
 
 #+begin_src R :results output :session :exports both
-dft %>%
-    gather(V, Value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
+dft.x %>%
+    gather(V, Value, -Mask, -Year, -Day, -Hour, -Sequence, -Width, -Height, -Pixels, -H, -Count) %>%
     # Select the best V
-    group_by(Mask, Name, Width, Height, Pixels, H) %>%
+    group_by(Mask, Year, Day, Hour, Sequence, Width, Height, Pixels, H) %>%
     arrange(-Value) %>%
     slice(1) %>%
     ungroup() -> dft.2;
 dft.2;
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 4,813,200 x 9
-             Mask                              Name Width Height Pixels     H
-            <chr>                            <fctr> <int>  <int>  <int> <int>
- 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     0
- 2 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     1
- 3 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     2
- 4 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     3
- 5 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     4
- 6 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     5
- 7 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     6
- 8 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     7
- 9 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     8
-10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     9
-# ... with 4,813,190 more rows, and 3 more variables: Count <int>, V <chr>,
-#   Value <int>
-#+end_example
-
-*** Split name by Hour
-
-#+begin_src R :results output :session :exports both
-dft.2 %>%
-    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
-    select(-Dir, -Year) %>%
-    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
-    mutate(Sequence = gsub(".jpg", "", Sequence)) -> dft.3;
-dft.3
 #+end_src
 
 #+RESULTS:
@@ -2722,16 +2678,17 @@ dft.3
 *** Calculate the HSV hex color and color mapping
 
 #+begin_src R :results output :session :exports both
-dft.3 %>%
+library(colorspace);
+dft.2 %>%
     mutate(V=as.integer(gsub("V", "", V))/10) %>%
     mutate(V=V) %>%
     mutate(S=1) %>%
     mutate(ColorKey = paste(H, S, V, sep="-")) %>%
-    mutate(Color = hex(HSV(H, S, V))) -> dft.4;
-dft.4 %>% select(H, S, V, ColorKey, Color) %>% unique
+    mutate(Color = hex(HSV(H, S, V))) -> dft.3;
+dft.3 %>% select(H, S, V, ColorKey, Color) %>% unique
 
 # Color mapping
-dft.4 %>% select(ColorKey, Color) %>% unique -> df.palette;
+dft.3 %>% select(ColorKey, Color) %>% unique -> df.palette;
 palette <- df.palette$Color;
 names(palette) <- df.palette$ColorKey;
 #+end_src
@@ -2761,7 +2718,7 @@ lowLimit = 0;
 highLimit = 360;
 
 library(ggplot2);
-dft.4 %>%
+dft.3 %>%
     filter(H >= lowLimit, H < highLimit) %>%
     filter(H != 0) %>%
     filter(Hour >= 8, Hour <= 17) %>%
