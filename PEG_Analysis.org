@@ -608,31 +608,40 @@ df %>%
 ***** all pictures, one mask, one hour, only sequence 1
 ****** Play with the H scale (barplot)
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 400 :session
+#+begin_src R :results output :session :exports both
+hsv <- HSV(seq(0,360), 1, 1);
+rep(1,length(hsv))
+#+end_src
+
+#+RESULTS:
+: [1] 1
+: [1] 1
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 400
 suppressMessages(library(tidyverse));
 library(colorspace);
 hsv <- HSV(seq(0,360), 1, 1);
 par(lty = 0);
-barplot(rep(1,length(s)), col=hex(hsv), space=0)
+barplot(rep(1,360), col=hex(hsv), space=0)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-31023Z-s/figure31023WRG.png]]
+[[file:/tmp/babel-680mHx/figure680P0r.png]]
 ****** and with (ggplot)
 
-#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 400 :session
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1600 :height 400
 suppressMessages(library(tidyverse));
 library(colorspace);
-tibble(H = seq(0,359)) %>%
-    mutate(Color = hex(HSV(H, 1, 1))) %>%
+tibble(H = seq(0,359)) %>% mutate(Color = hex(HSV(H, 1, 1))) -> hsv;
+hsv %>%
     ggplot(aes(x=H, y=1, fill=as.factor(H))) +
     geom_bar(stat='identity', width=1) +
-    scale_fill_manual(values = hex(hsv)) +
+    scale_fill_manual(values = hsv$Color) +
     theme(legend.position="none")
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-680mHx/figure680eha.png]]
+[[file:/tmp/babel-680mHx/figure680ocN.png]]
 ****** First correct mapping of H colors
 
 #+header: :var dep0=peg_palette
