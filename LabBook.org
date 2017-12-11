@@ -1980,6 +1980,7 @@ dfm %>%
 [[file:img/cpm_v3_facet.pdf]]
 
 * 2017-12-07 Test the phenovisr package with the H metric
+** Many images
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400
 suppressMessages(library(tidyverse));
@@ -2057,3 +2058,758 @@ df %>%
 
 #+RESULTS:
 [[file:/tmp/babel-31023Z-s/figure31023I4Q.png]]
+** Single image (get double HSV histogram)
+
+#+begin_src R :results output :exports both :session
+library(phenovisr);
+suppressMessages(library(tidyverse));
+df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+
+
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+
+gethist <- function(df, grain=360)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), 10) %>%
+        as_tibble()
+}
+
+df.masks %>% slice(1) %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% slice(1:100) %>% mutate(dummy=TRUE), by=c("dummy")) %>%   
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() -> dft;
+dft
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > # A tibble: 36,000 x 17
+             Mask                              Name Width Height Pixels     H
+            <chr>                            <fctr> <int>  <int>  <int> <int>
+ 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     0
+ 2 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     1
+ 3 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     2
+ 4 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     3
+ 5 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     4
+ 6 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     5
+ 7 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     6
+ 8 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     7
+ 9 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     8
+10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     9
+# ... with 35,990 more rows, and 11 more variables: Count <int>, V0 <int>,
+#   V1 <int>, V2 <int>, V3 <int>, V4 <int>, V5 <int>, V6 <int>, V7 <int>,
+#   V8 <int>, V9 <int>
+#+end_example
+
+#+begin_src R :results output :session :exports both
+library(colorspace);
+dft %>%
+    gather(V, Value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
+    # Select the best V
+    group_by(Mask, Name, Width, Height, Pixels, H) %>%
+    arrange(-Value) %>%
+    slice(1) %>%
+    ungroup() %>%
+    mutate(V=as.integer(gsub("V", "", V))/10) %>%
+    mutate(V=1-V) %>%
+    mutate(S=1) %>%
+    mutate(Color = hex(HSV(H, S, V))) %>%
+
+    # Name handling
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    mutate(Sequence = gsub(".jpg", "", Sequence)) -> dft.2;
+
+dft.2 %>%
+    filter(Year == 2014,
+           Day == 91,
+           Hour == 10,
+           Sequence == 1) %>%
+    select(-Mask, -Year, -Day, -Hour, -Sequence) %>% as.data.frame()
+
+#dft.2 %>%
+#    filter(Pixels != 0) %>%
+#    arrange(Day, Sequence, H) %>%
+#    head %>% as.data.frame()
+#+end_src
+
+#+RESULTS:
+#+begin_example
+    Width Height Pixels   H  Count   V  Value S   Color
+1    1280    960 508770   0 729544 1.0 726399 1 #FF0000
+2    1280    960 508770   1      6 0.3      2 1 #4D0100
+3    1280    960 508770   2    152 0.6     24 1 #990500
+4    1280    960 508770   3    182 0.4     36 1 #660500
+5    1280    960 508770   4    166 1.0     65 1 #FF1100
+6    1280    960 508770   5    623 0.8    106 1 #CC1100
+7    1280    960 508770   6    212 1.0    137 1 #FF1900
+8    1280    960 508770   7    269 1.0    138 1 #FF1E00
+9    1280    960 508770   8    292 1.0    157 1 #FF2200
+10   1280    960 508770   9    801 0.7    155 1 #B31B00
+11   1280    960 508770  10   1479 1.0    366 1 #FF2A00
+12   1280    960 508770  11   1248 0.7    295 1 #B32100
+13   1280    960 508770  12   1953 1.0    588 1 #FF3300
+14   1280    960 508770  13    233 1.0    142 1 #FF3700
+15   1280    960 508770  14    341 0.6     59 1 #992400
+16   1280    960 508770  15   1251 1.0    514 1 #FF4000
+17   1280    960 508770  16   1947 0.8    423 1 #CC3600
+18   1280    960 508770  17    577 1.0    157 1 #FF4800
+19   1280    960 508770  18    815 1.0    151 1 #FF4D00
+20   1280    960 508770  19    826 0.6    163 1 #993000
+21   1280    960 508770  20    852 1.0    610 1 #FF5500
+22   1280    960 508770  21   2451 0.8    442 1 #CC4700
+23   1280    960 508770  22   3166 0.8    622 1 #CC4B00
+24   1280    960 508770  23    928 0.6    146 1 #993B00
+25   1280    960 508770  24   1323 1.0    261 1 #FF6600
+26   1280    960 508770  25   3204 0.8    767 1 #CC5500
+27   1280    960 508770  26   5804 0.8   1156 1 #CC5800
+28   1280    960 508770  27   1947 0.8    431 1 #CC5C00
+29   1280    960 508770  28   2159 0.6    379 1 #994700
+30   1280    960 508770  29   2081 0.7    352 1 #B35600
+31   1280    960 508770  30   4314 1.0    689 1 #FF8000
+32   1280    960 508770  31   1875 0.7    356 1 #B35C00
+33   1280    960 508770  32   7004 0.8   1414 1 #CC6D00
+34   1280    960 508770  33   2007 0.4    368 1 #663800
+35   1280    960 508770  34   4067 0.6    731 1 #995700
+36   1280    960 508770  35   3970 0.7    654 1 #B36800
+37   1280    960 508770  36   1493 0.4    253 1 #663D00
+38   1280    960 508770  37   9443 0.8   1747 1 #CC7E00
+39   1280    960 508770  38   2575 0.5    429 1 #805100
+40   1280    960 508770  39   4733 0.6    800 1 #996300
+41   1280    960 508770  40   6277 1.0   1043 1 #FFAA00
+42   1280    960 508770  41  10931 0.8   2209 1 #CC8B00
+43   1280    960 508770  42   7145 0.8   1153 1 #CC8F00
+44   1280    960 508770  43  12531 0.5   2281 1 #805B00
+45   1280    960 508770  44   8806 0.8   1914 1 #CC9600
+46   1280    960 508770  45   7612 0.8   1244 1 #CC9900
+47   1280    960 508770  46   2755 0.4    656 1 #664E00
+48   1280    960 508770  47  11361 0.5   2170 1 #806400
+49   1280    960 508770  48  12506 0.6   1969 1 #997A00
+50   1280    960 508770  49   6033 0.8    990 1 #CCA700
+51   1280    960 508770  50   9876 0.7   1511 1 #B39500
+52   1280    960 508770  51  22277 0.5   3781 1 #806C00
+53   1280    960 508770  52  12794 0.6   2287 1 #998500
+54   1280    960 508770  53   3468 0.4    778 1 #665A00
+55   1280    960 508770  54   8441 0.5   1686 1 #807300
+56   1280    960 508770  55   9970 0.5   2087 1 #807500
+57   1280    960 508770  56   6195 0.6   1156 1 #998F00
+58   1280    960 508770  57  13450 0.5   2817 1 #807900
+59   1280    960 508770  58   5547 0.5   1152 1 #807B00
+60   1280    960 508770  59      6 0.2      3 1 #333200
+61   1280    960 508770  60  43632 0.1  10047 1 #191900
+62   1280    960 508770  61   6682 0.4   1478 1 #646600
+63   1280    960 508770  62    952 0.1    429 1 #191900
+64   1280    960 508770  63  11665 0.6   2336 1 #919900
+65   1280    960 508770  64   7785 0.5   1396 1 #778000
+66   1280    960 508770  65  10334 0.6   2154 1 #8C9900
+67   1280    960 508770  66   6114 0.5   1310 1 #738000
+68   1280    960 508770  67   7064 0.8   1247 1 #B4CC00
+69   1280    960 508770  68   9442 0.5   1846 1 #6F8000
+70   1280    960 508770  69  15737 0.6   2896 1 #829900
+71   1280    960 508770  70  14431 0.6   2535 1 #7F9900
+72   1280    960 508770  71   2295 0.8    568 1 #A7CC00
+73   1280    960 508770  72   4211 0.4    566 1 #526600
+74   1280    960 508770  73   5201 0.5   1098 1 #648000
+75   1280    960 508770  74   4112 0.6    994 1 #759900
+76   1280    960 508770  75   2266 0.5    663 1 #608000
+77   1280    960 508770  76   6212 0.6   1506 1 #709900
+78   1280    960 508770  77   4299 0.6    864 1 #6E9900
+79   1280    960 508770  78    745 0.5    130 1 #598000
+80   1280    960 508770  79   1765 0.5    387 1 #578000
+81   1280    960 508770  80   4866 0.6    901 1 #669900
+82   1280    960 508770  81    230 0.1     80 1 #111900
+83   1280    960 508770  82   1808 0.5    347 1 #518000
+84   1280    960 508770  83   2726 0.5    498 1 #4F8000
+85   1280    960 508770  84   2294 0.8    336 1 #7ACC00
+86   1280    960 508770  85   5876 0.6   1074 1 #599900
+87   1280    960 508770  86   1917 0.5    382 1 #488000
+88   1280    960 508770  87    214 0.3     45 1 #2A4D00
+89   1280    960 508770  88    801 0.5    167 1 #448000
+90   1280    960 508770  89    789 0.6    181 1 #4F9900
+91   1280    960 508770  90   2051 1.0    439 1 #80FF00
+92   1280    960 508770  91    972 0.5    190 1 #3E8000
+93   1280    960 508770  92   1351 0.4    275 1 #306600
+94   1280    960 508770  93    177 0.4     37 1 #2E6600
+95   1280    960 508770  94     86 0.1     44 1 #0B1900
+96   1280    960 508770  95    949 0.6    187 1 #409900
+97   1280    960 508770  96   2603 0.6    487 1 #3D9900
+98   1280    960 508770  97     33 1.0     19 1 #62FF00
+99   1280    960 508770  98    437 0.4     99 1 #256600
+100  1280    960 508770  99    677 0.8    210 1 #47CC00
+101  1280    960 508770 100   1629 1.0    326 1 #55FF00
+102  1280    960 508770 101    452 0.5     92 1 #288000
+103  1280    960 508770 102   1649 0.7    318 1 #36B300
+104  1280    960 508770 103   1191 0.5    243 1 #248000
+105  1280    960 508770 104     45 0.1     30 1 #071900
+106  1280    960 508770 105    311 1.0    107 1 #40FF00
+107  1280    960 508770 106     19 0.1     10 1 #061900
+108  1280    960 508770 107    548 0.5    107 1 #1C8000
+109  1280    960 508770 108     63 1.0     38 1 #33FF00
+110  1280    960 508770 109    517 0.8    131 1 #25CC00
+111  1280    960 508770 110   1059 0.7    208 1 #1EB300
+112  1280    960 508770 111    247 0.5     40 1 #138000
+113  1280    960 508770 112    817 0.7    154 1 #18B300
+114  1280    960 508770 113     52 0.1     15 1 #031900
+115  1280    960 508770 114    471 0.5     81 1 #0D8000
+116  1280    960 508770 115     22 0.8      6 1 #11CC00
+117  1280    960 508770 116    100 0.4     20 1 #076600
+118  1280    960 508770 117     15 0.4      5 1 #056600
+119  1280    960 508770 118      0 1.0      0 1 #09FF00
+120  1280    960 508770 119      0 1.0      0 1 #04FF00
+121  1280    960 508770 120   3157 1.0   2237 1 #00FF00
+122  1280    960 508770 121      0 1.0      0 1 #00FF04
+123  1280    960 508770 122      4 0.4      2 1 #006603
+124  1280    960 508770 123     41 0.5      9 1 #008006
+125  1280    960 508770 124     71 0.8     11 1 #00CC0E
+126  1280    960 508770 125    309 0.4     72 1 #006609
+127  1280    960 508770 126    138 0.9     29 1 #00E617
+128  1280    960 508770 127      6 0.1      3 1 #001903
+129  1280    960 508770 128      1 0.1      1 1 #001903
+130  1280    960 508770 129     86 0.5     20 1 #008013
+131  1280    960 508770 130     91 0.8     27 1 #00CC22
+132  1280    960 508770 131    921 0.7    245 1 #00B321
+133  1280    960 508770 132    634 0.8    149 1 #00CC29
+134  1280    960 508770 133     78 0.6     15 1 #009921
+135  1280    960 508770 134      8 0.1      7 1 #001906
+136  1280    960 508770 135      2 0.1      2 1 #001906
+137  1280    960 508770 136    154 0.5     29 1 #008022
+138  1280    960 508770 137     19 0.1     13 1 #001907
+139  1280    960 508770 138     74 0.5     17 1 #008026
+140  1280    960 508770 139    254 0.7     64 1 #00B339
+141  1280    960 508770 140    386 0.8     81 1 #00CC44
+142  1280    960 508770 141      6 0.1      4 1 #001909
+143  1280    960 508770 142     22 0.5      7 1 #00802F
+144  1280    960 508770 143      1 0.1      1 1 #00190A
+145  1280    960 508770 144     14 1.0      3 1 #00FF66
+146  1280    960 508770 145      5 0.1      4 1 #00190B
+147  1280    960 508770 146    291 0.6     52 1 #009942
+148  1280    960 508770 147    176 0.5     34 1 #008039
+149  1280    960 508770 148      0 1.0      0 1 #00FF77
+150  1280    960 508770 149    330 0.8    125 1 #00CC63
+151  1280    960 508770 150   1024 0.8    206 1 #00CC66
+152  1280    960 508770 151      9 0.5      4 1 #008042
+153  1280    960 508770 152     23 0.4      6 1 #006636
+154  1280    960 508770 153      3 1.0      1 1 #00FF8C
+155  1280    960 508770 154      5 1.0      3 1 #00FF91
+156  1280    960 508770 155      3 0.1      3 1 #00190F
+157  1280    960 508770 156      3 1.0      3 1 #00FF99
+158  1280    960 508770 157      4 0.1      3 1 #001910
+159  1280    960 508770 158    103 0.6     24 1 #009961
+160  1280    960 508770 159    253 0.7     65 1 #00B374
+161  1280    960 508770 160    545 0.8    123 1 #00CC88
+162  1280    960 508770 161      3 0.5      1 1 #008057
+163  1280    960 508770 162      6 0.1      6 1 #001912
+164  1280    960 508770 163      1 0.1      1 1 #001912
+165  1280    960 508770 164    231 0.8     85 1 #00CC96
+166  1280    960 508770 165    691 0.8    136 1 #00CC99
+167  1280    960 508770 166      0 1.0      0 1 #00FFC3
+168  1280    960 508770 167      1 0.6      1 1 #009978
+169  1280    960 508770 168     22 0.1      7 1 #001914
+170  1280    960 508770 169     12 0.7      6 1 #00B392
+171  1280    960 508770 170     22 0.5      6 1 #00806A
+172  1280    960 508770 171      6 1.0      3 1 #00FFD9
+173  1280    960 508770 172      0 1.0      0 1 #00FFDD
+174  1280    960 508770 173    192 0.8     39 1 #00CCB4
+175  1280    960 508770 174     70 0.4     14 1 #00665C
+176  1280    960 508770 175      1 1.0      1 1 #00FFEA
+177  1280    960 508770 176      6 0.5      2 1 #008077
+178  1280    960 508770 177      1 0.4      1 1 #006661
+179  1280    960 508770 178      0 1.0      0 1 #00FFF7
+180  1280    960 508770 179      0 1.0      0 1 #00FFFB
+181  1280    960 508770 180    845 0.1    366 1 #001919
+182  1280    960 508770 181      0 1.0      0 1 #00FBFF
+183  1280    960 508770 182      0 1.0      0 1 #00F7FF
+184  1280    960 508770 183      1 0.1      1 1 #001819
+185  1280    960 508770 184     13 0.5      3 1 #007780
+186  1280    960 508770 185     57 0.7     12 1 #00A4B3
+187  1280    960 508770 186      2 0.1      2 1 #001719
+188  1280    960 508770 187      2 0.1      2 1 #001719
+189  1280    960 508770 188      1 0.1      1 1 #001619
+190  1280    960 508770 189     49 0.1     13 1 #001619
+191  1280    960 508770 190     30 0.9      6 1 #00BFE6
+192  1280    960 508770 191    420 0.8    107 1 #00A7CC
+193  1280    960 508770 192    328 0.8     70 1 #00A3CC
+194  1280    960 508770 193      6 0.1      5 1 #001419
+195  1280    960 508770 194     14 0.1     14 1 #001419
+196  1280    960 508770 195      8 1.0      5 1 #00BFFF
+197  1280    960 508770 196    107 0.7     23 1 #0083B3
+198  1280    960 508770 197      8 0.1      7 1 #001219
+199  1280    960 508770 198      9 0.1      3 1 #001219
+200  1280    960 508770 199     12 0.1     11 1 #001119
+201  1280    960 508770 200     21 0.1     16 1 #001119
+202  1280    960 508770 201     37 0.7      7 1 #0074B3
+203  1280    960 508770 202    286 0.8     63 1 #0081CC
+204  1280    960 508770 203     12 0.1      9 1 #001019
+205  1280    960 508770 204     12 1.0      6 1 #0099FF
+206  1280    960 508770 205    441 0.8    100 1 #0077CC
+207  1280    960 508770 206    185 0.8     44 1 #0074CC
+208  1280    960 508770 207     68 0.7     12 1 #0062B3
+209  1280    960 508770 208      8 0.7      4 1 #005FB3
+210  1280    960 508770 209     24 0.1     19 1 #000D19
+211  1280    960 508770 210     79 1.0     42 1 #0080FF
+212  1280    960 508770 211      2 0.5      1 1 #003E80
+213  1280    960 508770 212    176 0.8     43 1 #005FCC
+214  1280    960 508770 213      5 0.1      2 1 #000B19
+215  1280    960 508770 214     22 0.1      9 1 #000B19
+216  1280    960 508770 215     51 0.1     11 1 #000B19
+217  1280    960 508770 216     19 1.0     17 1 #0066FF
+218  1280    960 508770 217    276 0.8     52 1 #004ECC
+219  1280    960 508770 218      4 0.8      2 1 #004BCC
+220  1280    960 508770 219    247 0.8    121 1 #0047CC
+221  1280    960 508770 220    710 0.8    124 1 #0044CC
+222  1280    960 508770 221    198 0.7     52 1 #0039B3
+223  1280    960 508770 222    134 1.0     23 1 #004CFF
+224  1280    960 508770 223     48 0.7     11 1 #0033B3
+225  1280    960 508770 224    146 0.7     33 1 #0030B3
+226  1280    960 508770 225    132 1.0     41 1 #0040FF
+227  1280    960 508770 226      3 1.0      3 1 #003CFF
+228  1280    960 508770 227    156 0.8     50 1 #002CCC
+229  1280    960 508770 228    485 0.8     90 1 #0029CC
+230  1280    960 508770 229    108 0.8     35 1 #0025CC
+231  1280    960 508770 230    327 0.6     60 1 #001999
+232  1280    960 508770 231    159 0.6     27 1 #001799
+233  1280    960 508770 232     93 0.7     14 1 #0018B3
+234  1280    960 508770 233      8 1.0      5 1 #001EFF
+235  1280    960 508770 234     24 1.0      4 1 #001AFF
+236  1280    960 508770 235     20 0.3      4 1 #00064D
+237  1280    960 508770 236     37 0.9      6 1 #000FE6
+238  1280    960 508770 237     50 0.4      8 1 #000566
+239  1280    960 508770 238     11 0.4      3 1 #000366
+240  1280    960 508770 239      0 1.0      0 1 #0004FF
+241  1280    960 508770 240   2091 1.0    544 1 #0000FF
+242  1280    960 508770 241      9 0.8      2 1 #0300CC
+243  1280    960 508770 242     15 0.9      9 1 #0800E6
+244  1280    960 508770 243     98 0.8     18 1 #0A00CC
+245  1280    960 508770 244    106 1.0     19 1 #1100FF
+246  1280    960 508770 245     76 0.6     14 1 #0D0099
+247  1280    960 508770 246     46 1.0     10 1 #1900FF
+248  1280    960 508770 247    279 0.7     52 1 #1500B3
+249  1280    960 508770 248    123 1.0     20 1 #2200FF
+250  1280    960 508770 249    370 0.7     75 1 #1B00B3
+251  1280    960 508770 250    415 0.8     71 1 #2200CC
+252  1280    960 508770 251    337 0.7     79 1 #2100B3
+253  1280    960 508770 252    350 1.0     92 1 #3300FF
+254  1280    960 508770 253     62 0.4     11 1 #160066
+255  1280    960 508770 254     48 0.6      9 1 #240099
+256  1280    960 508770 255    102 1.0     48 1 #4000FF
+257  1280    960 508770 256    205 0.8     40 1 #3600CC
+258  1280    960 508770 257    127 0.7     24 1 #3300B3
+259  1280    960 508770 258     23 1.0      5 1 #4C00FF
+260  1280    960 508770 259     71 0.1     17 1 #080019
+261  1280    960 508770 260    254 1.0     56 1 #5500FF
+262  1280    960 508770 261     20 1.0     11 1 #5900FF
+263  1280    960 508770 262     53 0.5     11 1 #2F0080
+264  1280    960 508770 263    262 0.8     60 1 #4E00CC
+265  1280    960 508770 264    354 1.0     87 1 #6600FF
+266  1280    960 508770 265    470 0.8     82 1 #5500CC
+267  1280    960 508770 266     85 1.0     24 1 #6F00FF
+268  1280    960 508770 267     13 0.5      3 1 #390080
+269  1280    960 508770 268     28 0.8      5 1 #5F00CC
+270  1280    960 508770 269     36 0.1     11 1 #0C0019
+271  1280    960 508770 270    212 1.0     74 1 #8000FF
+272  1280    960 508770 271     56 0.8      8 1 #6900CC
+273  1280    960 508770 272    101 1.0     12 1 #8800FF
+274  1280    960 508770 273     19 1.0      6 1 #8C00FF
+275  1280    960 508770 274     14 1.0      8 1 #9000FF
+276  1280    960 508770 275     27 0.1      8 1 #0F0019
+277  1280    960 508770 276    338 0.8     58 1 #7A00CC
+278  1280    960 508770 277      4 1.0      4 1 #9D00FF
+279  1280    960 508770 278     39 0.1      9 1 #100019
+280  1280    960 508770 279    251 0.8     82 1 #8500CC
+281  1280    960 508770 280    726 1.0    190 1 #AA00FF
+282  1280    960 508770 281     45 1.0      8 1 #AE00FF
+283  1280    960 508770 282    288 0.8     50 1 #8F00CC
+284  1280    960 508770 283    164 0.8     24 1 #9200CC
+285  1280    960 508770 284      2 1.0      1 1 #BB00FF
+286  1280    960 508770 285     79 1.0     27 1 #BF00FF
+287  1280    960 508770 286      7 1.0      5 1 #C300FF
+288  1280    960 508770 287     78 0.8     14 1 #A000CC
+289  1280    960 508770 288     31 1.0     19 1 #CC00FF
+290  1280    960 508770 289     72 0.7     21 1 #9200B3
+291  1280    960 508770 290    367 0.8     70 1 #AA00CC
+292  1280    960 508770 291     57 1.0     13 1 #D900FF
+293  1280    960 508770 292    162 0.8     40 1 #B100CC
+294  1280    960 508770 293     11 1.0      3 1 #E100FF
+295  1280    960 508770 294     69 0.8     13 1 #B800CC
+296  1280    960 508770 295      8 0.1      5 1 #170019
+297  1280    960 508770 296     35 0.1      8 1 #180019
+298  1280    960 508770 297      5 0.5      2 1 #790080
+299  1280    960 508770 298      0 1.0      0 1 #F700FF
+300  1280    960 508770 299      0 1.0      0 1 #FB00FF
+301  1280    960 508770 300   1622 0.1   1301 1 #190019
+302  1280    960 508770 301      0 1.0      0 1 #FF00FB
+303  1280    960 508770 302      1 0.3      1 1 #4D004A
+304  1280    960 508770 303     18 0.6      4 1 #990091
+305  1280    960 508770 304     37 0.5      8 1 #800077
+306  1280    960 508770 305      9 0.1      3 1 #190017
+307  1280    960 508770 306    119 0.9     19 1 #E600CF
+308  1280    960 508770 307      7 1.0      5 1 #FF00E1
+309  1280    960 508770 308     11 0.1      7 1 #190016
+310  1280    960 508770 309     35 0.1      9 1 #190016
+311  1280    960 508770 310     50 1.0     15 1 #FF00D4
+312  1280    960 508770 311    426 0.8    103 1 #CC00A7
+313  1280    960 508770 312    442 1.0    123 1 #FF00CC
+314  1280    960 508770 313     64 1.0      9 1 #FF00C8
+315  1280    960 508770 314      6 0.1      5 1 #190014
+316  1280    960 508770 315     11 1.0     11 1 #FF00BF
+317  1280    960 508770 316    103 0.8     17 1 #CC0096
+318  1280    960 508770 317     26 0.1     11 1 #190012
+319  1280    960 508770 318     89 0.8     15 1 #CC008F
+320  1280    960 508770 319    136 0.7     37 1 #B3007A
+321  1280    960 508770 320    367 1.0    101 1 #FF00AA
+322  1280    960 508770 321      5 0.1      3 1 #190011
+323  1280    960 508770 322     46 1.0      8 1 #FF00A2
+324  1280    960 508770 323     21 0.1     21 1 #190010
+325  1280    960 508770 324     42 1.0      7 1 #FF0099
+326  1280    960 508770 325     28 1.0     12 1 #FF0095
+327  1280    960 508770 326    250 0.7     48 1 #B30065
+328  1280    960 508770 327    269 0.7     50 1 #B30062
+329  1280    960 508770 328      4 0.1      3 1 #19000E
+330  1280    960 508770 329    395 0.8    144 1 #CC0069
+331  1280    960 508770 330   1150 1.0    309 1 #FF0080
+332  1280    960 508770 331     32 0.3      6 1 #4D0025
+333  1280    960 508770 332     52 0.7      8 1 #B30053
+334  1280    960 508770 333     20 0.8      3 1 #CC005C
+335  1280    960 508770 334     30 0.1      9 1 #19000B
+336  1280    960 508770 335      9 0.1      9 1 #19000B
+337  1280    960 508770 336     10 0.1      5 1 #19000A
+338  1280    960 508770 337      8 0.1      5 1 #19000A
+339  1280    960 508770 338    244 0.6     44 1 #990038
+340  1280    960 508770 339    313 0.7     84 1 #B3003E
+341  1280    960 508770 340   1022 0.8    211 1 #CC0044
+342  1280    960 508770 341     34 0.5      6 1 #800028
+343  1280    960 508770 342     19 1.0     17 1 #FF004C
+344  1280    960 508770 343      5 0.1      4 1 #190007
+345  1280    960 508770 344    249 0.8     79 1 #CC0036
+346  1280    960 508770 345    872 1.0    196 1 #FF0040
+347  1280    960 508770 346     10 1.0      6 1 #FF003C
+348  1280    960 508770 347     47 0.4     13 1 #660016
+349  1280    960 508770 348    210 0.7     32 1 #B30024
+350  1280    960 508770 349     63 0.7     17 1 #B30021
+351  1280    960 508770 350    166 0.8     28 1 #CC0022
+352  1280    960 508770 351     43 0.1      9 1 #190004
+353  1280    960 508770 352     28 0.1      9 1 #190003
+354  1280    960 508770 353    633 0.8    119 1 #CC0018
+355  1280    960 508770 354    355 0.8     63 1 #CC0014
+356  1280    960 508770 355     15 0.4      3 1 #660008
+357  1280    960 508770 356    111 0.6     23 1 #99000A
+358  1280    960 508770 357     54 0.6      9 1 #990008
+359  1280    960 508770 358      5 0.7      2 1 #B30006
+360  1280    960 508770 359      0 1.0      0 1 #FF0004
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1200 :height 400 :session
+dft.2 %>% 
+    filter(Hour == 12) %>%
+    filter(Sequence == 1) %>%
+  #  filter(grepl("roi6?1", Mask)) %>%
+    group_by(Mask) %>%
+    mutate(Value = Value/Pixels) %>%
+    ungroup() %>%
+    ggplot(aes(x = Day, y = Value, fill=as.factor(H))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+    scale_fill_manual(values = dft.2$Color) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 4)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-680mHx/figure6806MR.png]]
+
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 1800 :height 100 :session
+n = 10;
+dft.2 %>%
+    filter(H < n) %>%
+    ggplot(aes(x=H, y=1, fill=Color)) +
+    theme_bw() +
+    geom_bar(stat='identity', width=1) +
+    scale_fill_manual(values = dft.2 %>% filter(H < n) %>% pull(Color)) +
+    theme(legend.position="none")
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-680mHx/figure680sBE.png]]
+
+
+
+#+begin_src R :results output :session :exports both :session
+    ## gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
+    ## mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
+    ## separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    ## select(-Dir, -Year) %>%
+    ## separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    ## mutate(Sequence = gsub(".jpg", "", Sequence)) -> df;
+
+lowLimit = 0;
+highLimit = 360;
+
+library(ggplot2);
+df %>% 
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    filter(Hour == 12) %>% #>= 8, Hour <= 17) %>%
+    filter(Sequence == 1) %>%
+  #  filter(grepl("roi6?1", Mask)) %>%
+    group_by(Mask) %>%
+    mutate(value = value/Pixels) %>%
+    ungroup() %>%
+    ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+#    scale_fill_manual(values=palette) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 4)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+** New attemps
+*** Pre-processing with double HSV
+
+#+begin_src R :results output :exports both :session
+library(phenovisr);
+suppressMessages(library(tidyverse));
+df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+
+
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+
+gethist <- function(df, grain=360)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), 10) %>%
+        as_tibble()
+}
+
+df.masks %>% slice(1) %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>%   
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() -> dft;
+dft;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > # A tibble: 1,901,160 x 17
+             Mask                              Name Width Height Pixels     H
+            <chr>                            <fctr> <int>  <int>  <int> <int>
+ 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     0
+ 2 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     1
+ 3 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     2
+ 4 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     3
+ 5 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     4
+ 6 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     5
+ 7 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     6
+ 8 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     7
+ 9 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     8
+10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     9
+# ... with 1,901,150 more rows, and 11 more variables: Count <int>, V0 <int>,
+#   V1 <int>, V2 <int>, V3 <int>, V4 <int>, V5 <int>, V6 <int>, V7 <int>,
+#   V8 <int>, V9 <int>
+#+end_example
+
+*** Select the V with higher value for each H
+
+#+begin_src R :results output :session :exports both
+dft;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 1,901,160 x 17
+             Mask                              Name Width Height Pixels     H
+            <chr>                            <fctr> <int>  <int>  <int> <int>
+ 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     0
+ 2 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     1
+ 3 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     2
+ 4 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     3
+ 5 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     4
+ 6 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     5
+ 7 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     6
+ 8 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     7
+ 9 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     8
+10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     9
+# ... with 1,901,150 more rows, and 11 more variables: Count <int>, V0 <int>,
+#   V1 <int>, V2 <int>, V3 <int>, V4 <int>, V5 <int>, V6 <int>, V7 <int>,
+#   V8 <int>, V9 <int>
+#+end_example
+
+#+begin_src R :results output :session :exports both
+dft %>%
+    gather(V, Value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
+    # Select the best V
+    group_by(Mask, Name, Width, Height, Pixels, H) %>%
+    arrange(-Value) %>%
+    slice(1) %>%
+    ungroup() -> dft.2;
+dft.2;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 1,901,160 x 9
+             Mask                              Name Width Height Pixels     H
+            <chr>                            <fctr> <int>  <int>  <int> <int>
+ 1 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     0
+ 2 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     1
+ 3 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     2
+ 4 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     3
+ 5 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     4
+ 6 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     5
+ 7 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     6
+ 8 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     7
+ 9 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     8
+10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770     9
+# ... with 1,901,150 more rows, and 3 more variables: Count <int>, V <chr>,
+#   Value <int>
+#+end_example
+
+*** Split name by Hour
+
+#+begin_src R :results output :session :exports both
+dft.2 %>%
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    mutate(Sequence = gsub(".jpg", "", Sequence)) -> dft.3;
+dft.3
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 1,901,160 x 12
+             Mask  Year   Day  Hour Sequence Width Height Pixels     H  Count
+            <chr> <int> <int> <int>    <chr> <int>  <int>  <int> <int>  <int>
+ 1 Comunidade_PEG  2014    91    10        1  1280    960 508770     0 729544
+ 2 Comunidade_PEG  2014    91    10        1  1280    960 508770     1      6
+ 3 Comunidade_PEG  2014    91    10        1  1280    960 508770     2    152
+ 4 Comunidade_PEG  2014    91    10        1  1280    960 508770     3    182
+ 5 Comunidade_PEG  2014    91    10        1  1280    960 508770     4    166
+ 6 Comunidade_PEG  2014    91    10        1  1280    960 508770     5    623
+ 7 Comunidade_PEG  2014    91    10        1  1280    960 508770     6    212
+ 8 Comunidade_PEG  2014    91    10        1  1280    960 508770     7    269
+ 9 Comunidade_PEG  2014    91    10        1  1280    960 508770     8    292
+10 Comunidade_PEG  2014    91    10        1  1280    960 508770     9    801
+# ... with 1,901,150 more rows, and 2 more variables: V <chr>, Value <int>
+#+end_example
+
+*** Calculate the HSV hex color and color mapping
+
+#+begin_src R :results output :session :exports both
+dft.3 %>%
+    mutate(V=as.integer(gsub("V", "", V))/10) %>%
+    mutate(V=1-V) %>%
+    mutate(S=1) %>%
+    mutate(ColorKey = paste(H, S, V, sep="-")) %>%
+    mutate(Color = hex(HSV(H, S, V))) -> dft.4;
+dft.4 %>% select(H, S, V, ColorKey, Color) %>% unique
+
+# Color mapping
+dft.4 %>% select(ColorKey, Color) %>% unique -> df.palette;
+palette <- df.palette$Color;
+names(palette) <- df.palette$ColorKey;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,213 x 5
+       H     S     V ColorKey   Color
+   <int> <dbl> <dbl>    <chr>   <chr>
+ 1     0     1   1.0    0-1-1 #FF0000
+ 2     1     1   0.3  1-1-0.3 #4D0100
+ 3     2     1   0.6  2-1-0.6 #990500
+ 4     3     1   0.4  3-1-0.4 #660500
+ 5     4     1   1.0    4-1-1 #FF1100
+ 6     5     1   0.8  5-1-0.8 #CC1100
+ 7     6     1   1.0    6-1-1 #FF1900
+ 8     7     1   1.0    7-1-1 #FF1E00
+ 9     8     1   1.0    8-1-1 #FF2200
+10     9     1   0.7  9-1-0.7 #B31B00
+# ... with 3,203 more rows
+#+end_example
+
+*** Plot
+
+#+begin_src R :results output graphics :file img/PEG_2014_H_V_v1.png :exports both :width 1200 :height 1200 :session
+lowLimit = 0;
+highLimit = 360;
+
+library(ggplot2);
+dft.4 %>% 
+    filter(H >= lowLimit, H < highLimit) %>%
+    filter(H != 0) %>%
+    group_by(Mask) %>%
+    mutate(Count = Count/Pixels) %>%
+    ungroup() %>%
+    ggplot(aes(x = Day, y = Count, fill=as.factor(ColorKey))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+    scale_fill_manual(values=palette) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 4)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:img/PEG_2014_H_V_v1.png]]
