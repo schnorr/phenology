@@ -632,7 +632,7 @@ tibble(H = seq(0,359)) %>%
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-31023Z-s/figure31023xmZ.png]]
+[[file:/tmp/babel-680mHx/figure680eha.png]]
 ****** First correct mapping of H colors
 
 #+header: :var dep0=peg_palette
