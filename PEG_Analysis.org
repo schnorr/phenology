@@ -100,6 +100,13 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
 #+end_example
 
 * Analysis
+** Dependencies
+In order to reproduce this analysis, you need the following packages:
+
+#+begin_src r
+install.packages(c('tidyverse', 'colorspace'))
+#+end_src r
+
 ** Masks
 *** Convert all masks to JPG in RGB mode
 
@@ -566,6 +573,7 @@ palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1)
 
 #+header: :var dep0=peg_palette
 #+begin_src R :results output graphics :file img/PEG_2014_H_8AM_17PM_Seq1.png :exports both :width 1400 :height 1000 :session
+library(colorspace)
 p <- tibble(H = seq(0,359)) %>% mutate(Color = hex(HSV(H, 1, 1)));
 
 lowLimit = 0;
