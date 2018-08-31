@@ -1,0 +1,845 @@
+#+TITLE: Lucas's PEG LabBook
+#+AUTHOR: Lucas Mello Schnorr
+#+LATEX_HEADER: \usepackage[margin=2cm,a4paper]{geometry}
+#+STARTUP: overview indent
+#+TAGS: Lucas(L) noexport(n) deprecated(d)
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
+
+This file refers to a smaller analysis of the PEG dataset, used for
+development.
+
+* Dataset description
+
+We have 5281 JPG images.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | wc -l
+#+end_src
+
+#+RESULTS:
+: 5281
+
+The head.
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | head -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_091_10_1.jpg
+Output_PEG/2014/2014_091_10_2.jpg
+Output_PEG/2014/2014_091_10_4.jpg
+Output_PEG/2014/2014_091_10_5.jpg
+Output_PEG/2014/2014_091_11_1.jpg
+Output_PEG/2014/2014_091_11_2.jpg
+Output_PEG/2014/2014_091_11_3.jpg
+Output_PEG/2014/2014_091_12_1.jpg
+Output_PEG/2014/2014_091_12_2.jpg
+Output_PEG/2014/2014_091_12_3.jpg
+#+end_example
+
+The tail.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | tail -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_212_14_2.jpg
+Output_PEG/2014/2014_212_14_4.jpg
+Output_PEG/2014/2014_212_14_5.jpg
+Output_PEG/2014/2014_212_16_1.jpg
+Output_PEG/2014/2014_212_16_3.jpg
+Output_PEG/2014/2014_212_16_4.jpg
+Output_PEG/2014/2014_212_17_1.jpg
+Output_PEG/2014/2014_212_17_2.jpg
+Output_PEG/2014/2014_212_17_4.jpg
+Output_PEG/2014/2014_212_17_5.jpg
+#+end_example
+
+* ROI and Community Masks
+
+Masks have been provided by [[https://www.researchgate.net/profile/Bruna_Alberton][Bruna Alberton]].
+
+** ROI                                                              :ATTACH:
+:PROPERTIES:
+:ID:       d0f675a1-3705-49d1-9c00-576025f3142f
+:Attachments: roi1_PEG.bmp roi2_PEG.bmp roi58_PEG.bmp roi60_PEG.bmp roi61_PEG.bmp roi62_PEG.bmp roi65_PEG.bmp roi66_PEG.bmp roi68_PEG.bmp
+:END:
+
+** Community                                                        :ATTACH:
+:PROPERTIES:
+:Attachments: Comunidade-PEG.bmp
+:ID:       70a49c79-ab5d-43f4-99d8-5b9d609da83b
+:END:
+
+** Lists all masks
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.bmp
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
+#+end_example
+
+* Analysis
+** Dependencies
+In order to reproduce this analysis, you need the following packages:
+#+BEGIN_SRC R
+install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
+#+END_SRC
+** Masks
+*** Convert all masks to JPG in RGB mode
+
+Masks should be in the JPEG file format using a 24bit depth (24bit RGB
+without alpha). Since the masks that have been provided are in the BMP
+file format in grayscale (8bit only), we need to convert them. This
+procedure is done only once since we are saving the JPEG masks in this
+repository.
+
+#+name: mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep bmp$) $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep bmp$);
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    pushd $DIR
+    convert $FILE -type TrueColor $(basename $FILE .bmp).jpg
+    popd
+done
+#+end_src
+
+#+RESULTS: mask_bmp2jpg
+#+begin_example
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+#+end_example
+
+List the new JPEG masks after conversion:
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+#+end_example
+
+*** Convert all masks to 1280 x 960
+
+Masks should have the same dimensions as the pictures in the dataset.
+
+This procedure has already been executed, results have been committed.
+
+#+header: dep0=mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg$ | grep -v "\-2") $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg$ | grep -v "\-2");
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    echo $mask
+    jpeginfo $mask
+    pushd $DIR
+    convert $FILE -resize 1280x960 -type TrueColor $(basename $FILE .jpg)-2.jpg
+    mv $(basename $FILE .jpg)-2.jpg $FILE
+    popd
+done
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+~/Mac SDCard/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+#+end_example
+
+*** Masks description in a tibble
+
+Reading masks into a data.frame
+#+name: masks
+#+begin_src R :results output :session analysis :exports both
+suppressMessages(library(tidyverse));
+df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+df.masks
+#+end_src
+
+#+RESULTS: masks
+#+begin_example
+[90m# A tibble: 10 x 2[39m
+   Mask.Filename                                                 Mask          
+   [3m[90m<chr>[39m[23m                                                         [3m[90m<chr>[39m[23m         
+[90m 1[39m data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+[90m 2[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg       roi1_PEG      
+[90m 3[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg       roi2_PEG      
+[90m 4[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg      roi58_PEG     
+[90m 5[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg      roi60_PEG     
+[90m 6[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg      roi61_PEG     
+[90m 7[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg      roi62_PEG     
+[90m 8[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg      roi65_PEG     
+[90m 9[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg      roi66_PEG     
+[90m10[39m data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg      roi68_PEG
+#+end_example
+
+** Pictures
+
+Read all the images from the sample
+#+name: peg
+#+begin_src R :results output :session analysis :exports both
+suppressMessages(library(tidyverse));
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+[90m# A tibble: 5,281 x 2[39m
+   Picture.Filename                  Picture      
+   [3m[90m<chr>[39m[23m                             [3m[90m<chr>[39m[23m        
+[90m 1[39m Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+[90m 2[39m Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+[90m 3[39m Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+[90m 4[39m Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+[90m 5[39m Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+[90m 6[39m Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+[90m 7[39m Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+[90m 8[39m Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+[90m 9[39m Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+[90m10[39m Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+[90m# ... with 5,271 more rows[39m
+#+end_example
+
+To make it faster, I'll keep only a few images (probably 365 would be
+fine).
+
+#+BEGIN_SRC R :session analysis
+df.peg <- df.peg %>% head(365)
+df.peg
+#+END_SRC
+
+#+RESULTS:
+| Output_PEG/2014/2014_091_10_1.jpg | 2014_091_10_1 |
+| Output_PEG/2014/2014_091_10_2.jpg | 2014_091_10_2 |
+| Output_PEG/2014/2014_091_10_4.jpg | 2014_091_10_4 |
+| Output_PEG/2014/2014_091_10_5.jpg | 2014_091_10_5 |
+| Output_PEG/2014/2014_091_11_1.jpg | 2014_091_11_1 |
+| Output_PEG/2014/2014_091_11_2.jpg | 2014_091_11_2 |
+| Output_PEG/2014/2014_091_11_3.jpg | 2014_091_11_3 |
+| Output_PEG/2014/2014_091_12_1.jpg | 2014_091_12_1 |
+| Output_PEG/2014/2014_091_12_2.jpg | 2014_091_12_2 |
+| Output_PEG/2014/2014_091_12_3.jpg | 2014_091_12_3 |
+| Output_PEG/2014/2014_091_13_1.jpg | 2014_091_13_1 |
+| Output_PEG/2014/2014_091_13_2.jpg | 2014_091_13_2 |
+| Output_PEG/2014/2014_091_13_4.jpg | 2014_091_13_4 |
+| Output_PEG/2014/2014_091_13_5.jpg | 2014_091_13_5 |
+| Output_PEG/2014/2014_091_14_1.jpg | 2014_091_14_1 |
+| Output_PEG/2014/2014_091_14_2.jpg | 2014_091_14_2 |
+| Output_PEG/2014/2014_091_14_4.jpg | 2014_091_14_4 |
+| Output_PEG/2014/2014_091_14_5.jpg | 2014_091_14_5 |
+| Output_PEG/2014/2014_091_16_1.jpg | 2014_091_16_1 |
+| Output_PEG/2014/2014_091_16_2.jpg | 2014_091_16_2 |
+| Output_PEG/2014/2014_091_16_4.jpg | 2014_091_16_4 |
+| Output_PEG/2014/2014_091_16_5.jpg | 2014_091_16_5 |
+| Output_PEG/2014/2014_091_17_1.jpg | 2014_091_17_1 |
+| Output_PEG/2014/2014_091_17_2.jpg | 2014_091_17_2 |
+| Output_PEG/2014/2014_091_17_4.jpg | 2014_091_17_4 |
+| Output_PEG/2014/2014_091_17_5.jpg | 2014_091_17_5 |
+| Output_PEG/2014/2014_091_18_1.jpg | 2014_091_18_1 |
+| Output_PEG/2014/2014_091_18_2.jpg | 2014_091_18_2 |
+| Output_PEG/2014/2014_091_18_4.jpg | 2014_091_18_4 |
+| Output_PEG/2014/2014_091_18_5.jpg | 2014_091_18_5 |
+| Output_PEG/2014/2014_092_06_1.jpg | 2014_092_06_1 |
+| Output_PEG/2014/2014_092_06_2.jpg | 2014_092_06_2 |
+| Output_PEG/2014/2014_092_06_4.jpg | 2014_092_06_4 |
+| Output_PEG/2014/2014_092_06_5.jpg | 2014_092_06_5 |
+| Output_PEG/2014/2014_092_07_1.jpg | 2014_092_07_1 |
+| Output_PEG/2014/2014_092_07_2.jpg | 2014_092_07_2 |
+| Output_PEG/2014/2014_092_07_4.jpg | 2014_092_07_4 |
+| Output_PEG/2014/2014_092_07_5.jpg | 2014_092_07_5 |
+| Output_PEG/2014/2014_092_08_1.jpg | 2014_092_08_1 |
+| Output_PEG/2014/2014_092_08_2.jpg | 2014_092_08_2 |
+| Output_PEG/2014/2014_092_08_4.jpg | 2014_092_08_4 |
+| Output_PEG/2014/2014_092_08_5.jpg | 2014_092_08_5 |
+| Output_PEG/2014/2014_092_09_1.jpg | 2014_092_09_1 |
+| Output_PEG/2014/2014_092_09_2.jpg | 2014_092_09_2 |
+| Output_PEG/2014/2014_092_09_4.jpg | 2014_092_09_4 |
+| Output_PEG/2014/2014_092_09_5.jpg | 2014_092_09_5 |
+| Output_PEG/2014/2014_092_10_1.jpg | 2014_092_10_1 |
+| Output_PEG/2014/2014_092_10_2.jpg | 2014_092_10_2 |
+| Output_PEG/2014/2014_092_10_4.jpg | 2014_092_10_4 |
+| Output_PEG/2014/2014_092_10_5.jpg | 2014_092_10_5 |
+| Output_PEG/2014/2014_092_11_1.jpg | 2014_092_11_1 |
+| Output_PEG/2014/2014_092_11_2.jpg | 2014_092_11_2 |
+| Output_PEG/2014/2014_092_11_4.jpg | 2014_092_11_4 |
+| Output_PEG/2014/2014_092_11_5.jpg | 2014_092_11_5 |
+| Output_PEG/2014/2014_092_12_1.jpg | 2014_092_12_1 |
+| Output_PEG/2014/2014_092_12_2.jpg | 2014_092_12_2 |
+| Output_PEG/2014/2014_092_12_4.jpg | 2014_092_12_4 |
+| Output_PEG/2014/2014_092_12_5.jpg | 2014_092_12_5 |
+| Output_PEG/2014/2014_092_13_1.jpg | 2014_092_13_1 |
+| Output_PEG/2014/2014_092_13_2.jpg | 2014_092_13_2 |
+| Output_PEG/2014/2014_092_13_4.jpg | 2014_092_13_4 |
+| Output_PEG/2014/2014_092_13_5.jpg | 2014_092_13_5 |
+| Output_PEG/2014/2014_092_14_1.jpg | 2014_092_14_1 |
+| Output_PEG/2014/2014_092_14_2.jpg | 2014_092_14_2 |
+| Output_PEG/2014/2014_092_14_4.jpg | 2014_092_14_4 |
+| Output_PEG/2014/2014_092_14_5.jpg | 2014_092_14_5 |
+| Output_PEG/2014/2014_092_16_1.jpg | 2014_092_16_1 |
+| Output_PEG/2014/2014_092_16_2.jpg | 2014_092_16_2 |
+| Output_PEG/2014/2014_092_16_4.jpg | 2014_092_16_4 |
+| Output_PEG/2014/2014_092_16_5.jpg | 2014_092_16_5 |
+| Output_PEG/2014/2014_092_17_1.jpg | 2014_092_17_1 |
+| Output_PEG/2014/2014_092_17_2.jpg | 2014_092_17_2 |
+| Output_PEG/2014/2014_092_17_4.jpg | 2014_092_17_4 |
+| Output_PEG/2014/2014_092_17_5.jpg | 2014_092_17_5 |
+| Output_PEG/2014/2014_092_18_1.jpg | 2014_092_18_1 |
+| Output_PEG/2014/2014_092_18_2.jpg | 2014_092_18_2 |
+| Output_PEG/2014/2014_092_18_4.jpg | 2014_092_18_4 |
+| Output_PEG/2014/2014_092_18_5.jpg | 2014_092_18_5 |
+| Output_PEG/2014/2014_093_06_1.jpg | 2014_093_06_1 |
+| Output_PEG/2014/2014_093_06_2.jpg | 2014_093_06_2 |
+| Output_PEG/2014/2014_093_06_4.jpg | 2014_093_06_4 |
+| Output_PEG/2014/2014_093_06_5.jpg | 2014_093_06_5 |
+| Output_PEG/2014/2014_093_07_1.jpg | 2014_093_07_1 |
+| Output_PEG/2014/2014_093_07_2.jpg | 2014_093_07_2 |
+| Output_PEG/2014/2014_093_07_4.jpg | 2014_093_07_4 |
+| Output_PEG/2014/2014_093_07_5.jpg | 2014_093_07_5 |
+| Output_PEG/2014/2014_093_08_1.jpg | 2014_093_08_1 |
+| Output_PEG/2014/2014_093_08_2.jpg | 2014_093_08_2 |
+| Output_PEG/2014/2014_093_08_4.jpg | 2014_093_08_4 |
+| Output_PEG/2014/2014_093_08_5.jpg | 2014_093_08_5 |
+| Output_PEG/2014/2014_093_09_1.jpg | 2014_093_09_1 |
+| Output_PEG/2014/2014_093_09_2.jpg | 2014_093_09_2 |
+| Output_PEG/2014/2014_093_09_4.jpg | 2014_093_09_4 |
+| Output_PEG/2014/2014_093_09_5.jpg | 2014_093_09_5 |
+| Output_PEG/2014/2014_093_10_1.jpg | 2014_093_10_1 |
+| Output_PEG/2014/2014_093_10_2.jpg | 2014_093_10_2 |
+| Output_PEG/2014/2014_093_10_4.jpg | 2014_093_10_4 |
+| Output_PEG/2014/2014_093_10_5.jpg | 2014_093_10_5 |
+| Output_PEG/2014/2014_093_11_1.jpg | 2014_093_11_1 |
+| Output_PEG/2014/2014_093_11_2.jpg | 2014_093_11_2 |
+| Output_PEG/2014/2014_093_11_4.jpg | 2014_093_11_4 |
+| Output_PEG/2014/2014_093_11_5.jpg | 2014_093_11_5 |
+| Output_PEG/2014/2014_093_12_1.jpg | 2014_093_12_1 |
+| Output_PEG/2014/2014_093_12_2.jpg | 2014_093_12_2 |
+| Output_PEG/2014/2014_093_12_4.jpg | 2014_093_12_4 |
+| Output_PEG/2014/2014_093_12_5.jpg | 2014_093_12_5 |
+| Output_PEG/2014/2014_093_13_1.jpg | 2014_093_13_1 |
+| Output_PEG/2014/2014_093_13_3.jpg | 2014_093_13_3 |
+| Output_PEG/2014/2014_093_13_4.jpg | 2014_093_13_4 |
+| Output_PEG/2014/2014_093_14_1.jpg | 2014_093_14_1 |
+| Output_PEG/2014/2014_093_14_2.jpg | 2014_093_14_2 |
+| Output_PEG/2014/2014_093_14_4.jpg | 2014_093_14_4 |
+| Output_PEG/2014/2014_093_14_5.jpg | 2014_093_14_5 |
+| Output_PEG/2014/2014_093_16_1.jpg | 2014_093_16_1 |
+| Output_PEG/2014/2014_093_16_2.jpg | 2014_093_16_2 |
+| Output_PEG/2014/2014_093_16_4.jpg | 2014_093_16_4 |
+| Output_PEG/2014/2014_093_16_5.jpg | 2014_093_16_5 |
+| Output_PEG/2014/2014_093_17_1.jpg | 2014_093_17_1 |
+| Output_PEG/2014/2014_093_17_2.jpg | 2014_093_17_2 |
+| Output_PEG/2014/2014_093_17_4.jpg | 2014_093_17_4 |
+| Output_PEG/2014/2014_093_17_5.jpg | 2014_093_17_5 |
+| Output_PEG/2014/2014_093_18_1.jpg | 2014_093_18_1 |
+| Output_PEG/2014/2014_093_18_2.jpg | 2014_093_18_2 |
+| Output_PEG/2014/2014_093_18_4.jpg | 2014_093_18_4 |
+| Output_PEG/2014/2014_093_18_5.jpg | 2014_093_18_5 |
+| Output_PEG/2014/2014_094_06_1.jpg | 2014_094_06_1 |
+| Output_PEG/2014/2014_094_06_2.jpg | 2014_094_06_2 |
+| Output_PEG/2014/2014_094_06_4.jpg | 2014_094_06_4 |
+| Output_PEG/2014/2014_094_06_5.jpg | 2014_094_06_5 |
+| Output_PEG/2014/2014_094_07_1.jpg | 2014_094_07_1 |
+| Output_PEG/2014/2014_094_07_2.jpg | 2014_094_07_2 |
+| Output_PEG/2014/2014_094_07_4.jpg | 2014_094_07_4 |
+| Output_PEG/2014/2014_094_07_5.jpg | 2014_094_07_5 |
+| Output_PEG/2014/2014_094_08_1.jpg | 2014_094_08_1 |
+| Output_PEG/2014/2014_094_08_2.jpg | 2014_094_08_2 |
+| Output_PEG/2014/2014_094_08_4.jpg | 2014_094_08_4 |
+| Output_PEG/2014/2014_094_08_5.jpg | 2014_094_08_5 |
+| Output_PEG/2014/2014_094_09_1.jpg | 2014_094_09_1 |
+| Output_PEG/2014/2014_094_09_2.jpg | 2014_094_09_2 |
+| Output_PEG/2014/2014_094_09_4.jpg | 2014_094_09_4 |
+| Output_PEG/2014/2014_094_09_5.jpg | 2014_094_09_5 |
+| Output_PEG/2014/2014_094_10_1.jpg | 2014_094_10_1 |
+| Output_PEG/2014/2014_094_10_2.jpg | 2014_094_10_2 |
+| Output_PEG/2014/2014_094_10_4.jpg | 2014_094_10_4 |
+| Output_PEG/2014/2014_094_10_5.jpg | 2014_094_10_5 |
+| Output_PEG/2014/2014_094_11_1.jpg | 2014_094_11_1 |
+| Output_PEG/2014/2014_094_11_2.jpg | 2014_094_11_2 |
+| Output_PEG/2014/2014_094_11_4.jpg | 2014_094_11_4 |
+| Output_PEG/2014/2014_094_11_5.jpg | 2014_094_11_5 |
+| Output_PEG/2014/2014_094_12_1.jpg | 2014_094_12_1 |
+| Output_PEG/2014/2014_094_12_2.jpg | 2014_094_12_2 |
+| Output_PEG/2014/2014_094_12_4.jpg | 2014_094_12_4 |
+| Output_PEG/2014/2014_094_12_5.jpg | 2014_094_12_5 |
+| Output_PEG/2014/2014_094_13_1.jpg | 2014_094_13_1 |
+| Output_PEG/2014/2014_094_13_2.jpg | 2014_094_13_2 |
+| Output_PEG/2014/2014_094_13_4.jpg | 2014_094_13_4 |
+| Output_PEG/2014/2014_094_13_5.jpg | 2014_094_13_5 |
+| Output_PEG/2014/2014_094_14_1.jpg | 2014_094_14_1 |
+| Output_PEG/2014/2014_094_14_2.jpg | 2014_094_14_2 |
+| Output_PEG/2014/2014_094_14_4.jpg | 2014_094_14_4 |
+| Output_PEG/2014/2014_094_14_5.jpg | 2014_094_14_5 |
+| Output_PEG/2014/2014_094_16_1.jpg | 2014_094_16_1 |
+| Output_PEG/2014/2014_094_16_2.jpg | 2014_094_16_2 |
+| Output_PEG/2014/2014_094_16_4.jpg | 2014_094_16_4 |
+| Output_PEG/2014/2014_094_16_5.jpg | 2014_094_16_5 |
+| Output_PEG/2014/2014_094_17_1.jpg | 2014_094_17_1 |
+| Output_PEG/2014/2014_094_17_2.jpg | 2014_094_17_2 |
+| Output_PEG/2014/2014_094_17_4.jpg | 2014_094_17_4 |
+| Output_PEG/2014/2014_094_17_5.jpg | 2014_094_17_5 |
+| Output_PEG/2014/2014_094_18_1.jpg | 2014_094_18_1 |
+| Output_PEG/2014/2014_094_18_2.jpg | 2014_094_18_2 |
+| Output_PEG/2014/2014_094_18_4.jpg | 2014_094_18_4 |
+| Output_PEG/2014/2014_094_18_5.jpg | 2014_094_18_5 |
+| Output_PEG/2014/2014_095_06_1.jpg | 2014_095_06_1 |
+| Output_PEG/2014/2014_095_06_2.jpg | 2014_095_06_2 |
+| Output_PEG/2014/2014_095_06_4.jpg | 2014_095_06_4 |
+| Output_PEG/2014/2014_095_06_5.jpg | 2014_095_06_5 |
+| Output_PEG/2014/2014_095_07_1.jpg | 2014_095_07_1 |
+| Output_PEG/2014/2014_095_07_2.jpg | 2014_095_07_2 |
+| Output_PEG/2014/2014_095_07_4.jpg | 2014_095_07_4 |
+| Output_PEG/2014/2014_095_07_5.jpg | 2014_095_07_5 |
+| Output_PEG/2014/2014_095_08_1.jpg | 2014_095_08_1 |
+| Output_PEG/2014/2014_095_08_2.jpg | 2014_095_08_2 |
+| Output_PEG/2014/2014_095_08_4.jpg | 2014_095_08_4 |
+| Output_PEG/2014/2014_095_08_5.jpg | 2014_095_08_5 |
+| Output_PEG/2014/2014_095_09_1.jpg | 2014_095_09_1 |
+| Output_PEG/2014/2014_095_09_2.jpg | 2014_095_09_2 |
+| Output_PEG/2014/2014_095_09_4.jpg | 2014_095_09_4 |
+| Output_PEG/2014/2014_095_09_5.jpg | 2014_095_09_5 |
+| Output_PEG/2014/2014_095_10_1.jpg | 2014_095_10_1 |
+| Output_PEG/2014/2014_095_10_2.jpg | 2014_095_10_2 |
+| Output_PEG/2014/2014_095_10_4.jpg | 2014_095_10_4 |
+| Output_PEG/2014/2014_095_10_5.jpg | 2014_095_10_5 |
+| Output_PEG/2014/2014_095_11_1.jpg | 2014_095_11_1 |
+| Output_PEG/2014/2014_095_11_2.jpg | 2014_095_11_2 |
+| Output_PEG/2014/2014_095_11_4.jpg | 2014_095_11_4 |
+| Output_PEG/2014/2014_095_11_5.jpg | 2014_095_11_5 |
+| Output_PEG/2014/2014_095_12_1.jpg | 2014_095_12_1 |
+| Output_PEG/2014/2014_095_12_2.jpg | 2014_095_12_2 |
+| Output_PEG/2014/2014_095_12_4.jpg | 2014_095_12_4 |
+| Output_PEG/2014/2014_095_12_5.jpg | 2014_095_12_5 |
+| Output_PEG/2014/2014_095_13_1.jpg | 2014_095_13_1 |
+| Output_PEG/2014/2014_095_13_2.jpg | 2014_095_13_2 |
+| Output_PEG/2014/2014_095_13_4.jpg | 2014_095_13_4 |
+| Output_PEG/2014/2014_095_13_5.jpg | 2014_095_13_5 |
+| Output_PEG/2014/2014_095_14_1.jpg | 2014_095_14_1 |
+| Output_PEG/2014/2014_095_14_2.jpg | 2014_095_14_2 |
+| Output_PEG/2014/2014_095_14_4.jpg | 2014_095_14_4 |
+| Output_PEG/2014/2014_095_14_5.jpg | 2014_095_14_5 |
+| Output_PEG/2014/2014_095_16_1.jpg | 2014_095_16_1 |
+| Output_PEG/2014/2014_095_16_2.jpg | 2014_095_16_2 |
+| Output_PEG/2014/2014_095_16_4.jpg | 2014_095_16_4 |
+| Output_PEG/2014/2014_095_16_5.jpg | 2014_095_16_5 |
+| Output_PEG/2014/2014_095_17_1.jpg | 2014_095_17_1 |
+| Output_PEG/2014/2014_095_17_2.jpg | 2014_095_17_2 |
+| Output_PEG/2014/2014_095_17_4.jpg | 2014_095_17_4 |
+| Output_PEG/2014/2014_095_17_5.jpg | 2014_095_17_5 |
+| Output_PEG/2014/2014_095_18_1.jpg | 2014_095_18_1 |
+| Output_PEG/2014/2014_095_18_2.jpg | 2014_095_18_2 |
+| Output_PEG/2014/2014_095_18_4.jpg | 2014_095_18_4 |
+| Output_PEG/2014/2014_095_18_5.jpg | 2014_095_18_5 |
+| Output_PEG/2014/2014_096_06_1.jpg | 2014_096_06_1 |
+| Output_PEG/2014/2014_096_06_2.jpg | 2014_096_06_2 |
+| Output_PEG/2014/2014_096_06_4.jpg | 2014_096_06_4 |
+| Output_PEG/2014/2014_096_06_5.jpg | 2014_096_06_5 |
+| Output_PEG/2014/2014_096_07_1.jpg | 2014_096_07_1 |
+| Output_PEG/2014/2014_096_07_2.jpg | 2014_096_07_2 |
+| Output_PEG/2014/2014_096_07_4.jpg | 2014_096_07_4 |
+| Output_PEG/2014/2014_096_07_5.jpg | 2014_096_07_5 |
+| Output_PEG/2014/2014_096_08_1.jpg | 2014_096_08_1 |
+| Output_PEG/2014/2014_096_08_2.jpg | 2014_096_08_2 |
+| Output_PEG/2014/2014_096_08_4.jpg | 2014_096_08_4 |
+| Output_PEG/2014/2014_096_08_5.jpg | 2014_096_08_5 |
+| Output_PEG/2014/2014_096_09_1.jpg | 2014_096_09_1 |
+| Output_PEG/2014/2014_096_09_2.jpg | 2014_096_09_2 |
+| Output_PEG/2014/2014_096_09_4.jpg | 2014_096_09_4 |
+| Output_PEG/2014/2014_096_09_5.jpg | 2014_096_09_5 |
+| Output_PEG/2014/2014_096_10_1.jpg | 2014_096_10_1 |
+| Output_PEG/2014/2014_096_10_2.jpg | 2014_096_10_2 |
+| Output_PEG/2014/2014_096_10_4.jpg | 2014_096_10_4 |
+| Output_PEG/2014/2014_096_10_5.jpg | 2014_096_10_5 |
+| Output_PEG/2014/2014_096_11_1.jpg | 2014_096_11_1 |
+| Output_PEG/2014/2014_096_11_2.jpg | 2014_096_11_2 |
+| Output_PEG/2014/2014_096_11_4.jpg | 2014_096_11_4 |
+| Output_PEG/2014/2014_096_11_5.jpg | 2014_096_11_5 |
+| Output_PEG/2014/2014_096_12_1.jpg | 2014_096_12_1 |
+| Output_PEG/2014/2014_096_12_2.jpg | 2014_096_12_2 |
+| Output_PEG/2014/2014_096_12_4.jpg | 2014_096_12_4 |
+| Output_PEG/2014/2014_096_12_5.jpg | 2014_096_12_5 |
+| Output_PEG/2014/2014_096_13_1.jpg | 2014_096_13_1 |
+| Output_PEG/2014/2014_096_13_2.jpg | 2014_096_13_2 |
+| Output_PEG/2014/2014_096_13_4.jpg | 2014_096_13_4 |
+| Output_PEG/2014/2014_096_13_5.jpg | 2014_096_13_5 |
+| Output_PEG/2014/2014_096_14_1.jpg | 2014_096_14_1 |
+| Output_PEG/2014/2014_096_14_2.jpg | 2014_096_14_2 |
+| Output_PEG/2014/2014_096_14_4.jpg | 2014_096_14_4 |
+| Output_PEG/2014/2014_096_14_5.jpg | 2014_096_14_5 |
+| Output_PEG/2014/2014_096_16_1.jpg | 2014_096_16_1 |
+| Output_PEG/2014/2014_096_16_3.jpg | 2014_096_16_3 |
+| Output_PEG/2014/2014_096_16_4.jpg | 2014_096_16_4 |
+| Output_PEG/2014/2014_096_17_1.jpg | 2014_096_17_1 |
+| Output_PEG/2014/2014_096_17_2.jpg | 2014_096_17_2 |
+| Output_PEG/2014/2014_096_17_4.jpg | 2014_096_17_4 |
+| Output_PEG/2014/2014_096_17_5.jpg | 2014_096_17_5 |
+| Output_PEG/2014/2014_096_18_1.jpg | 2014_096_18_1 |
+| Output_PEG/2014/2014_096_18_2.jpg | 2014_096_18_2 |
+| Output_PEG/2014/2014_096_18_4.jpg | 2014_096_18_4 |
+| Output_PEG/2014/2014_096_18_5.jpg | 2014_096_18_5 |
+| Output_PEG/2014/2014_097_06_1.jpg | 2014_097_06_1 |
+| Output_PEG/2014/2014_097_06_2.jpg | 2014_097_06_2 |
+| Output_PEG/2014/2014_097_06_4.jpg | 2014_097_06_4 |
+| Output_PEG/2014/2014_097_06_5.jpg | 2014_097_06_5 |
+| Output_PEG/2014/2014_097_07_1.jpg | 2014_097_07_1 |
+| Output_PEG/2014/2014_097_07_2.jpg | 2014_097_07_2 |
+| Output_PEG/2014/2014_097_07_4.jpg | 2014_097_07_4 |
+| Output_PEG/2014/2014_097_07_5.jpg | 2014_097_07_5 |
+| Output_PEG/2014/2014_097_08_1.jpg | 2014_097_08_1 |
+| Output_PEG/2014/2014_097_08_2.jpg | 2014_097_08_2 |
+| Output_PEG/2014/2014_097_08_4.jpg | 2014_097_08_4 |
+| Output_PEG/2014/2014_097_08_5.jpg | 2014_097_08_5 |
+| Output_PEG/2014/2014_097_09_1.jpg | 2014_097_09_1 |
+| Output_PEG/2014/2014_097_09_2.jpg | 2014_097_09_2 |
+| Output_PEG/2014/2014_097_09_4.jpg | 2014_097_09_4 |
+| Output_PEG/2014/2014_097_09_5.jpg | 2014_097_09_5 |
+| Output_PEG/2014/2014_097_10_1.jpg | 2014_097_10_1 |
+| Output_PEG/2014/2014_097_10_2.jpg | 2014_097_10_2 |
+| Output_PEG/2014/2014_097_10_4.jpg | 2014_097_10_4 |
+| Output_PEG/2014/2014_097_10_5.jpg | 2014_097_10_5 |
+| Output_PEG/2014/2014_097_11_1.jpg | 2014_097_11_1 |
+| Output_PEG/2014/2014_097_11_2.jpg | 2014_097_11_2 |
+| Output_PEG/2014/2014_097_11_4.jpg | 2014_097_11_4 |
+| Output_PEG/2014/2014_097_11_5.jpg | 2014_097_11_5 |
+| Output_PEG/2014/2014_097_12_1.jpg | 2014_097_12_1 |
+| Output_PEG/2014/2014_097_12_2.jpg | 2014_097_12_2 |
+| Output_PEG/2014/2014_097_12_4.jpg | 2014_097_12_4 |
+| Output_PEG/2014/2014_097_12_5.jpg | 2014_097_12_5 |
+| Output_PEG/2014/2014_097_13_1.jpg | 2014_097_13_1 |
+| Output_PEG/2014/2014_097_13_2.jpg | 2014_097_13_2 |
+| Output_PEG/2014/2014_097_13_4.jpg | 2014_097_13_4 |
+| Output_PEG/2014/2014_097_13_5.jpg | 2014_097_13_5 |
+| Output_PEG/2014/2014_097_14_1.jpg | 2014_097_14_1 |
+| Output_PEG/2014/2014_097_14_2.jpg | 2014_097_14_2 |
+| Output_PEG/2014/2014_097_14_4.jpg | 2014_097_14_4 |
+| Output_PEG/2014/2014_097_14_5.jpg | 2014_097_14_5 |
+| Output_PEG/2014/2014_097_16_1.jpg | 2014_097_16_1 |
+| Output_PEG/2014/2014_097_16_2.jpg | 2014_097_16_2 |
+| Output_PEG/2014/2014_097_16_4.jpg | 2014_097_16_4 |
+| Output_PEG/2014/2014_097_16_5.jpg | 2014_097_16_5 |
+| Output_PEG/2014/2014_097_17_1.jpg | 2014_097_17_1 |
+| Output_PEG/2014/2014_097_17_2.jpg | 2014_097_17_2 |
+| Output_PEG/2014/2014_097_17_4.jpg | 2014_097_17_4 |
+| Output_PEG/2014/2014_097_17_5.jpg | 2014_097_17_5 |
+| Output_PEG/2014/2014_097_18_1.jpg | 2014_097_18_1 |
+| Output_PEG/2014/2014_097_18_3.jpg | 2014_097_18_3 |
+| Output_PEG/2014/2014_097_18_4.jpg | 2014_097_18_4 |
+| Output_PEG/2014/2014_098_06_1.jpg | 2014_098_06_1 |
+| Output_PEG/2014/2014_098_06_2.jpg | 2014_098_06_2 |
+| Output_PEG/2014/2014_098_06_4.jpg | 2014_098_06_4 |
+| Output_PEG/2014/2014_098_06_5.jpg | 2014_098_06_5 |
+| Output_PEG/2014/2014_098_07_1.jpg | 2014_098_07_1 |
+| Output_PEG/2014/2014_098_07_2.jpg | 2014_098_07_2 |
+| Output_PEG/2014/2014_098_07_4.jpg | 2014_098_07_4 |
+| Output_PEG/2014/2014_098_07_5.jpg | 2014_098_07_5 |
+| Output_PEG/2014/2014_098_08_1.jpg | 2014_098_08_1 |
+| Output_PEG/2014/2014_098_08_3.jpg | 2014_098_08_3 |
+| Output_PEG/2014/2014_098_08_4.jpg | 2014_098_08_4 |
+| Output_PEG/2014/2014_098_09_1.jpg | 2014_098_09_1 |
+| Output_PEG/2014/2014_098_09_2.jpg | 2014_098_09_2 |
+| Output_PEG/2014/2014_098_09_4.jpg | 2014_098_09_4 |
+| Output_PEG/2014/2014_098_09_5.jpg | 2014_098_09_5 |
+| Output_PEG/2014/2014_098_10_1.jpg | 2014_098_10_1 |
+| Output_PEG/2014/2014_098_10_2.jpg | 2014_098_10_2 |
+| Output_PEG/2014/2014_098_10_4.jpg | 2014_098_10_4 |
+| Output_PEG/2014/2014_098_10_5.jpg | 2014_098_10_5 |
+| Output_PEG/2014/2014_098_11_1.jpg | 2014_098_11_1 |
+| Output_PEG/2014/2014_098_11_2.jpg | 2014_098_11_2 |
+| Output_PEG/2014/2014_098_11_4.jpg | 2014_098_11_4 |
+| Output_PEG/2014/2014_098_11_5.jpg | 2014_098_11_5 |
+| Output_PEG/2014/2014_098_12_1.jpg | 2014_098_12_1 |
+| Output_PEG/2014/2014_098_12_3.jpg | 2014_098_12_3 |
+| Output_PEG/2014/2014_098_12_4.jpg | 2014_098_12_4 |
+| Output_PEG/2014/2014_098_13_1.jpg | 2014_098_13_1 |
+| Output_PEG/2014/2014_098_13_2.jpg | 2014_098_13_2 |
+| Output_PEG/2014/2014_098_13_4.jpg | 2014_098_13_4 |
+| Output_PEG/2014/2014_098_13_5.jpg | 2014_098_13_5 |
+| Output_PEG/2014/2014_098_14_1.jpg | 2014_098_14_1 |
+| Output_PEG/2014/2014_098_14_2.jpg | 2014_098_14_2 |
+| Output_PEG/2014/2014_098_14_4.jpg | 2014_098_14_4 |
+| Output_PEG/2014/2014_098_14_5.jpg | 2014_098_14_5 |
+| Output_PEG/2014/2014_098_16_1.jpg | 2014_098_16_1 |
+| Output_PEG/2014/2014_098_16_2.jpg | 2014_098_16_2 |
+| Output_PEG/2014/2014_098_16_4.jpg | 2014_098_16_4 |
+| Output_PEG/2014/2014_098_16_5.jpg | 2014_098_16_5 |
+| Output_PEG/2014/2014_098_17_1.jpg | 2014_098_17_1 |
+| Output_PEG/2014/2014_098_17_2.jpg | 2014_098_17_2 |
+| Output_PEG/2014/2014_098_17_4.jpg | 2014_098_17_4 |
+| Output_PEG/2014/2014_098_17_5.jpg | 2014_098_17_5 |
+| Output_PEG/2014/2014_098_18_1.jpg | 2014_098_18_1 |
+| Output_PEG/2014/2014_098_18_2.jpg | 2014_098_18_2 |
+| Output_PEG/2014/2014_098_18_4.jpg | 2014_098_18_4 |
+| Output_PEG/2014/2014_098_18_5.jpg | 2014_098_18_5 |
+| Output_PEG/2014/2014_099_06_1.jpg | 2014_099_06_1 |
+| Output_PEG/2014/2014_099_06_2.jpg | 2014_099_06_2 |
+| Output_PEG/2014/2014_099_06_4.jpg | 2014_099_06_4 |
+| Output_PEG/2014/2014_099_06_5.jpg | 2014_099_06_5 |
+
+** Overview
+*** gcc
+**** Calculate the histogram for selected pictures (365) and mask :ATTACH:
+:PROPERTIES:
+:ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
+:Attachments: PEG_2014_gcc.csv.gz
+:END:
+
+It uses the default number of bins set to 100.
+
+#+begin_src R :results output :session analysis :exports both
+suppressMessages(library(tidyverse));
+library(phenovisr);
+
+gethist <- function(df, grain=100)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_histogram(phenovis_green(), df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+p <- proc.time();
+df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>%   
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() -> df.temp;
+proc.time() - p    
+
+df.temp
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|=====                                                 | 10% ~1 m remaining     |==========                                            | 20% ~1 m remaining     |================                                      | 30% ~57 s remaining    |=====================                                 | 40% ~48 s remaining    |===========================                           | 50% ~40 s remaining    |================================                      | 60% ~32 s remaining    |=====================================                 | 70% ~24 s remaining    |===========================================           | 80% ~16 s remaining    |================================================      | 90% ~8 s remaining     |======================================================|100% ~0 s remaining     >    user  system elapsed 
+ 77.037   0.899  78.490
+[90m# A tibble: 3,650 x 105[39m
+   Mask   Name    Width Height Pixels    B0    B1    B2    B3    B4    B5    B6
+   [3m[90m<chr>[39m[23m  [3m[90m<fct>[39m[23m   [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m
+[90m 1[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m802     3    16    30    54    90    86
+[90m 2[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m923     4     9    23    52    96   101
+[90m 3[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m956     4     9    31    54    87    89
+[90m 4[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m894     0    10    28    60   102    77
+[90m 5[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m341     4    12    27    56    74    90
+[90m 6[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m407     0    16    27    49   110   102
+[90m 7[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m7[24m369     4    11    39    47    75    97
+[90m 8[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m2[24m600     0     5     6     6    23    25
+[90m 9[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m2[24m556     0     3     6    11    15    19
+[90m10[39m Comun~ Output~  [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770  [4m2[24m594     0     1     7     6    19    20
+[90m# ... with 3,640 more rows, and 93 more variables: B7 [3m[90m<int>[90m[23m, B8 [3m[90m<int>[90m[23m,
+#   B9 [3m[90m<int>[90m[23m, B10 [3m[90m<int>[90m[23m, B11 [3m[90m<int>[90m[23m, B12 [3m[90m<int>[90m[23m, B13 [3m[90m<int>[90m[23m, B14 [3m[90m<int>[90m[23m, B15 [3m[90m<int>[90m[23m,
+#   B16 [3m[90m<int>[90m[23m, B17 [3m[90m<int>[90m[23m, B18 [3m[90m<int>[90m[23m, B19 [3m[90m<int>[90m[23m, B20 [3m[90m<int>[90m[23m, B21 [3m[90m<int>[90m[23m,
+#   B22 [3m[90m<int>[90m[23m, B23 [3m[90m<int>[90m[23m, B24 [3m[90m<int>[90m[23m, B25 [3m[90m<int>[90m[23m, B26 [3m[90m<int>[90m[23m, B27 [3m[90m<int>[90m[23m,
+#   B28 [3m[90m<int>[90m[23m, B29 [3m[90m<int>[90m[23m, B30 [3m[90m<int>[90m[23m, B31 [3m[90m<int>[90m[23m, B32 [3m[90m<int>[90m[23m, B33 [3m[90m<int>[90m[23m,
+#   B34 [3m[90m<int>[90m[23m, B35 [3m[90m<int>[90m[23m, B36 [3m[90m<int>[90m[23m, B37 [3m[90m<int>[90m[23m, B38 [3m[90m<int>[90m[23m, B39 [3m[90m<int>[90m[23m,
+#   B40 [3m[90m<int>[90m[23m, B41 [3m[90m<int>[90m[23m, B42 [3m[90m<int>[90m[23m, B43 [3m[90m<int>[90m[23m, B44 [3m[90m<int>[90m[23m, B45 [3m[90m<int>[90m[23m,
+#   B46 [3m[90m<int>[90m[23m, B47 [3m[90m<int>[90m[23m, B48 [3m[90m<int>[90m[23m, B49 [3m[90m<int>[90m[23m, B50 [3m[90m<int>[90m[23m, B51 [3m[90m<int>[90m[23m,
+#   B52 [3m[90m<int>[90m[23m, B53 [3m[90m<int>[90m[23m, B54 [3m[90m<int>[90m[23m, B55 [3m[90m<int>[90m[23m, B56 [3m[90m<int>[90m[23m, B57 [3m[90m<int>[90m[23m,
+#   B58 [3m[90m<int>[90m[23m, B59 [3m[90m<int>[90m[23m, B60 [3m[90m<int>[90m[23m, B61 [3m[90m<int>[90m[23m, B62 [3m[90m<int>[90m[23m, B63 [3m[90m<int>[90m[23m,
+#   B64 [3m[90m<int>[90m[23m, B65 [3m[90m<int>[90m[23m, B66 [3m[90m<int>[90m[23m, B67 [3m[90m<int>[90m[23m, B68 [3m[90m<int>[90m[23m, B69 [3m[90m<int>[90m[23m,
+#   B70 [3m[90m<int>[90m[23m, B71 [3m[90m<int>[90m[23m, B72 [3m[90m<int>[90m[23m, B73 [3m[90m<int>[90m[23m, B74 [3m[90m<int>[90m[23m, B75 [3m[90m<int>[90m[23m,
+#   B76 [3m[90m<int>[90m[23m, B77 [3m[90m<int>[90m[23m, B78 [3m[90m<int>[90m[23m, B79 [3m[90m<int>[90m[23m, B80 [3m[90m<int>[90m[23m, B81 [3m[90m<int>[90m[23m,
+#   B82 [3m[90m<int>[90m[23m, B83 [3m[90m<int>[90m[23m, B84 [3m[90m<int>[90m[23m, B85 [3m[90m<int>[90m[23m, B86 [3m[90m<int>[90m[23m, B87 [3m[90m<int>[90m[23m,
+#   B88 [3m[90m<int>[90m[23m, B89 [3m[90m<int>[90m[23m, B90 [3m[90m<int>[90m[23m, B91 [3m[90m<int>[90m[23m, B92 [3m[90m<int>[90m[23m, B93 [3m[90m<int>[90m[23m,
+#   B94 [3m[90m<int>[90m[23m, B95 [3m[90m<int>[90m[23m, B96 [3m[90m<int>[90m[23m, B97 [3m[90m<int>[90m[23m, B98 [3m[90m<int>[90m[23m, B99 [3m[90m<int>[90m[23m[39m
+#+end_example
+
+Much faster, it now takes around one minute. Considering the entire data set,
+this step would take around 10 minutes. Because this tibble is read
+later on, I'll still write it to CSV.
+
+
+#+begin_src R :results output :session analysis :exports both
+write_csv(df.temp, "PEG_2014_small_gcc.csv.gz");
+#+end_src
+
+#+RESULTS:
+**** Per-mask analysis
+***** Read data and prepare for stacked bar view
+Reading the previously saved CSV and mutating the data a bit...
+
+#+name: read_peg_data
+#+begin_src R :results output :session analysis :exports both
+suppressMessages(library(tidyverse));
+df <- read_csv("PEG_2014_small_gcc.csv.gz") %>%
+    gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
+    mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+    mutate(Sequence = gsub(".jpg", "", Sequence))
+df;
+#+end_src
+
+#+RESULTS: read_peg_data
+#+begin_example
+Parsed with column specification:
+cols(
+  .default = col_integer(),
+  Mask = col_character(),
+  Name = col_character()
+)
+See spec(...) for full column specifications.
+[90m# A tibble: 365,000 x 10[39m
+   Mask            Year   Day  Hour Sequence Width Height Pixels variable value
+   [3m[90m<chr>[39m[23m          [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<chr>[39m[23m    [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m    [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m
+[90m 1[39m Comunidade_PEG  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m802
+[90m 2[39m Comunidade_PEG  [4m2[24m014    91    10 2         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m923
+[90m 3[39m Comunidade_PEG  [4m2[24m014    91    10 4         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m956
+[90m 4[39m Comunidade_PEG  [4m2[24m014    91    10 5         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m894
+[90m 5[39m Comunidade_PEG  [4m2[24m014    91    11 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m341
+[90m 6[39m Comunidade_PEG  [4m2[24m014    91    11 2         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m407
+[90m 7[39m Comunidade_PEG  [4m2[24m014    91    11 3         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m7[24m369
+[90m 8[39m Comunidade_PEG  [4m2[24m014    91    12 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m2[24m600
+[90m 9[39m Comunidade_PEG  [4m2[24m014    91    12 2         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m2[24m556
+[90m10[39m Comunidade_PEG  [4m2[24m014    91    12 3         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770        0  [4m2[24m594
+[90m# ... with 364,990 more rows[39m
+#+end_example
+
+Instead of the 19M rows, we get 365K. Much more feasible in order to
+test changes...
+
+***** Read palette
+For now I'll use the same palette as the original analysis. It will
+probably need to be changed later on.
+
+#+name: peg_palette
+#+begin_src R :results output :session analysis :exports both
+paletteFilename = "palette/example.palette";
+palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+#+end_src
+
+***** Overview (all pictures, all masks, from 8AM to 17PM, only sequence 1)
+
+Finally, let's plot this thing.
+
+#+header: :var dep0=peg_palette
+#+begin_src R :results output graphics :file img/PEG_2014_small.png :exports both :width 1400 :height 1000 :session analysis
+lowLimit = 30;
+highLimit = 50;
+
+library(ggplot2);
+df %>% 
+    filter(variable >= lowLimit, variable < highLimit) %>%
+    filter(value != 0) %>%
+    filter(Hour >= 8, Hour <= 17) %>%
+    filter(Sequence == 1) %>%
+  #  filter(grepl("roi6?1", Mask)) %>%
+    group_by(Mask) %>%
+    mutate(value = value/Pixels) %>%
+    ungroup() %>%
+    ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+    scale_fill_manual(values=palette) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "top",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:img/PEG_2014_small.png]]
+
+Okay, it's a big mess. I probably messed up the sequencing, as the
+plots are showing very few days of the year... I'll migrate this to
+Rstudio for now, as I think it is faster to develop there.
