@@ -102,11 +102,9 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
 * Analysis
 ** Dependencies
 In order to reproduce this analysis, you need the following packages:
-
-#+begin_src r
-install.packages(c('tidyverse', 'colorspace'))
-#+end_src r
-
+#+BEGIN_SRC R
+install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
+#+END_SRC
 ** Masks
 *** Convert all masks to JPG in RGB mode
 
