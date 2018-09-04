@@ -8,13 +8,22 @@ df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=T
   mutate(Mask = gsub(".jpg", "", Mask)) %>%
   mutate(Mask = gsub("-", "_", Mask)) %>%
   select(-A, -B, -C)
-df.masks
 
 # Puts the description of all the images in another tibble
 df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
   separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
   mutate(Picture = gsub(".jpg", "", Picture))
-df.peg
+
+# Since we will only plot the first sequence of each day for a select time range,
+# get rid of the other images (for now)
+df.peg <- df.peg %>% 
+  mutate(Separator = Picture) %>%
+  separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
+  mutate(Sequence = as.numeric(Sequence)) %>%
+  mutate(Hour = as.numeric(Hour)) %>%
+  filter(Sequence == 1) %>%
+  filter(Hour >= 8, Hour <= 17) %>%
+  select(Picture.Filename, Picture)
 
 # Calculate the histogram for all the images (warning: this takes 10m+)
 gethist <- function(df, grain=100) {
