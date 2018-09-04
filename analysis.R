@@ -2,8 +2,9 @@ library(tidyverse)
 library(colorspace)
 library(phenovisr)
 
-# Puts the description of all the masks in a tibble
-df.masks <- tibble(Mask.Filename=list.files(c("data/70", "data/d0"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+# Puts the description of all the masks in a tibble. Originally this description included masks
+# from 'data/d0', but to keep things fast I'll just use the community mask.
+df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
   separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
   mutate(Mask = gsub(".jpg", "", Mask)) %>%
   mutate(Mask = gsub("-", "_", Mask)) %>%
@@ -23,13 +24,15 @@ df.peg <- df.peg %>%
   mutate(Hour = as.numeric(Hour)) %>%
   filter(Sequence == 1) %>%
   filter(Hour >= 8, Hour <= 17) %>%
+  # To make it even faster, get only the images from 10am
+  filter(Hour == 10) %>%
   select(Picture.Filename, Picture)
 
 # Calculate the histogram for all the images (warning: this takes 10m+)
-gethist <- function(df, grain=100) {
+gethist <- function(df, grain=360) {
   mask <- df %>% slice(1) %>% pull(Mask.Filename);
   phenovis_read_mask(mask);
-  phenovis_get_histogram(phenovis_green(), df %>% pull(Picture.Filename), grain) %>%
+  phenovis_get_histogram(phenovis_H(), df %>% pull(Picture.Filename), grain) %>%
     as_tibble()
 }
 
@@ -50,13 +53,12 @@ df <- df.histograms %>%
   separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
   mutate(Sequence = gsub(".jpg", "", Sequence))
 
-# Read color palette
-paletteFilename = "palette/example.palette";
-palette <- toupper(read.csv(paletteFilename, comment.char="?", header=FALSE)$V1);
+# Create HSV color palette
+palette <- tibble(H = seq(0,359)) %>% mutate(Color = hex(HSV(H, 1, 1)));
 
 # Plot it...
-lowLimit = 30;
-highLimit = 50;
+lowLimit = 0;
+highLimit = 360;
 
 df %>% 
   filter(variable >= lowLimit, variable < highLimit) %>%
@@ -73,7 +75,7 @@ df %>%
   theme_bw (base_size=16) +
   xlab("Day of the Year (2014)") +
   ylab("Normalized size of bins") +
-  scale_fill_manual(values=palette) +
+  scale_fill_manual(values=palette$Color) +
   theme(#axis.ticks = element_blank(),
     #axis.text = element_blank(),
     plot.margin = unit(c(0,0,0,0), "cm"),
