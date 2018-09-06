@@ -58,19 +58,20 @@ df <- df.histograms %>%
   mutate(Sequence = gsub(".jpg", "", Sequence))
 
 # Create HSV color palette
-palette <- expand.grid(H = seq(0, 359), V = seq(0, 9)) %>% mutate(Color = hex(HSV(H, 1, V/10)))
+palette <- expand.grid(V = seq(0, 9), H = seq(0, 359), S = 1) %>% mutate(Color = hex(HSV(H, S, V/10)))
 
 # Plot it...
 lowLimit = 0;
 highLimit = 3600;
 
 df %>% 
-  filter(variable >= lowLimit, variable < highLimit) %>%
+  # This is not necessary for HSV
+  #filter(variable >= lowLimit, variable < highLimit) %>%
   filter(value != 0) %>%
   filter(Hour >= 8, Hour <= 17) %>%
   filter(Sequence == 1) %>%
   group_by(Mask) %>%
-  mutate(value = value/Pixels) %>%
+  mutate(value = value/Count) %>%
   ungroup() %>%
   ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
   geom_bar(stat='identity', width=1) +
