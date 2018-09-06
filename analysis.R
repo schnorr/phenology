@@ -29,10 +29,10 @@ df.peg <- df.peg %>%
   select(Picture.Filename, Picture)
 
 # Calculate the histogram for all the images (warning: this takes 10m+)
-gethist <- function(df, grain=360) {
+gethist <- function(df, grain=10) {
   mask <- df %>% slice(1) %>% pull(Mask.Filename);
   phenovis_read_mask(mask);
-  phenovis_get_histogram(phenovis_H(), df %>% pull(Picture.Filename), grain) %>%
+  phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), grain) %>%
     as_tibble()
 }
 
@@ -49,26 +49,26 @@ df.histograms <- df.masks %>%
 # the charts. Right now it is a two-dimensional relationship (because only H is used).
 # In order to use H and V, I'll need to add another dimension to this tibble.
 df <- df.histograms %>%
-  gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
+  gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
   mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
+  mutate(variable = variable*360 + H) %>%
   separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
   select(-Dir, -Year) %>%
   separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
   mutate(Sequence = gsub(".jpg", "", Sequence))
 
 # Create HSV color palette
-palette <- tibble(H = seq(0,359)) %>% mutate(Color = hex(HSV(H, 1, 1)));
+palette <- expand.grid(H = seq(0, 359), V = seq(0, 9)) %>% mutate(Color = hex(HSV(H, 1, V/10)))
 
 # Plot it...
 lowLimit = 0;
-highLimit = 360;
+highLimit = 3600;
 
 df %>% 
   filter(variable >= lowLimit, variable < highLimit) %>%
   filter(value != 0) %>%
   filter(Hour >= 8, Hour <= 17) %>%
   filter(Sequence == 1) %>%
-  #  filter(grepl("roi6?1", Mask)) %>%
   group_by(Mask) %>%
   mutate(value = value/Pixels) %>%
   ungroup() %>%
