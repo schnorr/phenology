@@ -44,7 +44,10 @@ df.histograms <- df.masks %>%
   do(gethist(.)) %>%
   ungroup()
 
-# Prepare data for stacked bar view
+# Prepare data for stacked bar view.
+# TODO: This maps the histogram to a variable X value relationship, which is used to plot
+# the charts. Right now it is a two-dimensional relationship (because only H is used).
+# In order to use H and V, I'll need to add another dimension to this tibble.
 df <- df.histograms %>%
   gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels) %>%
   mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
