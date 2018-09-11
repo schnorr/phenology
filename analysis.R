@@ -45,9 +45,6 @@ df.histograms <- df.masks %>%
   ungroup()
 
 # Prepare data for stacked bar view.
-# TODO: This maps the histogram to a variable X value relationship, which is used to plot
-# the charts. Right now it is a two-dimensional relationship (because only H is used).
-# In order to use H and V, I'll need to add another dimension to this tibble.
 df <- df.histograms %>%
   gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
   mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
@@ -56,6 +53,7 @@ df <- df.histograms %>%
   select(-Dir, -Year) %>%
   separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
   mutate(Sequence = gsub(".jpg", "", Sequence))
+
 
 # Create HSV color palette
 palette <- expand.grid(V = seq(0, 9), H = seq(0, 359), S = 1) %>% mutate(Color = hex(HSV(H, S, V/10)))
