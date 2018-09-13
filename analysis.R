@@ -28,7 +28,7 @@ df.peg <- df.peg %>%
   filter(Hour == 10) %>%
   select(Picture.Filename, Picture)
 
-# Calculate the histogram for all the images (warning: this takes 10m+)
+# Calculate the histogram for all the images (warning: this can take a potentially long time)
 gethist <- function(df, grain=10) {
   mask <- df %>% slice(1) %>% pull(Mask.Filename);
   phenovis_read_mask(mask);
@@ -69,7 +69,7 @@ df %>%
   filter(Hour >= 8, Hour <= 17) %>%
   filter(Sequence == 1) %>%
   group_by(Mask) %>%
-  mutate(value = value/Count) %>%
+  mutate(value = (value/Count)) %>%
   ungroup() %>%
   ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
   geom_bar(stat='identity', width=1) +
