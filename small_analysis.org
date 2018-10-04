@@ -260,7 +260,8 @@ df.masks
 
 ** Pictures
 
-Capture names from all the sample images
+Capture names from all the sample images. There are 5281 pictures.
+
 #+name: peg
 #+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse))
