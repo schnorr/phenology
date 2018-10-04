@@ -401,9 +401,9 @@ df.peg
 :END:
 
 #+begin_src R :results output :session :exports both
+options(crayon.enabled = FALSE)
 suppressMessages(library(tidyverse))
 suppressMessages(library(phenovisr))
-options(crayon.enabled = FALSE)
 
 gethist <- function(df, vGrain=10)
 {
