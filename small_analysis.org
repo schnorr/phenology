@@ -394,7 +394,7 @@ df.peg
 
 ** Overview
 *** HSV with double histogram
-**** Calculate the histogram for selected pictures and mask :ATTACH:
+**** Calculate the histogram for selected pictures and mask       :ATTACH:
 :PROPERTIES:
 :ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
 :Attachments: PEG_2014_gcc.csv.gz
