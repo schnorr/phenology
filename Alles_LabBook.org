@@ -4444,3 +4444,309 @@ df.histograms.mode.tidy %>%
 
 #+RESULTS:
 [[file:img/PEG_2014_small.png]]
+* Temporal Entries
+** 2018-10-04 Organizing data manipulation procedures
+
+Overview: the general data manipulation procedure involves four steps:
+
+1. Dependencies installation
+2. Mask selection (which mask shall we use?)
+3. Picture selection (which time frame shall we investigate?)
+4. Plot with Exploratory Analysis
+
+These are detailed below.
+
+** Dependencies
+*** Installed from Cran
+In order to reproduce this analysis, you need the following packages:
+#+BEGIN_SRC R
+install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
+#+END_SRC
+*** Phenovisr (Installed from GITHUB)
+#+begin_src R :results output :session :exports both
+library(devtools)
+install_github("schnorr/phenovisr");
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Downloading GitHub repo schnorr/phenovisr@master
+from URL https://api.github.com/repos/schnorr/phenovisr/zipball/master
+Installing phenovisr
+trying URL 'https://cloud.r-project.org/src/contrib/Rcpp_0.12.19.tar.gz'
+Content type 'application/x-gzip' length 3646456 bytes (3.5 MB)
+==================================================
+downloaded 3.5 MB
+
+Installing Rcpp
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL '/tmp/RtmpUQHibf/devtools255274ddec67/Rcpp'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘Rcpp’ ...
+,** package ‘Rcpp’ successfully unpacked and MD5 sums checked
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Date.cpp -o Date.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Module.cpp -o Module.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Rcpp_init.cpp -o Rcpp_init.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c api.cpp -o api.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c attributes.cpp -o attributes.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c barrier.cpp -o barrier.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o Rcpp.so Date.o Module.o Rcpp_init.o api.o attributes.o barrier.o -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/libs
+,** R
+,** inst
+,** tests
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (Rcpp)
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL  \
+  '/tmp/RtmpUQHibf/devtools25521c0b0782/schnorr-phenovisr-1926222'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘phenovisr’ ...
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c RcppExports.cpp -o RcppExports.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c gcc.cpp -o gcc.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c jpeg_image.cpp -o jpeg_image.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c main.cpp -o main.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c metrics.cpp -o metrics.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c rgb2hsv.cpp -o rgb2hsv.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o phenovisr.so RcppExports.o gcc.o jpeg_image.o main.o metrics.o rgb2hsv.o -ljpeg -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/phenovisr/libs
+,** R
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** testing if installed package can be loaded
+,* DONE (phenovisr)
+#+end_example
+
+
+** Masks
+*** Convert all masks to JPG in RGB mode
+
+Masks should be in the JPEG file format using a 24bit depth (24bit RGB
+without alpha). Since the masks that have been provided are in the BMP
+file format in grayscale (8bit only), we need to convert them. This
+procedure is done only once since we are saving the JPEG masks in this
+repository.
+
+#+name: mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep bmp$) $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep bmp$);
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    pushd $DIR
+    convert $FILE -type TrueColor $(basename $FILE .bmp).jpg
+    popd
+done
+#+end_src
+
+#+RESULTS: mask_bmp2jpg
+#+begin_example
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/dev/phenology
+~/dev/phenology
+#+end_example
+
+List the new JPEG masks after conversion:
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+#+end_example
+
+*** Convert all masks to 1280 x 960
+
+Masks should have the same dimensions as the pictures in the dataset.
+
+This procedure has already been executed, results have been committed.
+
+#+header: dep0=mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg$ | grep -v "\-2") $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg$ | grep -v "\-2");
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    echo $mask
+    jpeginfo $mask
+    pushd $DIR
+    convert $FILE -resize 1280x960 -type TrueColor $(basename $FILE .jpg)-2.jpg
+    mv $(basename $FILE .jpg)-2.jpg $FILE
+    popd
+done
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg 1282 x 961  24bit JFIF  N   17735 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg 1282 x 961  24bit JFIF  N   17061 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg 1282 x 961  24bit JFIF  N   16154 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg 1282 x 961  24bit JFIF  N   17076 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg 1282 x 961  24bit JFIF  N   22756 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg 1282 x 961  24bit JFIF  N   16745 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg 1282 x 961  24bit JFIF  N   17880 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg 1282 x 961  24bit JFIF  N   17088 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg 1282 x 961  24bit JFIF  N   20952 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg 1280 x 960  24bit JFIF  N   35389 
+~/dev/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/dev/phenology
+~/dev/phenology
+#+end_example
+
+*** Masks description in a tibble
+
+Reading masks into a data.frame. Since this is still experimental, I
+will apply a single mask to make the process faster.
+#+name: masks
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+df.masks
+#+end_src
+
+#+RESULTS: masks
+: # A tibble: 1 x 2
+:   Mask.Filename                                                 Mask          
+:   <chr>                                                         <chr>         
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+
+** Pictures
+
+Capture names from all the sample images. There are 5281 pictures.
+
+#+name: peg
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+# A tibble: 5,281 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+To make it faster, I'll plot images from 10AM relative to a single
+year. The 10AM pictures can be identified when the sequence number
+equals to one. I will not consider other pictures of the same day, for
+now. By doing so, we reduce our dataset for 122 pictures.
+
+#+begin_src R :results output :session :exports both
+df.peg <- df.peg %>% 
+  mutate(Separator = Picture) %>%
+  separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
+  mutate(Sequence = as.numeric(Sequence)) %>%
+  mutate(Hour = as.numeric(Hour)) %>%
+  filter(Sequence == 1) %>%
+  filter(Hour == 10) %>%
+  select(Picture.Filename, Picture)
+df.peg
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_092_10_1.jpg 2014_092_10_1
+ 3 Output_PEG/2014/2014_093_10_1.jpg 2014_093_10_1
+ 4 Output_PEG/2014/2014_094_10_1.jpg 2014_094_10_1
+ 5 Output_PEG/2014/2014_095_10_1.jpg 2014_095_10_1
+ 6 Output_PEG/2014/2014_096_10_1.jpg 2014_096_10_1
+ 7 Output_PEG/2014/2014_097_10_1.jpg 2014_097_10_1
+ 8 Output_PEG/2014/2014_098_10_1.jpg 2014_098_10_1
+ 9 Output_PEG/2014/2014_099_10_1.jpg 2014_099_10_1
+10 Output_PEG/2014/2014_100_10_1.jpg 2014_100_10_1
+# ... with 112 more rows
+#+end_example
+
+** Analysis
