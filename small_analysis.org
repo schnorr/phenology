@@ -397,6 +397,7 @@ df.peg
 **** Calculate the histogram for selected pictures and mask :ATTACH:
 :PROPERTIES:
 :ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
+:Attachments: PEG_2014_gcc.csv.gz
 :END:
 
 #+begin_src R :results output :session :exports both
