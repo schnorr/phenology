@@ -2681,7 +2681,7 @@ dft.2;
 library(colorspace);
 dft.2 %>%
     mutate(V=as.integer(gsub("V", "", V))/10) %>%
-    mutate(V=V) %>%
+    mutate(V=1) %>%
     mutate(S=1) %>%
     mutate(ColorKey = paste(H, S, V, sep="-")) %>%
     mutate(Color = hex(HSV(H, S, V))) -> dft.3;
@@ -2695,20 +2695,20 @@ names(palette) <- df.palette$ColorKey;
 
 #+RESULTS:
 #+begin_example
-# A tibble: 3,520 x 5
+# A tibble: 360 x 5
        H     S     V ColorKey   Color
    <int> <dbl> <dbl>    <chr>   <chr>
- 1     0     1   0.0    0-1-0 #000000
- 2     1     1   0.7  1-1-0.7 #B30300
- 3     2     1   0.4  2-1-0.4 #660300
- 4     3     1   0.6  3-1-0.6 #990800
- 5     4     1   0.0    4-1-0 #000000
- 6     5     1   0.2  5-1-0.2 #330400
- 7     6     1   0.0    6-1-0 #000000
- 8     7     1   0.0    7-1-0 #000000
- 9     8     1   0.0    8-1-0 #000000
-10     9     1   0.3  9-1-0.3 #4D0B00
-# ... with 3,510 more rows
+ 1     0     1     1    0-1-1 #FF0000
+ 2     1     1     1    1-1-1 #FF0400
+ 3     2     1     1    2-1-1 #FF0800
+ 4     3     1     1    3-1-1 #FF0D00
+ 5     4     1     1    4-1-1 #FF1100
+ 6     5     1     1    5-1-1 #FF1500
+ 7     6     1     1    6-1-1 #FF1900
+ 8     7     1     1    7-1-1 #FF1E00
+ 9     8     1     1    8-1-1 #FF2200
+10     9     1     1    9-1-1 #FF2600
+# ... with 350 more rows
 #+end_example
 
 *** Plot
@@ -2749,3 +2749,44 @@ dft.3 %>%
 
 #+RESULTS:
 [[file:img/PEG_2014_H_V_v1.png]]
+
+*** roi1 PEG only, 12H
+#+begin_src R :results output graphics :file img/PEG_2014_H_V_roi1_12H.png :exports both :width 600 :height 600 :session
+lowLimit = 0;
+highLimit = 360;
+
+library(ggplot2);
+dft.3 %>%
+    filter(H >= lowLimit, H < highLimit) %>%
+    filter(H != 0) %>%
+    filter(Day < 95) %>%
+    filter(Hour == 12) %>%
+    filter(grepl("roi1", Mask)) %>%
+    filter(Sequence == 1) %>%
+    mutate(Count = 1) %>%
+#    group_by(Mask) %>%
+ #   mutate(Count = Count/Pixels) %>%
+ #   ungroup() %>%
+    ggplot(aes(x = Day, y = Count, fill=as.factor(ColorKey))) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+    theme_bw (base_size=16) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins") +
+    scale_fill_manual(values=palette) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(1, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 4)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:img/PEG_2014_H_V_roi1_12H.png]]
