@@ -450,8 +450,9 @@ FYI: This process can take around 1 minute.
 ***** Read data and prepare for stacked bar view
 
 Tidying data...
+
 #+name: read_peg_data
-#+begin_src R :results output :session analysis :exports both
+#+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse));
 df <- df.histograms %>%
   gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
@@ -466,27 +467,27 @@ df;
 
 #+RESULTS: read_peg_data
 #+begin_example
-[90m# A tibble: 439,200 x 12[39m
-   Mask     Year   Day  Hour Sequence Width Height Pixels     H  Count variable
-   [3m[90m<chr>[39m[23m   [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m [3m[90m<chr>[39m[23m    [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m [3m[90m<int>[39m[23m  [3m[90m<int>[39m[23m    [3m[90m<dbl>[39m[23m
-[90m 1[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     0 [4m7[24m[4m2[24m[4m9[24m875       0.
-[90m 2[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     1     32       1.
-[90m 3[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     2    330       2.
-[90m 4[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     3    318       3.
-[90m 5[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     4    277       4.
-[90m 6[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     5    772       5.
-[90m 7[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     6    252       6.
-[90m 8[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     7    368       7.
-[90m 9[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     8    359       8.
-[90m10[39m Comuni~  [4m2[24m014    91    10 1         [4m1[24m280    960 [4m5[24m[4m0[24m[4m8[24m770     9   [4m1[24m005       9.
-[90m# ... with 439,190 more rows, and 1 more variable: value [3m[90m<int>[90m[23m[39m
+# A tibble: 439,200 x 12
+   Mask   Year   Day  Hour Sequence Width Height Pixels     H  Count variable
+   <chr> <int> <int> <int> <chr>    <int>  <int>  <int> <int>  <int>    <dbl>
+ 1 Comu…  2014    91    10 1         1280    960 508770     0 729544        0
+ 2 Comu…  2014    91    10 1         1280    960 508770     1      6        1
+ 3 Comu…  2014    91    10 1         1280    960 508770     2    152        2
+ 4 Comu…  2014    91    10 1         1280    960 508770     3    182        3
+ 5 Comu…  2014    91    10 1         1280    960 508770     4    166        4
+ 6 Comu…  2014    91    10 1         1280    960 508770     5    623        5
+ 7 Comu…  2014    91    10 1         1280    960 508770     6    212        6
+ 8 Comu…  2014    91    10 1         1280    960 508770     7    269        7
+ 9 Comu…  2014    91    10 1         1280    960 508770     8    292        8
+10 Comu…  2014    91    10 1         1280    960 508770     9    801        9
+# ... with 439,190 more rows, and 1 more variable: value <int>
 #+end_example
 
 ***** Read palette
 Let's create a palette with the combination of H and V values
 
 #+name: peg_palette
-#+begin_src R :results output :session analysis :exports both
+#+begin_src R :results output :session :exports both
 suppressMessages(library(colorspace))
 palette <- expand.grid(V = seq(0, 9), H = seq(0, 359)) %>%
 mutate(Color = hex(HSV(H, 1, V/10)))
@@ -4105,8 +4106,7 @@ redundant (like sequence == 1 and hour between 8 and 17), I'll keep
 them here for when I add more pictures.
 
 #+header: :var dep0=peg_palette
-#+begin_src R :results output graphics :file img/PEG_2014_small.png :exports both :width 1400 :height 1000 :session analysis
-
+#+begin_src R :results output graphics :file img/PEG_2014_small-v2.png :exports both :width 1400 :height 1000 :session
 library(ggplot2);
 df %>% 
   # This is not necessary for HSV
@@ -4139,11 +4139,12 @@ df %>%
 #+end_src
 
 #+RESULTS:
-[[file:img/PEG_2014_small.png]]
+[[file:img/PEG_2014_small-v2.png]]
 
 Okay, it's a big mess. I probably messed up the sequencing, as the
 plots are showing very few days of the year... I'll migrate this to
 Rstudio for now, as I think it is faster to develop there.
+
 *** HSV with single, non static V
 As discussed with Lucas, we will try to plot a single histogram (as
 previous implementations already did). 
