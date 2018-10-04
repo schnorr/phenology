@@ -4799,3 +4799,32 @@ df.peg
 #+end_example
 
 *** Analysis
+
+**** Introduction
+
+Previously [1] we have calculated histograms of a vegetation index
+that considers the green intensity of pixels, calculated as G/(R+G+B),
+so based in RGB colors.
+
+[1]: https://dl.acm.org/citation.cfm?id=3005917
+
+Our new viz technique will now consider the HSV color space. So, for a
+given picture, we calculate the histogram of H (with 360 bins) and,
+for each H, the histogram of V (with 10 bins by default). So, since
+our images are 1280\times960 pixels (total pixels is 1228800) we reduce the
+amount of information from that number of pixels to 3600 bins (360 H \times
+10 V). Then, there are two analysis approaches:
+
+1. We define a color for every single possibility out of those 3600
+   bins (360 H \times 10 V). The color definition is straightforward, since
+   we have H and V (considering S as constant value).
+
+2. We define a color for each H value, and a constant S value. Instead
+   of choosing any V value (constant, mean), we instead choose the one
+   that is capable to represent best the corresponding H value. This
+   means that from the 10 possible values, we select the one that is
+   most frequent. So, at the end, we have 360 colors.
+
+Next sections show an example for each strategy.
+
+
