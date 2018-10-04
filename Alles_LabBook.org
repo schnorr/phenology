@@ -4446,8 +4446,9 @@ df.histograms.mode.tidy %>%
 [[file:img/PEG_2014_small.png]]
 * Temporal Entries
 ** 2018-10-04 Organizing data manipulation procedures
+*** Overview
 
-Overview: the general data manipulation procedure involves four steps:
+The general data manipulation procedure involves four steps:
 
 1. Dependencies installation
 2. Mask selection (which mask shall we use?)
@@ -4456,13 +4457,13 @@ Overview: the general data manipulation procedure involves four steps:
 
 These are detailed below.
 
-** Dependencies
-*** Installed from Cran
+*** Dependencies
+**** Installed from Cran
 In order to reproduce this analysis, you need the following packages:
 #+BEGIN_SRC R
 install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
 #+END_SRC
-*** Phenovisr (Installed from GITHUB)
+**** Phenovisr (Installed from GITHUB)
 #+begin_src R :results output :session :exports both
 library(devtools)
 install_github("schnorr/phenovisr");
@@ -4529,8 +4530,8 @@ installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/phenovisr/libs
 #+end_example
 
 
-** Masks
-*** Convert all masks to JPG in RGB mode
+*** Masks
+**** Convert all masks to JPG in RGB mode
 
 Masks should be in the JPEG file format using a 24bit depth (24bit RGB
 without alpha). Since the masks that have been provided are in the BMP
@@ -4595,7 +4596,7 @@ data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
 #+end_example
 
-*** Convert all masks to 1280 x 960
+**** Convert all masks to 1280 x 960
 
 Masks should have the same dimensions as the pictures in the dataset.
 
@@ -4660,7 +4661,7 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg 1280 x 960  24bit 
 ~/dev/phenology
 #+end_example
 
-*** Masks description in a tibble
+**** Masks description in a tibble
 
 Reading masks into a data.frame. Since this is still experimental, I
 will apply a single mask to make the process faster.
@@ -4682,7 +4683,7 @@ df.masks
 :   <chr>                                                         <chr>         
 : 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
 
-** Pictures
+*** Pictures
 
 Capture names from all the sample images. There are 5281 pictures.
 
@@ -4749,4 +4750,4 @@ df.peg
 # ... with 112 more rows
 #+end_example
 
-** Analysis
+*** Analysis
