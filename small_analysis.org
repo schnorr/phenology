@@ -262,7 +262,7 @@ df.masks
 
 Capture names from all the sample images
 #+name: peg
-#+begin_src R :results output :session analysis :exports both
+#+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse))
 options(crayon.enabled = FALSE)
 df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
@@ -293,7 +293,7 @@ To make it faster, I'll plot images from 10AM relative to a single
 year, with sequence == 1. I'll get rid of all the others images for
 now...
 
-#+BEGIN_SRC R :session analysis
+#+begin_src R :results output :session :exports both
 df.peg <- df.peg %>% 
   mutate(Separator = Picture) %>%
   separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
