@@ -308,7 +308,7 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg 1280 x 960  24bit 
 Reading masks into a data.frame. Since this is still experimental, I
 will apply a single mask to make the process faster.
 #+name: masks
-#+begin_src R :results output :session analysis :exports both
+#+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse))
 options(crayon.enabled = FALSE)
 df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
@@ -399,7 +399,7 @@ df.peg
 :ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
 :END:
 
-#+begin_src R :results output :session analysis :exports both
+#+begin_src R :results output :session :exports both
 suppressMessages(library(tidyverse))
 suppressMessages(library(phenovisr))
 options(crayon.enabled = FALSE)
