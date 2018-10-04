@@ -101,10 +101,77 @@ data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
 
 * Analysis
 ** Dependencies
+*** Installed from Cran
 In order to reproduce this analysis, you need the following packages:
 #+BEGIN_SRC R
 install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
 #+END_SRC
+*** Phenovisr (Installed from GITHUB)
+#+begin_src R :results output :session :exports both
+library(devtools)
+install_github("schnorr/phenovisr");
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Downloading GitHub repo schnorr/phenovisr@master
+from URL https://api.github.com/repos/schnorr/phenovisr/zipball/master
+Installing phenovisr
+trying URL 'https://cloud.r-project.org/src/contrib/Rcpp_0.12.19.tar.gz'
+Content type 'application/x-gzip' length 3646456 bytes (3.5 MB)
+==================================================
+downloaded 3.5 MB
+
+Installing Rcpp
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL '/tmp/RtmpUQHibf/devtools255274ddec67/Rcpp'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘Rcpp’ ...
+,** package ‘Rcpp’ successfully unpacked and MD5 sums checked
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Date.cpp -o Date.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Module.cpp -o Module.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Rcpp_init.cpp -o Rcpp_init.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c api.cpp -o api.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c attributes.cpp -o attributes.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c barrier.cpp -o barrier.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o Rcpp.so Date.o Module.o Rcpp_init.o api.o attributes.o barrier.o -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/libs
+,** R
+,** inst
+,** tests
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (Rcpp)
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL  \
+  '/tmp/RtmpUQHibf/devtools25521c0b0782/schnorr-phenovisr-1926222'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘phenovisr’ ...
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c RcppExports.cpp -o RcppExports.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c gcc.cpp -o gcc.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c jpeg_image.cpp -o jpeg_image.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c main.cpp -o main.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c metrics.cpp -o metrics.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c rgb2hsv.cpp -o rgb2hsv.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o phenovisr.so RcppExports.o gcc.o jpeg_image.o main.o metrics.o rgb2hsv.o -ljpeg -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/phenovisr/libs
+,** R
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** testing if installed package can be loaded
+,* DONE (phenovisr)
+#+end_example
+
 ** Masks
 *** Convert all masks to JPG in RGB mode
 
