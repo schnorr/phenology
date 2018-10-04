@@ -4460,9 +4460,58 @@ These are detailed below.
 *** Dependencies
 **** Installed from Cran
 In order to reproduce this analysis, you need the following packages:
-#+BEGIN_SRC R
+#+begin_src R :results output :session :exports both
 install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
-#+END_SRC
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Installing packages into ‘/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5’
+(as ‘lib’ is unspecified)
+trying URL 'http://cran.us.r-project.org/src/contrib/tidyverse_1.2.1.tar.gz'
+Content type 'application/x-gzip' length 61647 bytes (60 KB)
+==================================================
+downloaded 60 KB
+
+trying URL 'http://cran.us.r-project.org/src/contrib/colorspace_1.3-2.tar.gz'
+Content type 'application/x-gzip' length 293433 bytes (286 KB)
+==================================================
+downloaded 286 KB
+
+,* installing *source* package ‘tidyverse’ ...
+,** package ‘tidyverse’ successfully unpacked and MD5 sums checked
+,** R
+,** inst
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,*** copying figures
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (tidyverse)
+,* installing *source* package ‘colorspace’ ...
+,** package ‘colorspace’ successfully unpacked and MD5 sums checked
+,** libs
+gcc -std=gnu99 -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c colorspace.c -o colorspace.o
+gcc -std=gnu99 -shared -L/usr/lib/R/lib -Wl,-z,relro -o colorspace.so colorspace.o -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/colorspace/libs
+,** R
+,** data
+,*** moving datasets to lazyload DB
+,** inst
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (colorspace)
+
+The downloaded source packages are in
+	‘/tmp/RtmpMzmOZA/downloaded_packages’
+#+end_example
+
 **** Phenovisr (Installed from GITHUB)
 #+begin_src R :results output :session :exports both
 library(devtools)
@@ -4528,7 +4577,6 @@ installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/phenovisr/libs
 ,** testing if installed package can be loaded
 ,* DONE (phenovisr)
 #+end_example
-
 
 *** Masks
 **** Convert all masks to JPG in RGB mode
