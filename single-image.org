@@ -269,7 +269,6 @@ options(crayon.enabled = FALSE)
 #+END_SRC
 
 #+RESULTS:
-: FALSE
 
 Now, let's read the mask we will be using into a tibble.
 #+BEGIN_SRC R :session analysis :results output
@@ -290,9 +289,17 @@ df.masks <- tibble(Mask.Filename = list.files('data/70',
 :   <chr>                                                         <chr>         
 : 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
 
-We already have the image we will be working with (from the previous
-steps). Let's take a look...
+In order to keep all the code in the same session, let's read the
+images again.
+
 #+BEGIN_SRC R :session analysis :results output
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+
+df.peg <- df.peg[42,] %>%
+  select(Picture.Filename, Picture)
+
 df.peg %>% as.data.frame
 #+END_SRC
 
@@ -344,21 +351,26 @@ df.histograms
 # A tibble: 360 x 17
    Mask   Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
    <chr>  <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
- 1 Comun… Outp…  1280    960 508770     0 731178 725457  1692  1652   814   504
- 2 Comun… Outp…  1280    960 508770     1     43      0     3     2     4     3
- 3 Comun… Outp…  1280    960 508770     2    307     21    23    37    43    45
- 4 Comun… Outp…  1280    960 508770     3    321     46    14    17    40    57
- 5 Comun… Outp…  1280    960 508770     4    232     72    34    29    19    21
- 6 Comun… Outp…  1280    960 508770     5    718    101    64   131   118    73
- 7 Comun… Outp…  1280    960 508770     6    246    107     7    29    16    25
- 8 Comun… Outp…  1280    960 508770     7    368    105    14    15    38    44
- 9 Comun… Outp…  1280    960 508770     8    354    129    11    17    33    31
-10 Comun… Outp…  1280    960 508770     9    846     57    70   129   156   117
+ 1 Comun… Outp…  1280    960 509695     0 730182 724865  1629  1646   675   404
+ 2 Comun… Outp…  1280    960 509695     1      9      0     2     1     1     0
+ 3 Comun… Outp…  1280    960 509695     2    133     11    14    17    21    17
+ 4 Comun… Outp…  1280    960 509695     3    185     43     8    19    23    22
+ 5 Comun… Outp…  1280    960 509695     4    199     93    16    25    15    13
+ 6 Comun… Outp…  1280    960 509695     5    576    108    58    82    73    65
+ 7 Comun… Outp…  1280    960 509695     6    199    133    11     9     6    11
+ 8 Comun… Outp…  1280    960 509695     7    219    115     3    12     9    12
+ 9 Comun… Outp…  1280    960 509695     8    271    164     1     3     7    10
+10 Comun… Outp…  1280    960 509695     9    664     63    55    92   115    89
 # ... with 350 more rows, and 5 more variables: V5 <int>, V6 <int>, V7 <int>,
 #   V8 <int>, V9 <int>
 #+end_example
 
-The resulting output is a tibble containing the histograms for each H value, for every image (since we are working with a single image, there are 360 rows (for 360 H values). For each H, we can find a histogram of the observations of V. Note that the "Pixels" column only shows the numver of considered pixels after applying the mask.
+The resulting output is a tibble containing the histograms for each H
+value, for every image (since we are working with a single image,
+there are 360 rows (for 360 H values). For each H, we can find a
+histogram of the observations of V. Note that the "Pixels" column only
+shows the numver of considered pixels after applying the mask (*And
+this is why the normalized histogram does not reach 1*).
 
 For each row, let's get the mode of the collected V values. In case of
 a tie (i.e. two bins with the same value), we'll get the last one to
@@ -372,33 +384,26 @@ binsMode <- colnames(v.bins)[max.col(v.bins, ties.method = 'last')]
 df.histograms.mode <- df.histograms %>%
   mutate(V.Mode = binsMode)
 
-df.histograms.mode %>% head(10) %>% as.data.frame
+df.histograms.mode %>% as.tibble
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-             Mask                              Name Width Height Pixels H
-1  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 0
-2  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 1
-3  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 2
-4  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 3
-5  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 4
-6  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 5
-7  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 6
-8  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 7
-9  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 8
-10 Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 9
-    Count     V0   V1   V2  V3  V4  V5  V6 V7 V8  V9 V.Mode
-1  731178 725457 1692 1652 814 504 275 222 91 69 402     V0
-2      43      0    3    2   4   3   5   9  8  1   8     V6
-3     307     21   23   37  43  45  34  36 32 20  16     V4
-4     321     46   14   17  40  57  47  42 14 17  27     V4
-5     232     72   34   29  19  21  15  18  5  5  14     V0
-6     718    101   64  131 118  73  59  68 44 13  47     V2
-7     246    107    7   29  16  25  15   9  5 10  23     V0
-8     368    105   14   15  38  44  34  33 30 27  28     V0
-9     354    129   11   17  33  31  29  32 18 17  37     V0
-10    846     57   70  129 156 117  84 105 54 30  44     V3
+# A tibble: 360 x 18
+   Mask   Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
+   <chr>  <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
+ 1 Comun… Outp…  1280    960 509695     0 730182 724865  1629  1646   675   404
+ 2 Comun… Outp…  1280    960 509695     1      9      0     2     1     1     0
+ 3 Comun… Outp…  1280    960 509695     2    133     11    14    17    21    17
+ 4 Comun… Outp…  1280    960 509695     3    185     43     8    19    23    22
+ 5 Comun… Outp…  1280    960 509695     4    199     93    16    25    15    13
+ 6 Comun… Outp…  1280    960 509695     5    576    108    58    82    73    65
+ 7 Comun… Outp…  1280    960 509695     6    199    133    11     9     6    11
+ 8 Comun… Outp…  1280    960 509695     7    219    115     3    12     9    12
+ 9 Comun… Outp…  1280    960 509695     8    271    164     1     3     7    10
+10 Comun… Outp…  1280    960 509695     9    664     63    55    92   115    89
+# ... with 350 more rows, and 6 more variables: V5 <int>, V6 <int>, V7 <int>,
+#   V8 <int>, V9 <int>, V.Mode <chr>
 #+end_example
 
 Now let's tidy the data. we will also remove the bins information (V0 to
@@ -407,102 +412,97 @@ V9) because they are not relevant anymore.
 df.histograms.mode.tidy <- df.histograms.mode %>%
   select(-V0, -V1, -V2, -V3, -V4, -V5, -V6, -V7, -V8, -V9) %>%
   mutate(V.Mode = as.integer(substr(V.Mode, 2, 100))) %>%
-  mutate(value = H * 10 + V.Mode) %>%
+  mutate(V = V.Mode) %>%
   separate(Name, sep = '/', into = c('Dir', 'Year', 'Filename')) %>%
-  select(-Dir, -Year) %>%
+  select(-Dir, -Year, -V.Mode) %>%
   separate(Filename, sep = '_', into = c('Year', 'Day', 'Hour', 'Sequence'), convert = TRUE) %>%
   mutate(Sequence = gsub('.jpg', '', Sequence))
 
+df.histograms.mode.tidy %>% as.tibble
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 360 x 11
+   Mask        Year   Day  Hour Sequence Width Height Pixels     H  Count     V
+   <chr>      <int> <int> <int> <chr>    <int>  <int>  <int> <int>  <int> <int>
+ 1 Comunidad…  2014    92     8 5         1280    960 509695     0 730182     0
+ 2 Comunidad…  2014    92     8 5         1280    960 509695     1      9     6
+ 3 Comunidad…  2014    92     8 5         1280    960 509695     2    133     3
+ 4 Comunidad…  2014    92     8 5         1280    960 509695     3    185     0
+ 5 Comunidad…  2014    92     8 5         1280    960 509695     4    199     0
+ 6 Comunidad…  2014    92     8 5         1280    960 509695     5    576     0
+ 7 Comunidad…  2014    92     8 5         1280    960 509695     6    199     0
+ 8 Comunidad…  2014    92     8 5         1280    960 509695     7    219     0
+ 9 Comunidad…  2014    92     8 5         1280    960 509695     8    271     0
+10 Comunidad…  2014    92     8 5         1280    960 509695     9    664     3
+# ... with 350 more rows
+#+end_example
+
+We now have a tibble that contains one row for each H value. Each row
+will be a vertical bin on the final plot. The color of the vertical
+bin is defined by (H, 1, V).
+
+Next, let's create the color palette
+#+BEGIN_SRC R :session analysis :results output
+palette <- expand.grid(H = seq(0, 359), S = 1, V = seq(0, 9)) %>%
+  mutate(Color = hex(HSV(H, S, V/10)))
+
+palette %>% as.tibble
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,600 x 4
+       H     S     V Color  
+   <int> <dbl> <int> <chr>  
+ 1     0    1.     0 #000000
+ 2     1    1.     0 #000000
+ 3     2    1.     0 #000000
+ 4     3    1.     0 #000000
+ 5     4    1.     0 #000000
+ 6     5    1.     0 #000000
+ 7     6    1.     0 #000000
+ 8     7    1.     0 #000000
+ 9     8    1.     0 #000000
+10     9    1.     0 #000000
+# ... with 3,590 more rows
+#+end_example
+
+Merging the color palette with the data...
+#+BEGIN_SRC R :session analysis :results output
+df.histograms.mode.tidy <- df.histograms.mode.tidy %>%
+  left_join(palette, by = c('H', 'V')) %>%
+  select(-S)
 df.histograms.mode.tidy %>% head(10) %>% as.data.frame
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-             Mask Year Day Hour Sequence Width Height Pixels H  Count V.Mode
-1  Comunidade_PEG 2014  92    8        5  1280    960 508770 0 731178      0
-2  Comunidade_PEG 2014  92    8        5  1280    960 508770 1     43      6
-3  Comunidade_PEG 2014  92    8        5  1280    960 508770 2    307      4
-4  Comunidade_PEG 2014  92    8        5  1280    960 508770 3    321      4
-5  Comunidade_PEG 2014  92    8        5  1280    960 508770 4    232      0
-6  Comunidade_PEG 2014  92    8        5  1280    960 508770 5    718      2
-7  Comunidade_PEG 2014  92    8        5  1280    960 508770 6    246      0
-8  Comunidade_PEG 2014  92    8        5  1280    960 508770 7    368      0
-9  Comunidade_PEG 2014  92    8        5  1280    960 508770 8    354      0
-10 Comunidade_PEG 2014  92    8        5  1280    960 508770 9    846      3
-   value
-1      0
-2     16
-3     24
-4     34
-5     40
-6     52
-7     60
-8     70
-9     80
-10    93
+             Mask Year Day Hour Sequence Width Height Pixels H  Count V   Color
+1  Comunidade_PEG 2014  92    8        5  1280    960 509695 0 730182 0 #000000
+2  Comunidade_PEG 2014  92    8        5  1280    960 509695 1      9 6 #990300
+3  Comunidade_PEG 2014  92    8        5  1280    960 509695 2    133 3 #4D0300
+4  Comunidade_PEG 2014  92    8        5  1280    960 509695 3    185 0 #000000
+5  Comunidade_PEG 2014  92    8        5  1280    960 509695 4    199 0 #000000
+6  Comunidade_PEG 2014  92    8        5  1280    960 509695 5    576 0 #000000
+7  Comunidade_PEG 2014  92    8        5  1280    960 509695 6    199 0 #000000
+8  Comunidade_PEG 2014  92    8        5  1280    960 509695 7    219 0 #000000
+9  Comunidade_PEG 2014  92    8        5  1280    960 509695 8    271 0 #000000
+10 Comunidade_PEG 2014  92    8        5  1280    960 509695 9    664 3 #4D0B00
 #+end_example
-
-The last step is to create the color palette
-#+BEGIN_SRC R :session analysis :results output
-palette <- expand.grid(V = seq(1, 10), H = seq(0, 359), S = 1) %>%
-  mutate(Color = hex(HSV(H, S, V/10)))
-
-palette %>% head(20)
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-    V H S   Color
-1   1 0 1 #1A0000
-2   2 0 1 #330000
-3   3 0 1 #4D0000
-4   4 0 1 #660000
-5   5 0 1 #800000
-6   6 0 1 #990000
-7   7 0 1 #B30000
-8   8 0 1 #CC0000
-9   9 0 1 #E60000
-10 10 0 1 #FF0000
-11  1 1 1 #1A0000
-12  2 1 1 #330100
-13  3 1 1 #4D0100
-14  4 1 1 #660200
-15  5 1 1 #800200
-16  6 1 1 #990300
-17  7 1 1 #B30300
-18  8 1 1 #CC0300
-19  9 1 1 #E60400
-20 10 1 1 #FF0400
-#+end_example
-
 
 Now, let's finally plot it...
-#+BEGIN_SRC R :session analysis :results output graphics :file img/PEG_2014_single.png :exports both :width 700 :height: 500
+#+BEGIN_SRC R :session analysis :results output graphics :file img/PEG_2014_single.png :exports both :width 500 :height 250
 df.histograms.mode.tidy %>%
-  mutate(value = rep(10, 360)) %>%
   filter(H != 0) %>%
-  ggplot(aes(x = Day, y = Count/Pixels, fill = as.factor(value))) + 
-    geom_bar(stat = 'identity', width = 1) +
-    ylim(0, NA) +
-    theme_bw(base_size = 16) +
-    xlab('Day of the Year 2014') +
-    ylab('Normalized size of bins') +
-    scale_fill_manual(values=palette$Color) +
-    guides(fill = FALSE)
-#+END_SRC
-
-#+RESULTS:
-[[file:img/PEG_2014_single.png]]
-
-#+BEGIN_SRC R :session analysis :results output graphics :file img/PEG_2014_single.png :exports both :width 1400 :height 1000
-df.histograms.mode.tidy %>%
-  ggplot(aes(x = Day, y = Count/value, fill = as.factor(value))) +
+  ggplot(aes(x = Day, y = Count/Pixels, fill = as.factor(Color))) +
     geom_bar(stat = 'identity', width = 1) + 
     ylim(0, NA) + 
     theme_bw(base_size = 16) +
     xlab('Day of the Year 2014') +
     ylab('Normalized size of bins') +
-    scale_fill_manual(values=palette$Color) +
+    scale_fill_manual(values = df.histograms.mode.tidy$Color) +
     theme(
       plot.margin = unit(c(0,0,0,0), "cm"),
       legend.spacing = unit(1, "mm"),
@@ -512,7 +512,7 @@ df.histograms.mode.tidy %>%
       legend.box.spacing = unit(0, "pt"),
       legend.box.margin = margin(0,0,0,0),
       legend.title = element_blank()) +
-    guides(fill = guide_legend(nrow = 1)) +
+    guides(fill = FALSE) +
     facet_grid(Hour~Mask, scales = 'free')
 #+END_SRC
 
