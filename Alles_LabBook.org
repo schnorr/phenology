@@ -4799,7 +4799,6 @@ df.peg
 #+end_example
 
 *** Analysis
-
 **** Introduction
 
 Previously [1] we have calculated histograms of a vegetation index
@@ -4826,5 +4825,57 @@ amount of information from that number of pixels to 3600 bins (360 H \times
    most frequent. So, at the end, we have 360 colors.
 
 Next sections show an example for each strategy.
+
+**** Calculate the double histogram
+
+The same histogram is used for both strategies.
+
+#+begin_src R :results output :session :exports both
+options(crayon.enabled = FALSE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+
+gethist <- function(df, vGrain=10)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), vGrain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup()
+
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > > # A tibble: 43,920 x 17
+   Mask  Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
+   <chr> <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
+ 1 Comu… Outp…  1280    960 508770     0 729544 726399   544   770   578   380
+ 2 Comu… Outp…  1280    960 508770     1      6      0     0     0     0     1
+ 3 Comu… Outp…  1280    960 508770     2    152      7    13    15    21    24
+ 4 Comu… Outp…  1280    960 508770     3    182     30    10     8    19    22
+ 5 Comu… Outp…  1280    960 508770     4    166     65    16    22    15    11
+ 6 Comu… Outp…  1280    960 508770     5    623     85    67   106    93    87
+ 7 Comu… Outp…  1280    960 508770     6    212    137     7    15     8    13
+ 8 Comu… Outp…  1280    960 508770     7    269    138     7    11    18    18
+ 9 Comu… Outp…  1280    960 508770     8    292    157     5     9    15    25
+10 Comu… Outp…  1280    960 508770     9    801     49    72   106   155   118
+# ... with 43,910 more rows, and 5 more variables: V5 <int>, V6 <int>,
+#   V7 <int>, V8 <int>, V9 <int>
+#+end_example
+
+**** Strategy #1: 3600 bins (360 H \times 10 V)
+**** Strategy #2: 360 bins (360 H of the most frequent V)
+
+
 
 
