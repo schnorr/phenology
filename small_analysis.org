@@ -427,23 +427,24 @@ df.histograms
 #+RESULTS:
 #+begin_example
 |======================================================|100% ~0 s remaining     > > # A tibble: 43,920 x 17
-   Mask   Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
-   <chr>  <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
- 1 Comun… Outp…  1280    960 508770     0 729875 726071   700   891   671   506
- 2 Comun… Outp…  1280    960 508770     1     32      0     4     2     2     4
- 3 Comun… Outp…  1280    960 508770     2    330     11    26    33    51    63
- 4 Comun… Outp…  1280    960 508770     3    318     44    13    18    39    53
- 5 Comun… Outp…  1280    960 508770     4    277     79    34    31    37    28
- 6 Comun… Outp…  1280    960 508770     5    772    114    86   115   117   106
- 7 Comun… Outp…  1280    960 508770     6    252    125    10    25    19    16
- 8 Comun… Outp…  1280    960 508770     7    368    117    16    28    37    41
- 9 Comun… Outp…  1280    960 508770     8    359    135    10    13    23    34
-10 Comun… Outp…  1280    960 508770     9   1005     58    94   136   189   167
+   Mask  Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
+   <chr> <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
+ 1 Comu… Outp…  1280    960 508770     0 729544 726399   544   770   578   380
+ 2 Comu… Outp…  1280    960 508770     1      6      0     0     0     0     1
+ 3 Comu… Outp…  1280    960 508770     2    152      7    13    15    21    24
+ 4 Comu… Outp…  1280    960 508770     3    182     30    10     8    19    22
+ 5 Comu… Outp…  1280    960 508770     4    166     65    16    22    15    11
+ 6 Comu… Outp…  1280    960 508770     5    623     85    67   106    93    87
+ 7 Comu… Outp…  1280    960 508770     6    212    137     7    15     8    13
+ 8 Comu… Outp…  1280    960 508770     7    269    138     7    11    18    18
+ 9 Comu… Outp…  1280    960 508770     8    292    157     5     9    15    25
+10 Comu… Outp…  1280    960 508770     9    801     49    72   106   155   118
 # ... with 43,910 more rows, and 5 more variables: V5 <int>, V6 <int>,
 #   V7 <int>, V8 <int>, V9 <int>
 #+end_example
 
 FYI: This process can take around 1 minute.
+- But here with one picture per day for 2014 only is very fast.
 
 **** Per-mask analysis
 ***** Read data and prepare for stacked bar view
