@@ -291,8 +291,9 @@ df.peg
 #+end_example
 
 To make it faster, I'll plot images from 10AM relative to a single
-year, with sequence == 1. I'll get rid of all the others images for
-now...
+year. The 10AM pictures can be identified when the sequence number
+equals to one. I will not consider other pictures of the same day, for
+now. By doing so, we reduce our dataset for 122 pictures.
 
 #+begin_src R :results output :session :exports both
 df.peg <- df.peg %>% 
