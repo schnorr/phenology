@@ -4898,6 +4898,8 @@ amount of information from that number of pixels to 3600 bins (360 H \times
 2. We define a color for every single possibility out of those 3600
    bins (360 H \times 10 V). The color definition is straightforward, since
    we have H and V (considering S as constant value).
+   - X is day, Y is ???, color is H+V
+   - stacke bar to stack the ??? is used
 
 3. We define a color for each H value, and a constant S value. Instead
    of choosing any V value (constant, mean), we instead choose the one
@@ -4972,7 +4974,104 @@ df.histograms
 # ... with 437,970 more rows
 #+end_example
 
-**** H(fixed S)V Color Palette
+**** Strategy #1: 360 bins (360 H and a fixed S=1, V=1) CPM-like
+***** H(fixed S)(fixed V) Color Palette
+
+In this color coding, S and V are fixed to 1.
+
+#+begin_src R :results output :session :exports both
+suppressMessages(library(colorspace))
+palette <- expand.grid(
+    H = seq(0, 359),
+    S = 1,
+    V = 1) %>%
+    # The color code
+    mutate(Color.Code = as.factor(H)) %>%
+    # The color itself
+    mutate(Color = hex(HSV(H, S, V))) %>%
+    as_tibble %>%
+    print
+
+palette.list <- as.character(palette$Color)
+names(palette.list) <- palette$Color.Code
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 360 x 5
+       H     S     V Color.Code Color  
+   <int> <dbl> <dbl> <fct>      <chr>  
+ 1     0     1     1 0          #FF0000
+ 2     1     1     1 1          #FF0400
+ 3     2     1     1 2          #FF0800
+ 4     3     1     1 3          #FF0D00
+ 5     4     1     1 4          #FF1100
+ 6     5     1     1 5          #FF1500
+ 7     6     1     1 6          #FF1900
+ 8     7     1     1 7          #FF1E00
+ 9     8     1     1 8          #FF2200
+10     9     1     1 9          #FF2600
+# ... with 350 more rows
+#+end_example
+
+***** Data Manipulation
+
+We need to get rid of V values to work only with H.
+
+#+begin_src R :results output :session :exports both
+st0.df <- df.histograms %>%
+    select(-V, -V.count) %>%
+    unique %>%
+    print
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 43,798 x 10
+   Mask            Year   Day  Hour   Seq Width Height Pixels     H H.count
+   <chr>          <int> <int> <int> <int> <int>  <int>  <int> <int>   <int>
+ 1 Comunidade_PEG  2014    91    10     1  1280    960 508770     1       6
+ 2 Comunidade_PEG  2014    91    10     1  1280    960 508770     2     152
+ 3 Comunidade_PEG  2014    91    10     1  1280    960 508770     3     182
+ 4 Comunidade_PEG  2014    91    10     1  1280    960 508770     4     166
+ 5 Comunidade_PEG  2014    91    10     1  1280    960 508770     5     623
+ 6 Comunidade_PEG  2014    91    10     1  1280    960 508770     6     212
+ 7 Comunidade_PEG  2014    91    10     1  1280    960 508770     7     269
+ 8 Comunidade_PEG  2014    91    10     1  1280    960 508770     8     292
+ 9 Comunidade_PEG  2014    91    10     1  1280    960 508770     9     801
+10 Comunidade_PEG  2014    91    10     1  1280    960 508770    10    1479
+# ... with 43,788 more rows
+#+end_example
+
+***** Plot
+
+#+begin_src R :results output graphics :file img/peg_2014-122-st1-v3.png :exports both :width 1200 :height 400 :session
+st0.df  %>%
+    mutate(Color.Code = H) %>%    
+    ggplot(aes(x = Day, y = H.count, fill=as.factor(Color.Code))) +#, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins")
+#+end_src
+
+#+RESULTS:
+[[file:img/peg_2014-122-st1-v3.png]]
+
+**** TODO Strategy #2: 3600 bins (360 H \times 10 V)
+***** H(fixed S)V Color Palette
 
 A color coding is necessary since we are handling colors manually.
 - We first define a tibble with all possible HSV combinations
@@ -5013,9 +5112,7 @@ names(palette.list) <- palette$Color.Code
 10     9     1     0          9 #000000
 # ... with 3,590 more rows
 #+end_example
-
-**** Strategy #1: 3600 bins (360 H \times 10 V)
-***** Confirme we have tidy data
+***** Confirme we have tidy data of H and V
 
 Let's just confirm we have 3.6K bins
 
@@ -5031,16 +5128,16 @@ df.histograms %>%
 # Groups:   Mask, Year, Day, Hour, Seq, Width, Height [?]
    Mask            Year   Day  Hour   Seq Width Height Pixels N.Bins
    <chr>          <int> <int> <int> <int> <int>  <int>  <int>  <int>
- 1 Comunidade_PEG  2014    91    10     1  1280    960 508770   3600
- 2 Comunidade_PEG  2014    92    10     1  1280    960 508770   3600
- 3 Comunidade_PEG  2014    93    10     1  1280    960 508770   3600
- 4 Comunidade_PEG  2014    94    10     1  1280    960 508770   3600
- 5 Comunidade_PEG  2014    95    10     1  1280    960 508770   3600
- 6 Comunidade_PEG  2014    96    10     1  1280    960 508770   3600
- 7 Comunidade_PEG  2014    97    10     1  1280    960 508770   3600
- 8 Comunidade_PEG  2014    98    10     1  1280    960 508770   3600
- 9 Comunidade_PEG  2014    99    10     1  1280    960 508770   3600
-10 Comunidade_PEG  2014   100    10     1  1280    960 508770   3600
+ 1 Comunidade_PEG  2014    91    10     1  1280    960 508770   3590
+ 2 Comunidade_PEG  2014    92    10     1  1280    960 508770   3590
+ 3 Comunidade_PEG  2014    93    10     1  1280    960 508770   3590
+ 4 Comunidade_PEG  2014    94    10     1  1280    960 508770   3590
+ 5 Comunidade_PEG  2014    95    10     1  1280    960 508770   3590
+ 6 Comunidade_PEG  2014    96    10     1  1280    960 508770   3590
+ 7 Comunidade_PEG  2014    97    10     1  1280    960 508770   3590
+ 8 Comunidade_PEG  2014    98    10     1  1280    960 508770   3590
+ 9 Comunidade_PEG  2014    99    10     1  1280    960 508770   3590
+10 Comunidade_PEG  2014   100    10     1  1280    960 508770   3590
 # ... with 112 more rows
 #+end_example
 
@@ -5048,43 +5145,14 @@ Yes, we do have 3.6K bins for each of the 122 pictures.
 
 ***** Plot
 
-#+begin_src R :results output :session :exports both
-df.histograms %>%
-    mutate(Color.Code = H+V) -> df;
-
-df %>%
-    select(-Mask, -Year, -Hour, -Seq, -Width, -Height) %>%
-    filter(Day %in% c(91)) %>%
-    filter(H != 0) %>%
-    select(H, H.count, Pixels)
-#    pull(H.count) %>% sum
-#+end_src
-
-#+RESULTS:
-#+begin_example
-# A tibble: 3,590 x 3
-       H H.count Pixels
-   <int>   <int>  <int>
- 1     1       6 508770
- 2     2     152 508770
- 3     3     182 508770
- 4     4     166 508770
- 5     5     623 508770
- 6     6     212 508770
- 7     7     269 508770
- 8     8     292 508770
- 9     9     801 508770
-10    10    1479 508770
-# ... with 3,580 more rows
-#+end_example
-
 #+begin_src R :results output graphics :file img/peg_2014-122-v3.png :exports both :width 600 :height 400 :session
 library(ggplot2);
 df %>% 
-    #filter(H != 0) %>%
-    filter(Day < 92) %>%
+    select(-V, -V.count, -Color.Code) %>%
+    unique %>%
+    filter(Day < 100) %>%
     filter(Seq == 1) %>%
-    ggplot(aes(x = Day, y = H.count, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count, color=as.factor(Color.Code))) +
     scale_fill_manual(values=palette.list) +
     geom_bar(stat='identity', width=1) +
     ylim(0,NA) +
@@ -5109,9 +5177,6 @@ df %>%
 
 #+RESULTS:
 [[file:img/peg_2014-122-v3.png]]
-
-**** Strategy #2: 360 bins (360 H of the most frequent V)
-
-
+**** TODO Strategy #3: (360 H, fixed S=1, but V is the mode)
 
 
