@@ -1,0 +1,520 @@
+#+TITLE: Alles's PEG LabBook
+#+AUTHOR: Guilherme Alles
+#+LATEX_HEADER: \usepackage[margin=2cm,a4paper]{geometry}
+#+STARTUP: overview indent
+#+TAGS: Lucas(L) noexport(n) deprecated(d)
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
+
+This file refers to the analysis of a single image. I will use this
+analysis to debug the double histogram plot.
+
+* Dataset description
+
+We have 5281 JPG images.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | wc -l
+#+end_src
+
+#+RESULTS:
+: 5281
+
+The head.
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | head -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_091_10_1.jpg
+Output_PEG/2014/2014_091_10_2.jpg
+Output_PEG/2014/2014_091_10_4.jpg
+Output_PEG/2014/2014_091_10_5.jpg
+Output_PEG/2014/2014_091_11_1.jpg
+Output_PEG/2014/2014_091_11_2.jpg
+Output_PEG/2014/2014_091_11_3.jpg
+Output_PEG/2014/2014_091_12_1.jpg
+Output_PEG/2014/2014_091_12_2.jpg
+Output_PEG/2014/2014_091_12_3.jpg
+#+end_example
+
+* ROI and Community Masks
+
+Masks have been provided by [[https://www.researchgate.net/profile/Bruna_Alberton][Bruna Alberton]].
+
+** ROI                                                              :ATTACH:
+:PROPERTIES:
+:ID:       d0f675a1-3705-49d1-9c00-576025f3142f
+:Attachments: roi1_PEG.bmp roi2_PEG.bmp roi58_PEG.bmp roi60_PEG.bmp roi61_PEG.bmp roi62_PEG.bmp roi65_PEG.bmp roi66_PEG.bmp roi68_PEG.bmp
+:END:
+
+** Community                                                        :ATTACH:
+:PROPERTIES:
+:Attachments: Comunidade-PEG.bmp
+:ID:       70a49c79-ab5d-43f4-99d8-5b9d609da83b
+:END:
+
+** Lists all masks
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.bmp
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
+#+end_example
+
+* Analysis
+** Dependencies
+In order to reproduce this analysis, you need the following packages:
+#+BEGIN_SRC R :session analysis
+install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
+#+END_SRC
+
+#+RESULTS:
+
+** Masks
+*** Convert all masks to JPG in RGB mode
+
+Masks should be in the JPEG file format using a 24bit depth (24bit RGB
+without alpha). Since the masks that have been provided are in the BMP
+file format in grayscale (8bit only), we need to convert them. This
+procedure is done only once since we are saving the JPEG masks in this
+repository.
+
+#+name: mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep bmp$) $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep bmp$);
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    pushd $DIR
+    convert $FILE -type TrueColor $(basename $FILE .bmp).jpg
+    popd
+done
+#+end_src
+
+#+RESULTS: mask_bmp2jpg
+#+begin_example
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+~/Mac SDCard/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+#+end_example
+
+List the new JPEG masks after conversion:
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+#+end_example
+
+*** Convert all masks to 1280 x 960
+
+Masks should have the same dimensions as the pictures in the dataset.
+
+This procedure has already been executed, results have been committed.
+
+#+header: dep0=mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg$ | grep -v "\-2") $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg$ | grep -v "\-2");
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    echo $mask
+    jpeginfo $mask
+    pushd $DIR
+    convert $FILE -resize 1280x960 -type TrueColor $(basename $FILE .jpg)-2.jpg
+    mv $(basename $FILE .jpg)-2.jpg $FILE
+    popd
+done
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+~/Mac SDCard/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+~/Mac SDCard/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/Mac SDCard/phenology
+~/Mac SDCard/phenology
+#+end_example
+
+** Pictures
+
+Capture names from all the sample images
+#+name: peg
+#+begin_src R :results output :session analysis :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+# A tibble: 5,281 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+Let's keep only one image, say, the one with index 42. 
+
+#+BEGIN_SRC R :session analysis
+df.peg <- df.peg[42,] %>%
+  select(Picture.Filename, Picture)
+df.peg %>% as.data.frame
+#+END_SRC
+
+#+RESULTS:
+| Output_PEG/2014/2014_092_08_5.jpg | 2014_092_08_5 |
+
+** Overview
+*** HSV with single, non static V
+As discussed with Lucas, we will try to plot a single histogram (as
+previous implementations already did). 
+
+Instead of fixing the V value to 1, however, we will be sampling the V
+values (using the double histogram method) and assigning the mode of V
+to the whole data set.
+
+Let's start by loading the necessary packages into our session and doing a little bit of setup...
+#+BEGIN_SRC R :session analysis
+suppressMessages(library(tidyverse))
+suppressMessages(library(colorspace))
+suppressMessages(library(phenovisr))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+: FALSE
+
+Now, let's read the mask we will be using into a tibble.
+#+BEGIN_SRC R :session analysis :results output
+df.masks <- tibble(Mask.Filename = list.files('data/70', 
+  recursive = TRUE, 
+  pattern = 'jpg', 
+  full.names = TRUE)) %>%
+    separate(Mask.Filename, sep = '/', into = c('A', 'B', 'C', 'Mask'), remove = FALSE) %>%
+    mutate(Mask = gsub('.jpg', '', Mask)) %>%
+    mutate(Mask = gsub('-', '_', Mask)) %>%
+    select(-A, -B, -C)
+    df.masks
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                                                 Mask          
+:   <chr>                                                         <chr>         
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+
+We already have the image we will be working with (from the previous
+steps). Let's take a look...
+#+BEGIN_SRC R :session analysis :results output
+df.peg %>% as.data.frame
+#+END_SRC
+
+#+RESULTS:
+:                    Picture.Filename       Picture
+: 1 Output_PEG/2014/2014_092_08_5.jpg 2014_092_08_5
+
+Now that we have the image and the mask, let's join the data in a
+single data frame.
+#+BEGIN_SRC R :session analysis :results output
+df.join <- df.masks %>%
+  mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.peg %>% mutate(dummy = TRUE), by = 'dummy') %>%
+  select(-dummy)
+df.join
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 4
+: # Groups:   Mask [1]
+:   Mask.Filename                     Mask      Picture.Filename        Picture  
+:   <chr>                             <chr>     <chr>                   <chr>    
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_0… 2014_092…
+
+
+Okay, we are now ready to calculate the histograms for the chosen
+picture. Here, we define the function that will perform the
+calculations and apply this funciton for all the rows in the df.join
+tibble.
+#+BEGIN_SRC R :session analysis :results output
+gethist <- function(df, nsubins = 10) {
+  mask <- df %>% slice(1) %>% pull(Mask.Filename)
+  picture <- df %>% pull(Picture.Filename)
+  phenovis_read_mask(mask)
+  phenovis_get_HSV_double_histogram(phenovis_H(), picture, nsubins) %>%
+    as.tibble
+}
+
+df.histograms <- df.join %>%
+  do(gethist(.)) %>%
+  ungroup()
+
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 360 x 17
+   Mask   Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
+   <chr>  <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
+ 1 Comun… Outp…  1280    960 508770     0 731178 725457  1692  1652   814   504
+ 2 Comun… Outp…  1280    960 508770     1     43      0     3     2     4     3
+ 3 Comun… Outp…  1280    960 508770     2    307     21    23    37    43    45
+ 4 Comun… Outp…  1280    960 508770     3    321     46    14    17    40    57
+ 5 Comun… Outp…  1280    960 508770     4    232     72    34    29    19    21
+ 6 Comun… Outp…  1280    960 508770     5    718    101    64   131   118    73
+ 7 Comun… Outp…  1280    960 508770     6    246    107     7    29    16    25
+ 8 Comun… Outp…  1280    960 508770     7    368    105    14    15    38    44
+ 9 Comun… Outp…  1280    960 508770     8    354    129    11    17    33    31
+10 Comun… Outp…  1280    960 508770     9    846     57    70   129   156   117
+# ... with 350 more rows, and 5 more variables: V5 <int>, V6 <int>, V7 <int>,
+#   V8 <int>, V9 <int>
+#+end_example
+
+The resulting output is a tibble containing the histograms for each H value, for every image (since we are working with a single image, there are 360 rows (for 360 H values). For each H, we can find a histogram of the observations of V. Note that the "Pixels" column only shows the numver of considered pixels after applying the mask.
+
+For each row, let's get the mode of the collected V values. In case of
+a tie (i.e. two bins with the same value), we'll get the last one to
+get a more vibrant color.
+#+BEGIN_SRC R :session analysis :results output
+v.bins <- df.histograms %>%
+  select(V0, V1, V2, V3, V4, V5, V6, V7, V8, V9)
+
+binsMode <- colnames(v.bins)[max.col(v.bins, ties.method = 'last')]
+
+df.histograms.mode <- df.histograms %>%
+  mutate(V.Mode = binsMode)
+
+df.histograms.mode %>% head(10) %>% as.data.frame
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+             Mask                              Name Width Height Pixels H
+1  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 0
+2  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 1
+3  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 2
+4  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 3
+5  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 4
+6  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 5
+7  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 6
+8  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 7
+9  Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 8
+10 Comunidade_PEG Output_PEG/2014/2014_092_08_5.jpg  1280    960 508770 9
+    Count     V0   V1   V2  V3  V4  V5  V6 V7 V8  V9 V.Mode
+1  731178 725457 1692 1652 814 504 275 222 91 69 402     V0
+2      43      0    3    2   4   3   5   9  8  1   8     V6
+3     307     21   23   37  43  45  34  36 32 20  16     V4
+4     321     46   14   17  40  57  47  42 14 17  27     V4
+5     232     72   34   29  19  21  15  18  5  5  14     V0
+6     718    101   64  131 118  73  59  68 44 13  47     V2
+7     246    107    7   29  16  25  15   9  5 10  23     V0
+8     368    105   14   15  38  44  34  33 30 27  28     V0
+9     354    129   11   17  33  31  29  32 18 17  37     V0
+10    846     57   70  129 156 117  84 105 54 30  44     V3
+#+end_example
+
+Now let's tidy the data. we will also remove the bins information (V0 to
+V9) because they are not relevant anymore.
+#+BEGIN_SRC R :session analysis :results output
+df.histograms.mode.tidy <- df.histograms.mode %>%
+  select(-V0, -V1, -V2, -V3, -V4, -V5, -V6, -V7, -V8, -V9) %>%
+  mutate(V.Mode = as.integer(substr(V.Mode, 2, 100))) %>%
+  mutate(value = H * 10 + V.Mode) %>%
+  separate(Name, sep = '/', into = c('Dir', 'Year', 'Filename')) %>%
+  select(-Dir, -Year) %>%
+  separate(Filename, sep = '_', into = c('Year', 'Day', 'Hour', 'Sequence'), convert = TRUE) %>%
+  mutate(Sequence = gsub('.jpg', '', Sequence))
+
+df.histograms.mode.tidy %>% head(10) %>% as.data.frame
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+             Mask Year Day Hour Sequence Width Height Pixels H  Count V.Mode
+1  Comunidade_PEG 2014  92    8        5  1280    960 508770 0 731178      0
+2  Comunidade_PEG 2014  92    8        5  1280    960 508770 1     43      6
+3  Comunidade_PEG 2014  92    8        5  1280    960 508770 2    307      4
+4  Comunidade_PEG 2014  92    8        5  1280    960 508770 3    321      4
+5  Comunidade_PEG 2014  92    8        5  1280    960 508770 4    232      0
+6  Comunidade_PEG 2014  92    8        5  1280    960 508770 5    718      2
+7  Comunidade_PEG 2014  92    8        5  1280    960 508770 6    246      0
+8  Comunidade_PEG 2014  92    8        5  1280    960 508770 7    368      0
+9  Comunidade_PEG 2014  92    8        5  1280    960 508770 8    354      0
+10 Comunidade_PEG 2014  92    8        5  1280    960 508770 9    846      3
+   value
+1      0
+2     16
+3     24
+4     34
+5     40
+6     52
+7     60
+8     70
+9     80
+10    93
+#+end_example
+
+The last step is to create the color palette
+#+BEGIN_SRC R :session analysis :results output
+palette <- expand.grid(V = seq(1, 10), H = seq(0, 359), S = 1) %>%
+  mutate(Color = hex(HSV(H, S, V/10)))
+
+palette %>% head(20)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+    V H S   Color
+1   1 0 1 #1A0000
+2   2 0 1 #330000
+3   3 0 1 #4D0000
+4   4 0 1 #660000
+5   5 0 1 #800000
+6   6 0 1 #990000
+7   7 0 1 #B30000
+8   8 0 1 #CC0000
+9   9 0 1 #E60000
+10 10 0 1 #FF0000
+11  1 1 1 #1A0000
+12  2 1 1 #330100
+13  3 1 1 #4D0100
+14  4 1 1 #660200
+15  5 1 1 #800200
+16  6 1 1 #990300
+17  7 1 1 #B30300
+18  8 1 1 #CC0300
+19  9 1 1 #E60400
+20 10 1 1 #FF0400
+#+end_example
+
+
+Now, let's finally plot it...
+#+BEGIN_SRC R :session analysis :results output graphics :file img/PEG_2014_single.png :exports both :width 700 :height: 500
+df.histograms.mode.tidy %>%
+  mutate(value = rep(10, 360)) %>%
+  filter(H != 0) %>%
+  ggplot(aes(x = Day, y = Count/Pixels, fill = as.factor(value))) + 
+    geom_bar(stat = 'identity', width = 1) +
+    ylim(0, NA) +
+    theme_bw(base_size = 16) +
+    xlab('Day of the Year 2014') +
+    ylab('Normalized size of bins') +
+    scale_fill_manual(values=palette$Color) +
+    guides(fill = FALSE)
+#+END_SRC
+
+#+RESULTS:
+[[file:img/PEG_2014_single.png]]
+
+#+BEGIN_SRC R :session analysis :results output graphics :file img/PEG_2014_single.png :exports both :width 1400 :height 1000
+df.histograms.mode.tidy %>%
+  ggplot(aes(x = Day, y = Count/value, fill = as.factor(value))) +
+    geom_bar(stat = 'identity', width = 1) + 
+    ylim(0, NA) + 
+    theme_bw(base_size = 16) +
+    xlab('Day of the Year 2014') +
+    ylab('Normalized size of bins') +
+    scale_fill_manual(values=palette$Color) +
+    theme(
+      plot.margin = unit(c(0,0,0,0), "cm"),
+      legend.spacing = unit(1, "mm"),
+      panel.grid = element_blank(),
+      legend.position = "top",
+      legend.justification = "left",
+      legend.box.spacing = unit(0, "pt"),
+      legend.box.margin = margin(0,0,0,0),
+      legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    facet_grid(Hour~Mask, scales = 'free')
+#+END_SRC
+
+#+RESULTS:
+[[file:img/PEG_2014_single.png]]

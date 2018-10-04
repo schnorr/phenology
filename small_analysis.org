@@ -1,0 +1,4446 @@
+#+TITLE: Lucas's PEG LabBook
+#+AUTHOR: Lucas Mello Schnorr
+#+LATEX_HEADER: \usepackage[margin=2cm,a4paper]{geometry}
+#+STARTUP: overview indent
+#+TAGS: Lucas(L) noexport(n) deprecated(d)
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+SEQ_TODO: TODO(t!) STARTED(s!) WAITING(w!) | DONE(d!) CANCELLED(c!) DEFERRED(f!)
+
+This file refers to a smaller analysis of the PEG dataset, used for
+development.
+
+* Dataset description
+
+We have 5281 JPG images.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | wc -l
+#+end_src
+
+#+RESULTS:
+: 5281
+
+The head.
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | head -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_091_10_1.jpg
+Output_PEG/2014/2014_091_10_2.jpg
+Output_PEG/2014/2014_091_10_4.jpg
+Output_PEG/2014/2014_091_10_5.jpg
+Output_PEG/2014/2014_091_11_1.jpg
+Output_PEG/2014/2014_091_11_2.jpg
+Output_PEG/2014/2014_091_11_3.jpg
+Output_PEG/2014/2014_091_12_1.jpg
+Output_PEG/2014/2014_091_12_2.jpg
+Output_PEG/2014/2014_091_12_3.jpg
+#+end_example
+
+The tail.
+
+#+begin_src shell :results output
+find Output_PEG/ | grep jpg$ | sort | tail -n10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Output_PEG/2014/2014_212_14_2.jpg
+Output_PEG/2014/2014_212_14_4.jpg
+Output_PEG/2014/2014_212_14_5.jpg
+Output_PEG/2014/2014_212_16_1.jpg
+Output_PEG/2014/2014_212_16_3.jpg
+Output_PEG/2014/2014_212_16_4.jpg
+Output_PEG/2014/2014_212_17_1.jpg
+Output_PEG/2014/2014_212_17_2.jpg
+Output_PEG/2014/2014_212_17_4.jpg
+Output_PEG/2014/2014_212_17_5.jpg
+#+end_example
+
+* ROI and Community Masks
+
+Masks have been provided by [[https://www.researchgate.net/profile/Bruna_Alberton][Bruna Alberton]].
+
+** ROI                                                              :ATTACH:
+:PROPERTIES:
+:ID:       d0f675a1-3705-49d1-9c00-576025f3142f
+:Attachments: roi1_PEG.bmp roi2_PEG.bmp roi58_PEG.bmp roi60_PEG.bmp roi61_PEG.bmp roi62_PEG.bmp roi65_PEG.bmp roi66_PEG.bmp roi68_PEG.bmp
+:END:
+
+** Community                                                        :ATTACH:
+:PROPERTIES:
+:Attachments: Comunidade-PEG.bmp
+:ID:       70a49c79-ab5d-43f4-99d8-5b9d609da83b
+:END:
+
+** Lists all masks
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.bmp
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.bmp
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.bmp
+#+end_example
+
+* Analysis
+** Dependencies
+*** Installed from Cran
+In order to reproduce this analysis, you need the following packages:
+#+BEGIN_SRC R
+install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
+#+END_SRC
+*** Phenovisr (Installed from GITHUB)
+#+begin_src R :results output :session :exports both
+library(devtools)
+install_github("schnorr/phenovisr");
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Downloading GitHub repo schnorr/phenovisr@master
+from URL https://api.github.com/repos/schnorr/phenovisr/zipball/master
+Installing phenovisr
+trying URL 'https://cloud.r-project.org/src/contrib/Rcpp_0.12.19.tar.gz'
+Content type 'application/x-gzip' length 3646456 bytes (3.5 MB)
+==================================================
+downloaded 3.5 MB
+
+Installing Rcpp
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL '/tmp/RtmpUQHibf/devtools255274ddec67/Rcpp'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘Rcpp’ ...
+,** package ‘Rcpp’ successfully unpacked and MD5 sums checked
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Date.cpp -o Date.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Module.cpp -o Module.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Rcpp_init.cpp -o Rcpp_init.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c api.cpp -o api.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c attributes.cpp -o attributes.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c barrier.cpp -o barrier.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o Rcpp.so Date.o Module.o Rcpp_init.o api.o attributes.o barrier.o -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/libs
+,** R
+,** inst
+,** tests
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (Rcpp)
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL  \
+  '/tmp/RtmpUQHibf/devtools25521c0b0782/schnorr-phenovisr-1926222'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘phenovisr’ ...
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c RcppExports.cpp -o RcppExports.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c gcc.cpp -o gcc.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c jpeg_image.cpp -o jpeg_image.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c main.cpp -o main.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c metrics.cpp -o metrics.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c rgb2hsv.cpp -o rgb2hsv.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o phenovisr.so RcppExports.o gcc.o jpeg_image.o main.o metrics.o rgb2hsv.o -ljpeg -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/phenovisr/libs
+,** R
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** testing if installed package can be loaded
+,* DONE (phenovisr)
+#+end_example
+
+** Masks
+*** Convert all masks to JPG in RGB mode
+
+Masks should be in the JPEG file format using a 24bit depth (24bit RGB
+without alpha). Since the masks that have been provided are in the BMP
+file format in grayscale (8bit only), we need to convert them. This
+procedure is done only once since we are saving the JPEG masks in this
+repository.
+
+#+name: mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep bmp$) $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep bmp$);
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    pushd $DIR
+    convert $FILE -type TrueColor $(basename $FILE .bmp).jpg
+    popd
+done
+#+end_src
+
+#+RESULTS: mask_bmp2jpg
+#+begin_example
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+~/dev/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/dev/phenology
+~/dev/phenology
+#+end_example
+
+List the new JPEG masks after conversion:
+
+#+begin_src shell :results output
+find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg
+find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+#+end_example
+
+*** Convert all masks to 1280 x 960
+
+Masks should have the same dimensions as the pictures in the dataset.
+
+This procedure has already been executed, results have been committed.
+
+#+header: dep0=mask_bmp2jpg
+#+begin_src shell :results output
+for mask in $(find data/d0/f675a1-3705-49d1-9c00-576025f3142f | grep jpg$ | grep -v "\-2") $(find data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b | grep jpg$ | grep -v "\-2");
+do
+    FILE=$(basename $mask)
+    DIR=$(dirname $mask)
+    echo $mask
+    jpeginfo $mask
+    pushd $DIR
+    convert $FILE -resize 1280x960 -type TrueColor $(basename $FILE .jpg)-2.jpg
+    mv $(basename $FILE .jpg)-2.jpg $FILE
+    popd
+done
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi61_PEG.jpg 1282 x 961  24bit JFIF  N   17735 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi60_PEG.jpg 1282 x 961  24bit JFIF  N   17061 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi68_PEG.jpg 1282 x 961  24bit JFIF  N   16154 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi62_PEG.jpg 1282 x 961  24bit JFIF  N   17076 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi2_PEG.jpg 1282 x 961  24bit JFIF  N   22756 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi65_PEG.jpg 1282 x 961  24bit JFIF  N   16745 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi58_PEG.jpg 1282 x 961  24bit JFIF  N   17880 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi66_PEG.jpg 1282 x 961  24bit JFIF  N   17088 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg
+data/d0/f675a1-3705-49d1-9c00-576025f3142f/roi1_PEG.jpg 1282 x 961  24bit JFIF  N   20952 
+~/dev/phenology/data/d0/f675a1-3705-49d1-9c00-576025f3142f ~/dev/phenology
+~/dev/phenology
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg
+data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg 1280 x 960  24bit JFIF  N   35389 
+~/dev/phenology/data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b ~/dev/phenology
+~/dev/phenology
+#+end_example
+
+*** Masks description in a tibble
+
+Reading masks into a data.frame. Since this is still experimental, I
+will apply a single mask to make the process faster.
+#+name: masks
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+df.masks
+#+end_src
+
+#+RESULTS: masks
+: # A tibble: 1 x 2
+:   Mask.Filename                                                 Mask          
+:   <chr>                                                         <chr>         
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+
+** Pictures
+
+Capture names from all the sample images. There are 5281 pictures.
+
+#+name: peg
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+# A tibble: 5,281 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+To make it faster, I'll plot images from 10AM relative to a single
+year. The 10AM pictures can be identified when the sequence number
+equals to one. I will not consider other pictures of the same day, for
+now. By doing so, we reduce our dataset for 122 pictures.
+
+#+begin_src R :results output :session :exports both
+df.peg <- df.peg %>% 
+  mutate(Separator = Picture) %>%
+  separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
+  mutate(Sequence = as.numeric(Sequence)) %>%
+  mutate(Hour = as.numeric(Hour)) %>%
+  filter(Sequence == 1) %>%
+  filter(Hour == 10) %>%
+  select(Picture.Filename, Picture)
+df.peg
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_092_10_1.jpg 2014_092_10_1
+ 3 Output_PEG/2014/2014_093_10_1.jpg 2014_093_10_1
+ 4 Output_PEG/2014/2014_094_10_1.jpg 2014_094_10_1
+ 5 Output_PEG/2014/2014_095_10_1.jpg 2014_095_10_1
+ 6 Output_PEG/2014/2014_096_10_1.jpg 2014_096_10_1
+ 7 Output_PEG/2014/2014_097_10_1.jpg 2014_097_10_1
+ 8 Output_PEG/2014/2014_098_10_1.jpg 2014_098_10_1
+ 9 Output_PEG/2014/2014_099_10_1.jpg 2014_099_10_1
+10 Output_PEG/2014/2014_100_10_1.jpg 2014_100_10_1
+# ... with 112 more rows
+#+end_example
+
+** Overview
+*** HSV with double histogram
+**** Calculate the histogram for selected pictures and mask       :ATTACH:
+:PROPERTIES:
+:ID:       866db30a-fff8-47ef-85bc-fc71e13dc71a
+:Attachments: PEG_2014_gcc.csv.gz
+:END:
+
+#+begin_src R :results output :session :exports both
+options(crayon.enabled = FALSE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+
+gethist <- function(df, vGrain=10)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), vGrain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup()
+
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > > # A tibble: 43,920 x 17
+   Mask  Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
+   <chr> <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
+ 1 Comu… Outp…  1280    960 508770     0 729544 726399   544   770   578   380
+ 2 Comu… Outp…  1280    960 508770     1      6      0     0     0     0     1
+ 3 Comu… Outp…  1280    960 508770     2    152      7    13    15    21    24
+ 4 Comu… Outp…  1280    960 508770     3    182     30    10     8    19    22
+ 5 Comu… Outp…  1280    960 508770     4    166     65    16    22    15    11
+ 6 Comu… Outp…  1280    960 508770     5    623     85    67   106    93    87
+ 7 Comu… Outp…  1280    960 508770     6    212    137     7    15     8    13
+ 8 Comu… Outp…  1280    960 508770     7    269    138     7    11    18    18
+ 9 Comu… Outp…  1280    960 508770     8    292    157     5     9    15    25
+10 Comu… Outp…  1280    960 508770     9    801     49    72   106   155   118
+# ... with 43,910 more rows, and 5 more variables: V5 <int>, V6 <int>,
+#   V7 <int>, V8 <int>, V9 <int>
+#+end_example
+
+FYI: This process can take around 1 minute.
+- But here with one picture per day for 2014 only is very fast.
+
+**** Per-mask analysis
+***** Read data and prepare for stacked bar view
+
+Tidying data...
+
+#+name: read_peg_data
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse));
+df <- df.histograms %>%
+  gather(variable, value, -Mask, -Name, -Width, -Height, -Pixels, -H, -Count) %>%
+  mutate(variable = as.integer(substr(as.character(variable), 2, 100))) %>%
+  mutate(variable = variable*360 + H) %>%
+  separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+  select(-Dir, -Year) %>%
+  separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Sequence"), convert=TRUE) %>%
+  mutate(Sequence = gsub(".jpg", "", Sequence))
+df;
+#+end_src
+
+#+RESULTS: read_peg_data
+#+begin_example
+# A tibble: 439,200 x 12
+   Mask   Year   Day  Hour Sequence Width Height Pixels     H  Count variable
+   <chr> <int> <int> <int> <chr>    <int>  <int>  <int> <int>  <int>    <dbl>
+ 1 Comu…  2014    91    10 1         1280    960 508770     0 729544        0
+ 2 Comu…  2014    91    10 1         1280    960 508770     1      6        1
+ 3 Comu…  2014    91    10 1         1280    960 508770     2    152        2
+ 4 Comu…  2014    91    10 1         1280    960 508770     3    182        3
+ 5 Comu…  2014    91    10 1         1280    960 508770     4    166        4
+ 6 Comu…  2014    91    10 1         1280    960 508770     5    623        5
+ 7 Comu…  2014    91    10 1         1280    960 508770     6    212        6
+ 8 Comu…  2014    91    10 1         1280    960 508770     7    269        7
+ 9 Comu…  2014    91    10 1         1280    960 508770     8    292        8
+10 Comu…  2014    91    10 1         1280    960 508770     9    801        9
+# ... with 439,190 more rows, and 1 more variable: value <int>
+#+end_example
+
+***** Read palette
+Let's create a palette with the combination of H and V values
+
+#+name: peg_palette
+#+begin_src R :results output :session :exports both
+suppressMessages(library(colorspace))
+palette <- expand.grid(V = seq(0, 9), H = seq(0, 359)) %>%
+mutate(Color = hex(HSV(H, 1, V/10)))
+palette
+#+end_src
+
+#+RESULTS: peg_palette
+#+begin_example
+     V   H   Color
+1    0   0 #000000
+2    1   0 #1A0000
+3    2   0 #330000
+4    3   0 #4D0000
+5    4   0 #660000
+6    5   0 #800000
+7    6   0 #990000
+8    7   0 #B30000
+9    8   0 #CC0000
+10   9   0 #E60000
+11   0   1 #000000
+12   1   1 #1A0000
+13   2   1 #330100
+14   3   1 #4D0100
+15   4   1 #660200
+16   5   1 #800200
+17   6   1 #990300
+18   7   1 #B30300
+19   8   1 #CC0300
+20   9   1 #E60400
+21   0   2 #000000
+22   1   2 #1A0100
+23   2   2 #330200
+24   3   2 #4D0300
+25   4   2 #660300
+26   5   2 #800400
+27   6   2 #990500
+28   7   2 #B30600
+29   8   2 #CC0700
+30   9   2 #E60800
+31   0   3 #000000
+32   1   3 #1A0100
+33   2   3 #330300
+34   3   3 #4D0400
+35   4   3 #660500
+36   5   3 #800600
+37   6   3 #990800
+38   7   3 #B30900
+39   8   3 #CC0A00
+40   9   3 #E60B00
+41   0   4 #000000
+42   1   4 #1A0200
+43   2   4 #330300
+44   3   4 #4D0500
+45   4   4 #660700
+46   5   4 #800800
+47   6   4 #990A00
+48   7   4 #B30C00
+49   8   4 #CC0E00
+50   9   4 #E60F00
+51   0   5 #000000
+52   1   5 #1A0200
+53   2   5 #330400
+54   3   5 #4D0600
+55   4   5 #660900
+56   5   5 #800B00
+57   6   5 #990D00
+58   7   5 #B30F00
+59   8   5 #CC1100
+60   9   5 #E61300
+61   0   6 #000000
+62   1   6 #1A0300
+63   2   6 #330500
+64   3   6 #4D0800
+65   4   6 #660A00
+66   5   6 #800D00
+67   6   6 #990F00
+68   7   6 #B31200
+69   8   6 #CC1400
+70   9   6 #E61700
+71   0   7 #000000
+72   1   7 #1A0300
+73   2   7 #330600
+74   3   7 #4D0900
+75   4   7 #660C00
+76   5   7 #800F00
+77   6   7 #991200
+78   7   7 #B31500
+79   8   7 #CC1800
+80   9   7 #E61B00
+81   0   8 #000000
+82   1   8 #1A0300
+83   2   8 #330700
+84   3   8 #4D0A00
+85   4   8 #660E00
+86   5   8 #801100
+87   6   8 #991400
+88   7   8 #B31800
+89   8   8 #CC1B00
+90   9   8 #E61F00
+91   0   9 #000000
+92   1   9 #1A0400
+93   2   9 #330800
+94   3   9 #4D0B00
+95   4   9 #660F00
+96   5   9 #801300
+97   6   9 #991700
+98   7   9 #B31B00
+99   8   9 #CC1F00
+100  9   9 #E62200
+101  0  10 #000000
+102  1  10 #1A0400
+103  2  10 #330800
+104  3  10 #4D0D00
+105  4  10 #661100
+106  5  10 #801500
+107  6  10 #991900
+108  7  10 #B31E00
+109  8  10 #CC2200
+110  9  10 #E62600
+111  0  11 #000000
+112  1  11 #1A0500
+113  2  11 #330900
+114  3  11 #4D0E00
+115  4  11 #661300
+116  5  11 #801700
+117  6  11 #991C00
+118  7  11 #B32100
+119  8  11 #CC2500
+120  9  11 #E62A00
+121  0  12 #000000
+122  1  12 #1A0500
+123  2  12 #330A00
+124  3  12 #4D0F00
+125  4  12 #661400
+126  5  12 #801900
+127  6  12 #991F00
+128  7  12 #B32400
+129  8  12 #CC2900
+130  9  12 #E62E00
+131  0  13 #000000
+132  1  13 #1A0600
+133  2  13 #330B00
+134  3  13 #4D1100
+135  4  13 #661600
+136  5  13 #801C00
+137  6  13 #992100
+138  7  13 #B32700
+139  8  13 #CC2C00
+140  9  13 #E63200
+141  0  14 #000000
+142  1  14 #1A0600
+143  2  14 #330C00
+144  3  14 #4D1200
+145  4  14 #661800
+146  5  14 #801E00
+147  6  14 #992400
+148  7  14 #B32A00
+149  8  14 #CC3000
+150  9  14 #E63600
+151  0  15 #000000
+152  1  15 #1A0600
+153  2  15 #330D00
+154  3  15 #4D1300
+155  4  15 #661A00
+156  5  15 #802000
+157  6  15 #992600
+158  7  15 #B32D00
+159  8  15 #CC3300
+160  9  15 #E63900
+161  0  16 #000000
+162  1  16 #1A0700
+163  2  16 #330E00
+164  3  16 #4D1400
+165  4  16 #661B00
+166  5  16 #802200
+167  6  16 #992900
+168  7  16 #B33000
+169  8  16 #CC3600
+170  9  16 #E63D00
+171  0  17 #000000
+172  1  17 #1A0700
+173  2  17 #330E00
+174  3  17 #4D1600
+175  4  17 #661D00
+176  5  17 #802400
+177  6  17 #992B00
+178  7  17 #B33300
+179  8  17 #CC3A00
+180  9  17 #E64100
+181  0  18 #000000
+182  1  18 #1A0800
+183  2  18 #330F00
+184  3  18 #4D1700
+185  4  18 #661F00
+186  5  18 #802600
+187  6  18 #992E00
+188  7  18 #B33600
+189  8  18 #CC3D00
+190  9  18 #E64500
+191  0  19 #000000
+192  1  19 #1A0800
+193  2  19 #331000
+194  3  19 #4D1800
+195  4  19 #662000
+196  5  19 #802800
+197  6  19 #993000
+198  7  19 #B33900
+199  8  19 #CC4100
+200  9  19 #E64900
+201  0  20 #000000
+202  1  20 #1A0800
+203  2  20 #331100
+204  3  20 #4D1900
+205  4  20 #662200
+206  5  20 #802A00
+207  6  20 #993300
+208  7  20 #B33B00
+209  8  20 #CC4400
+210  9  20 #E64C00
+211  0  21 #000000
+212  1  21 #1A0900
+213  2  21 #331200
+214  3  21 #4D1B00
+215  4  21 #662400
+216  5  21 #802D00
+217  6  21 #993600
+218  7  21 #B33E00
+219  8  21 #CC4700
+220  9  21 #E65000
+221  0  22 #000000
+222  1  22 #1A0900
+223  2  22 #331300
+224  3  22 #4D1C00
+225  4  22 #662500
+226  5  22 #802F00
+227  6  22 #993800
+228  7  22 #B34100
+229  8  22 #CC4B00
+230  9  22 #E65400
+231  0  23 #000000
+232  1  23 #1A0A00
+233  2  23 #331400
+234  3  23 #4D1D00
+235  4  23 #662700
+236  5  23 #803100
+237  6  23 #993B00
+238  7  23 #B34400
+239  8  23 #CC4E00
+240  9  23 #E65800
+241  0  24 #000000
+242  1  24 #1A0A00
+243  2  24 #331400
+244  3  24 #4D1F00
+245  4  24 #662900
+246  5  24 #803300
+247  6  24 #993D00
+248  7  24 #B34700
+249  8  24 #CC5200
+250  9  24 #E65C00
+251  0  25 #000000
+252  1  25 #1A0B00
+253  2  25 #331500
+254  3  25 #4D2000
+255  4  25 #662B00
+256  5  25 #803500
+257  6  25 #994000
+258  7  25 #B34A00
+259  8  25 #CC5500
+260  9  25 #E66000
+261  0  26 #000000
+262  1  26 #1A0B00
+263  2  26 #331600
+264  3  26 #4D2100
+265  4  26 #662C00
+266  5  26 #803700
+267  6  26 #994200
+268  7  26 #B34D00
+269  8  26 #CC5800
+270  9  26 #E66300
+271  0  27 #000000
+272  1  27 #1A0B00
+273  2  27 #331700
+274  3  27 #4D2200
+275  4  27 #662E00
+276  5  27 #803900
+277  6  27 #994500
+278  7  27 #B35000
+279  8  27 #CC5C00
+280  9  27 #E66700
+281  0  28 #000000
+282  1  28 #1A0C00
+283  2  28 #331800
+284  3  28 #4D2400
+285  4  28 #663000
+286  5  28 #803C00
+287  6  28 #994700
+288  7  28 #B35300
+289  8  28 #CC5F00
+290  9  28 #E66B00
+291  0  29 #000000
+292  1  29 #1A0C00
+293  2  29 #331900
+294  3  29 #4D2500
+295  4  29 #663100
+296  5  29 #803E00
+297  6  29 #994A00
+298  7  29 #B35600
+299  8  29 #CC6300
+300  9  29 #E66F00
+301  0  30 #000000
+302  1  30 #1A0D00
+303  2  30 #331A00
+304  3  30 #4D2600
+305  4  30 #663300
+306  5  30 #804000
+307  6  30 #994D00
+308  7  30 #B35900
+309  8  30 #CC6600
+310  9  30 #E67300
+311  0  31 #000000
+312  1  31 #1A0D00
+313  2  31 #331A00
+314  3  31 #4D2800
+315  4  31 #663500
+316  5  31 #804200
+317  6  31 #994F00
+318  7  31 #B35C00
+319  8  31 #CC6900
+320  9  31 #E67700
+321  0  32 #000000
+322  1  32 #1A0E00
+323  2  32 #331B00
+324  3  32 #4D2900
+325  4  32 #663600
+326  5  32 #804400
+327  6  32 #995200
+328  7  32 #B35F00
+329  8  32 #CC6D00
+330  9  32 #E67A00
+331  0  33 #000000
+332  1  33 #1A0E00
+333  2  33 #331C00
+334  3  33 #4D2A00
+335  4  33 #663800
+336  5  33 #804600
+337  6  33 #995400
+338  7  33 #B36200
+339  8  33 #CC7000
+340  9  33 #E67E00
+341  0  34 #000000
+342  1  34 #1A0E00
+343  2  34 #331D00
+344  3  34 #4D2B00
+345  4  34 #663A00
+346  5  34 #804800
+347  6  34 #995700
+348  7  34 #B36500
+349  8  34 #CC7400
+350  9  34 #E68200
+351  0  35 #000000
+352  1  35 #1A0F00
+353  2  35 #331E00
+354  3  35 #4D2D00
+355  4  35 #663C00
+356  5  35 #804A00
+357  6  35 #995900
+358  7  35 #B36800
+359  8  35 #CC7700
+360  9  35 #E68600
+361  0  36 #000000
+362  1  36 #1A0F00
+363  2  36 #331F00
+364  3  36 #4D2E00
+365  4  36 #663D00
+366  5  36 #804D00
+367  6  36 #995C00
+368  7  36 #B36B00
+369  8  36 #CC7A00
+370  9  36 #E68A00
+371  0  37 #000000
+372  1  37 #1A1000
+373  2  37 #331F00
+374  3  37 #4D2F00
+375  4  37 #663F00
+376  5  37 #804F00
+377  6  37 #995E00
+378  7  37 #B36E00
+379  8  37 #CC7E00
+380  9  37 #E68E00
+381  0  38 #000000
+382  1  38 #1A1000
+383  2  38 #332000
+384  3  38 #4D3000
+385  4  38 #664100
+386  5  38 #805100
+387  6  38 #996100
+388  7  38 #B37100
+389  8  38 #CC8100
+390  9  38 #E69100
+391  0  39 #000000
+392  1  39 #1A1100
+393  2  39 #332100
+394  3  39 #4D3200
+395  4  39 #664200
+396  5  39 #805300
+397  6  39 #996300
+398  7  39 #B37400
+399  8  39 #CC8500
+400  9  39 #E69500
+401  0  40 #000000
+402  1  40 #1A1100
+403  2  40 #332200
+404  3  40 #4D3300
+405  4  40 #664400
+406  5  40 #805500
+407  6  40 #996600
+408  7  40 #B37700
+409  8  40 #CC8800
+410  9  40 #E69900
+411  0  41 #000000
+412  1  41 #1A1100
+413  2  41 #332300
+414  3  41 #4D3400
+415  4  41 #664600
+416  5  41 #805700
+417  6  41 #996900
+418  7  41 #B37A00
+419  8  41 #CC8B00
+420  9  41 #E69D00
+421  0  42 #000000
+422  1  42 #1A1200
+423  2  42 #332400
+424  3  42 #4D3600
+425  4  42 #664700
+426  5  42 #805900
+427  6  42 #996B00
+428  7  42 #B37D00
+429  8  42 #CC8F00
+430  9  42 #E6A100
+431  0  43 #000000
+432  1  43 #1A1200
+433  2  43 #332500
+434  3  43 #4D3700
+435  4  43 #664900
+436  5  43 #805B00
+437  6  43 #996E00
+438  7  43 #B38000
+439  8  43 #CC9200
+440  9  43 #E6A400
+441  0  44 #000000
+442  1  44 #1A1300
+443  2  44 #332500
+444  3  44 #4D3800
+445  4  44 #664B00
+446  5  44 #805E00
+447  6  44 #997000
+448  7  44 #B38300
+449  8  44 #CC9600
+450  9  44 #E6A800
+451  0  45 #000000
+452  1  45 #1A1300
+453  2  45 #332600
+454  3  45 #4D3900
+455  4  45 #664D00
+456  5  45 #806000
+457  6  45 #997300
+458  7  45 #B38600
+459  8  45 #CC9900
+460  9  45 #E6AC00
+461  0  46 #000000
+462  1  46 #1A1400
+463  2  46 #332700
+464  3  46 #4D3B00
+465  4  46 #664E00
+466  5  46 #806200
+467  6  46 #997500
+468  7  46 #B38900
+469  8  46 #CC9C00
+470  9  46 #E6B000
+471  0  47 #000000
+472  1  47 #1A1400
+473  2  47 #332800
+474  3  47 #4D3C00
+475  4  47 #665000
+476  5  47 #806400
+477  6  47 #997800
+478  7  47 #B38C00
+479  8  47 #CCA000
+480  9  47 #E6B400
+481  0  48 #000000
+482  1  48 #1A1400
+483  2  48 #332900
+484  3  48 #4D3D00
+485  4  48 #665200
+486  5  48 #806600
+487  6  48 #997A00
+488  7  48 #B38F00
+489  8  48 #CCA300
+490  9  48 #E6B800
+491  0  49 #000000
+492  1  49 #1A1500
+493  2  49 #332A00
+494  3  49 #4D3E00
+495  4  49 #665300
+496  5  49 #806800
+497  6  49 #997D00
+498  7  49 #B39200
+499  8  49 #CCA700
+500  9  49 #E6BB00
+501  0  50 #000000
+502  1  50 #1A1500
+503  2  50 #332B00
+504  3  50 #4D4000
+505  4  50 #665500
+506  5  50 #806A00
+507  6  50 #998000
+508  7  50 #B39500
+509  8  50 #CCAA00
+510  9  50 #E6BF00
+511  0  51 #000000
+512  1  51 #1A1600
+513  2  51 #332B00
+514  3  51 #4D4100
+515  4  51 #665700
+516  5  51 #806C00
+517  6  51 #998200
+518  7  51 #B39800
+519  8  51 #CCAD00
+520  9  51 #E6C300
+521  0  52 #000000
+522  1  52 #1A1600
+523  2  52 #332C00
+524  3  52 #4D4200
+525  4  52 #665800
+526  5  52 #806F00
+527  6  52 #998500
+528  7  52 #B39B00
+529  8  52 #CCB100
+530  9  52 #E6C700
+531  0  53 #000000
+532  1  53 #1A1700
+533  2  53 #332D00
+534  3  53 #4D4400
+535  4  53 #665A00
+536  5  53 #807100
+537  6  53 #998700
+538  7  53 #B39E00
+539  8  53 #CCB400
+540  9  53 #E6CB00
+541  0  54 #000000
+542  1  54 #1A1700
+543  2  54 #332E00
+544  3  54 #4D4500
+545  4  54 #665C00
+546  5  54 #807300
+547  6  54 #998A00
+548  7  54 #B3A100
+549  8  54 #CCB800
+550  9  54 #E6CF00
+551  0  55 #000000
+552  1  55 #1A1700
+553  2  55 #332F00
+554  3  55 #4D4600
+555  4  55 #665E00
+556  5  55 #807500
+557  6  55 #998C00
+558  7  55 #B3A400
+559  8  55 #CCBB00
+560  9  55 #E6D200
+561  0  56 #000000
+562  1  56 #1A1800
+563  2  56 #333000
+564  3  56 #4D4700
+565  4  56 #665F00
+566  5  56 #807700
+567  6  56 #998F00
+568  7  56 #B3A700
+569  8  56 #CCBE00
+570  9  56 #E6D600
+571  0  57 #000000
+572  1  57 #1A1800
+573  2  57 #333000
+574  3  57 #4D4900
+575  4  57 #666100
+576  5  57 #807900
+577  6  57 #999100
+578  7  57 #B3AA00
+579  8  57 #CCC200
+580  9  57 #E6DA00
+581  0  58 #000000
+582  1  58 #1A1900
+583  2  58 #333100
+584  3  58 #4D4A00
+585  4  58 #666300
+586  5  58 #807B00
+587  6  58 #999400
+588  7  58 #B3AD00
+589  8  58 #CCC500
+590  9  58 #E6DE00
+591  0  59 #000000
+592  1  59 #1A1900
+593  2  59 #333200
+594  3  59 #4D4B00
+595  4  59 #666400
+596  5  59 #807D00
+597  6  59 #999600
+598  7  59 #B3B000
+599  8  59 #CCC900
+600  9  59 #E6E200
+601  0  60 #000000
+602  1  60 #1A1A00
+603  2  60 #333300
+604  3  60 #4D4D00
+605  4  60 #666600
+606  5  60 #808000
+607  6  60 #999900
+608  7  60 #B3B300
+609  8  60 #CCCC00
+610  9  60 #E6E600
+611  0  61 #000000
+612  1  61 #191A00
+613  2  61 #323300
+614  3  61 #4B4D00
+615  4  61 #646600
+616  5  61 #7D8000
+617  6  61 #969900
+618  7  61 #B0B300
+619  8  61 #C9CC00
+620  9  61 #E2E600
+621  0  62 #000000
+622  1  62 #191A00
+623  2  62 #313300
+624  3  62 #4A4D00
+625  4  62 #636600
+626  5  62 #7B8000
+627  6  62 #949900
+628  7  62 #ADB300
+629  8  62 #C5CC00
+630  9  62 #DEE600
+631  0  63 #000000
+632  1  63 #181A00
+633  2  63 #303300
+634  3  63 #494D00
+635  4  63 #616600
+636  5  63 #798000
+637  6  63 #919900
+638  7  63 #AAB300
+639  8  63 #C2CC00
+640  9  63 #DAE600
+641  0  64 #000000
+642  1  64 #181A00
+643  2  64 #303300
+644  3  64 #474D00
+645  4  64 #5F6600
+646  5  64 #778000
+647  6  64 #8F9900
+648  7  64 #A7B300
+649  8  64 #BECC00
+650  9  64 #D6E600
+651  0  65 #000000
+652  1  65 #171A00
+653  2  65 #2F3300
+654  3  65 #464D00
+655  4  65 #5E6600
+656  5  65 #758000
+657  6  65 #8C9900
+658  7  65 #A4B300
+659  8  65 #BBCC00
+660  9  65 #D2E600
+661  0  66 #000000
+662  1  66 #171A00
+663  2  66 #2E3300
+664  3  66 #454D00
+665  4  66 #5C6600
+666  5  66 #738000
+667  6  66 #8A9900
+668  7  66 #A1B300
+669  8  66 #B8CC00
+670  9  66 #CFE600
+671  0  67 #000000
+672  1  67 #171A00
+673  2  67 #2D3300
+674  3  67 #444D00
+675  4  67 #5A6600
+676  5  67 #718000
+677  6  67 #879900
+678  7  67 #9EB300
+679  8  67 #B4CC00
+680  9  67 #CBE600
+681  0  68 #000000
+682  1  68 #161A00
+683  2  68 #2C3300
+684  3  68 #424D00
+685  4  68 #586600
+686  5  68 #6F8000
+687  6  68 #859900
+688  7  68 #9BB300
+689  8  68 #B1CC00
+690  9  68 #C7E600
+691  0  69 #000000
+692  1  69 #161A00
+693  2  69 #2B3300
+694  3  69 #414D00
+695  4  69 #576600
+696  5  69 #6C8000
+697  6  69 #829900
+698  7  69 #98B300
+699  8  69 #ADCC00
+700  9  69 #C3E600
+701  0  70 #000000
+702  1  70 #151A00
+703  2  70 #2B3300
+704  3  70 #404D00
+705  4  70 #556600
+706  5  70 #6A8000
+707  6  70 #7F9900
+708  7  70 #95B300
+709  8  70 #AACC00
+710  9  70 #BFE600
+711  0  71 #000000
+712  1  71 #151A00
+713  2  71 #2A3300
+714  3  71 #3E4D00
+715  4  71 #536600
+716  5  71 #688000
+717  6  71 #7D9900
+718  7  71 #92B300
+719  8  71 #A7CC00
+720  9  71 #BBE600
+721  0  72 #000000
+722  1  72 #141A00
+723  2  72 #293300
+724  3  72 #3D4D00
+725  4  72 #526600
+726  5  72 #668000
+727  6  72 #7A9900
+728  7  72 #8FB300
+729  8  72 #A3CC00
+730  9  72 #B8E600
+731  0  73 #000000
+732  1  73 #141A00
+733  2  73 #283300
+734  3  73 #3C4D00
+735  4  73 #506600
+736  5  73 #648000
+737  6  73 #789900
+738  7  73 #8CB300
+739  8  73 #A0CC00
+740  9  73 #B4E600
+741  0  74 #000000
+742  1  74 #141A00
+743  2  74 #273300
+744  3  74 #3B4D00
+745  4  74 #4E6600
+746  5  74 #628000
+747  6  74 #759900
+748  7  74 #89B300
+749  8  74 #9CCC00
+750  9  74 #B0E600
+751  0  75 #000000
+752  1  75 #131A00
+753  2  75 #263300
+754  3  75 #394D00
+755  4  75 #4D6600
+756  5  75 #608000
+757  6  75 #739900
+758  7  75 #86B300
+759  8  75 #99CC00
+760  9  75 #ACE600
+761  0  76 #000000
+762  1  76 #131A00
+763  2  76 #253300
+764  3  76 #384D00
+765  4  76 #4B6600
+766  5  76 #5E8000
+767  6  76 #709900
+768  7  76 #83B300
+769  8  76 #96CC00
+770  9  76 #A8E600
+771  0  77 #000000
+772  1  77 #121A00
+773  2  77 #253300
+774  3  77 #374D00
+775  4  77 #496600
+776  5  77 #5B8000
+777  6  77 #6E9900
+778  7  77 #80B300
+779  8  77 #92CC00
+780  9  77 #A4E600
+781  0  78 #000000
+782  1  78 #121A00
+783  2  78 #243300
+784  3  78 #364D00
+785  4  78 #476600
+786  5  78 #598000
+787  6  78 #6B9900
+788  7  78 #7DB300
+789  8  78 #8FCC00
+790  9  78 #A1E600
+791  0  79 #000000
+792  1  79 #111A00
+793  2  79 #233300
+794  3  79 #344D00
+795  4  79 #466600
+796  5  79 #578000
+797  6  79 #699900
+798  7  79 #7AB300
+799  8  79 #8BCC00
+800  9  79 #9DE600
+801  0  80 #000000
+802  1  80 #111A00
+803  2  80 #223300
+804  3  80 #334D00
+805  4  80 #446600
+806  5  80 #558000
+807  6  80 #669900
+808  7  80 #77B300
+809  8  80 #88CC00
+810  9  80 #99E600
+811  0  81 #000000
+812  1  81 #111A00
+813  2  81 #213300
+814  3  81 #324D00
+815  4  81 #426600
+816  5  81 #538000
+817  6  81 #639900
+818  7  81 #74B300
+819  8  81 #85CC00
+820  9  81 #95E600
+821  0  82 #000000
+822  1  82 #101A00
+823  2  82 #203300
+824  3  82 #304D00
+825  4  82 #416600
+826  5  82 #518000
+827  6  82 #619900
+828  7  82 #71B300
+829  8  82 #81CC00
+830  9  82 #91E600
+831  0  83 #000000
+832  1  83 #101A00
+833  2  83 #1F3300
+834  3  83 #2F4D00
+835  4  83 #3F6600
+836  5  83 #4F8000
+837  6  83 #5E9900
+838  7  83 #6EB300
+839  8  83 #7ECC00
+840  9  83 #8EE600
+841  0  84 #000000
+842  1  84 #0F1A00
+843  2  84 #1F3300
+844  3  84 #2E4D00
+845  4  84 #3D6600
+846  5  84 #4D8000
+847  6  84 #5C9900
+848  7  84 #6BB300
+849  8  84 #7ACC00
+850  9  84 #8AE600
+851  0  85 #000000
+852  1  85 #0F1A00
+853  2  85 #1E3300
+854  3  85 #2D4D00
+855  4  85 #3B6600
+856  5  85 #4A8000
+857  6  85 #599900
+858  7  85 #68B300
+859  8  85 #77CC00
+860  9  85 #86E600
+861  0  86 #000000
+862  1  86 #0E1A00
+863  2  86 #1D3300
+864  3  86 #2B4D00
+865  4  86 #3A6600
+866  5  86 #488000
+867  6  86 #579900
+868  7  86 #65B300
+869  8  86 #74CC00
+870  9  86 #82E600
+871  0  87 #000000
+872  1  87 #0E1A00
+873  2  87 #1C3300
+874  3  87 #2A4D00
+875  4  87 #386600
+876  5  87 #468000
+877  6  87 #549900
+878  7  87 #62B300
+879  8  87 #70CC00
+880  9  87 #7EE600
+881  0  88 #000000
+882  1  88 #0E1A00
+883  2  88 #1B3300
+884  3  88 #294D00
+885  4  88 #366600
+886  5  88 #448000
+887  6  88 #529900
+888  7  88 #5FB300
+889  8  88 #6DCC00
+890  9  88 #7AE600
+891  0  89 #000000
+892  1  89 #0D1A00
+893  2  89 #1A3300
+894  3  89 #284D00
+895  4  89 #356600
+896  5  89 #428000
+897  6  89 #4F9900
+898  7  89 #5CB300
+899  8  89 #69CC00
+900  9  89 #77E600
+901  0  90 #000000
+902  1  90 #0D1A00
+903  2  90 #1A3300
+904  3  90 #264D00
+905  4  90 #336600
+906  5  90 #408000
+907  6  90 #4D9900
+908  7  90 #59B300
+909  8  90 #66CC00
+910  9  90 #73E600
+911  0  91 #000000
+912  1  91 #0C1A00
+913  2  91 #193300
+914  3  91 #254D00
+915  4  91 #316600
+916  5  91 #3E8000
+917  6  91 #4A9900
+918  7  91 #56B300
+919  8  91 #63CC00
+920  9  91 #6FE600
+921  0  92 #000000
+922  1  92 #0C1A00
+923  2  92 #183300
+924  3  92 #244D00
+925  4  92 #306600
+926  5  92 #3B8000
+927  6  92 #479900
+928  7  92 #53B300
+929  8  92 #5FCC00
+930  9  92 #6BE600
+931  0  93 #000000
+932  1  93 #0B1A00
+933  2  93 #173300
+934  3  93 #224D00
+935  4  93 #2E6600
+936  5  93 #398000
+937  6  93 #459900
+938  7  93 #50B300
+939  8  93 #5CCC00
+940  9  93 #67E600
+941  0  94 #000000
+942  1  94 #0B1A00
+943  2  94 #163300
+944  3  94 #214D00
+945  4  94 #2C6600
+946  5  94 #378000
+947  6  94 #429900
+948  7  94 #4DB300
+949  8  94 #58CC00
+950  9  94 #63E600
+951  0  95 #000000
+952  1  95 #0B1A00
+953  2  95 #153300
+954  3  95 #204D00
+955  4  95 #2B6600
+956  5  95 #358000
+957  6  95 #409900
+958  7  95 #4AB300
+959  8  95 #55CC00
+960  9  95 #60E600
+961  0  96 #000000
+962  1  96 #0A1A00
+963  2  96 #143300
+964  3  96 #1F4D00
+965  4  96 #296600
+966  5  96 #338000
+967  6  96 #3D9900
+968  7  96 #47B300
+969  8  96 #52CC00
+970  9  96 #5CE600
+971  0  97 #000000
+972  1  97 #0A1A00
+973  2  97 #143300
+974  3  97 #1D4D00
+975  4  97 #276600
+976  5  97 #318000
+977  6  97 #3B9900
+978  7  97 #44B300
+979  8  97 #4ECC00
+980  9  97 #58E600
+981  0  98 #000000
+982  1  98 #091A00
+983  2  98 #133300
+984  3  98 #1C4D00
+985  4  98 #256600
+986  5  98 #2F8000
+987  6  98 #389900
+988  7  98 #41B300
+989  8  98 #4BCC00
+990  9  98 #54E600
+991  0  99 #000000
+992  1  99 #091A00
+993  2  99 #123300
+994  3  99 #1B4D00
+995  4  99 #246600
+996  5  99 #2D8000
+997  6  99 #369900
+998  7  99 #3EB300
+999  8  99 #47CC00
+1000 9  99 #50E600
+1001 0 100 #000000
+1002 1 100 #081A00
+1003 2 100 #113300
+1004 3 100 #194D00
+1005 4 100 #226600
+1006 5 100 #2A8000
+1007 6 100 #339900
+1008 7 100 #3BB300
+1009 8 100 #44CC00
+1010 9 100 #4CE600
+1011 0 101 #000000
+1012 1 101 #081A00
+1013 2 101 #103300
+1014 3 101 #184D00
+1015 4 101 #206600
+1016 5 101 #288000
+1017 6 101 #309900
+1018 7 101 #39B300
+1019 8 101 #41CC00
+1020 9 101 #49E600
+1021 0 102 #000000
+1022 1 102 #081A00
+1023 2 102 #0F3300
+1024 3 102 #174D00
+1025 4 102 #1F6600
+1026 5 102 #268000
+1027 6 102 #2E9900
+1028 7 102 #36B300
+1029 8 102 #3DCC00
+1030 9 102 #45E600
+1031 0 103 #000000
+1032 1 103 #071A00
+1033 2 103 #0E3300
+1034 3 103 #164D00
+1035 4 103 #1D6600
+1036 5 103 #248000
+1037 6 103 #2B9900
+1038 7 103 #33B300
+1039 8 103 #3ACC00
+1040 9 103 #41E600
+1041 0 104 #000000
+1042 1 104 #071A00
+1043 2 104 #0E3300
+1044 3 104 #144D00
+1045 4 104 #1B6600
+1046 5 104 #228000
+1047 6 104 #299900
+1048 7 104 #30B300
+1049 8 104 #36CC00
+1050 9 104 #3DE600
+1051 0 105 #000000
+1052 1 105 #061A00
+1053 2 105 #0D3300
+1054 3 105 #134D00
+1055 4 105 #1A6600
+1056 5 105 #208000
+1057 6 105 #269900
+1058 7 105 #2DB300
+1059 8 105 #33CC00
+1060 9 105 #39E600
+1061 0 106 #000000
+1062 1 106 #061A00
+1063 2 106 #0C3300
+1064 3 106 #124D00
+1065 4 106 #186600
+1066 5 106 #1E8000
+1067 6 106 #249900
+1068 7 106 #2AB300
+1069 8 106 #30CC00
+1070 9 106 #36E600
+1071 0 107 #000000
+1072 1 107 #061A00
+1073 2 107 #0B3300
+1074 3 107 #114D00
+1075 4 107 #166600
+1076 5 107 #1C8000
+1077 6 107 #219900
+1078 7 107 #27B300
+1079 8 107 #2CCC00
+1080 9 107 #32E600
+1081 0 108 #000000
+1082 1 108 #051A00
+1083 2 108 #0A3300
+1084 3 108 #0F4D00
+1085 4 108 #146600
+1086 5 108 #198000
+1087 6 108 #1F9900
+1088 7 108 #24B300
+1089 8 108 #29CC00
+1090 9 108 #2EE600
+1091 0 109 #000000
+1092 1 109 #051A00
+1093 2 109 #093300
+1094 3 109 #0E4D00
+1095 4 109 #136600
+1096 5 109 #178000
+1097 6 109 #1C9900
+1098 7 109 #21B300
+1099 8 109 #25CC00
+1100 9 109 #2AE600
+1101 0 110 #000000
+1102 1 110 #041A00
+1103 2 110 #093300
+1104 3 110 #0D4D00
+1105 4 110 #116600
+1106 5 110 #158000
+1107 6 110 #1A9900
+1108 7 110 #1EB300
+1109 8 110 #22CC00
+1110 9 110 #26E600
+1111 0 111 #000000
+1112 1 111 #041A00
+1113 2 111 #083300
+1114 3 111 #0B4D00
+1115 4 111 #0F6600
+1116 5 111 #138000
+1117 6 111 #179900
+1118 7 111 #1BB300
+1119 8 111 #1FCC00
+1120 9 111 #22E600
+1121 0 112 #000000
+1122 1 112 #031A00
+1123 2 112 #073300
+1124 3 112 #0A4D00
+1125 4 112 #0E6600
+1126 5 112 #118000
+1127 6 112 #149900
+1128 7 112 #18B300
+1129 8 112 #1BCC00
+1130 9 112 #1FE600
+1131 0 113 #000000
+1132 1 113 #031A00
+1133 2 113 #063300
+1134 3 113 #094D00
+1135 4 113 #0C6600
+1136 5 113 #0F8000
+1137 6 113 #129900
+1138 7 113 #15B300
+1139 8 113 #18CC00
+1140 9 113 #1BE600
+1141 0 114 #000000
+1142 1 114 #031A00
+1143 2 114 #053300
+1144 3 114 #084D00
+1145 4 114 #0A6600
+1146 5 114 #0D8000
+1147 6 114 #0F9900
+1148 7 114 #12B300
+1149 8 114 #14CC00
+1150 9 114 #17E600
+1151 0 115 #000000
+1152 1 115 #021A00
+1153 2 115 #043300
+1154 3 115 #064D00
+1155 4 115 #086600
+1156 5 115 #0B8000
+1157 6 115 #0D9900
+1158 7 115 #0FB300
+1159 8 115 #11CC00
+1160 9 115 #13E600
+1161 0 116 #000000
+1162 1 116 #021A00
+1163 2 116 #033300
+1164 3 116 #054D00
+1165 4 116 #076600
+1166 5 116 #088000
+1167 6 116 #0A9900
+1168 7 116 #0CB300
+1169 8 116 #0ECC00
+1170 9 116 #0FE600
+1171 0 117 #000000
+1172 1 117 #011A00
+1173 2 117 #033300
+1174 3 117 #044D00
+1175 4 117 #056600
+1176 5 117 #068000
+1177 6 117 #089900
+1178 7 117 #09B300
+1179 8 117 #0ACC00
+1180 9 117 #0BE600
+1181 0 118 #000000
+1182 1 118 #011A00
+1183 2 118 #023300
+1184 3 118 #034D00
+1185 4 118 #036600
+1186 5 118 #048000
+1187 6 118 #059900
+1188 7 118 #06B300
+1189 8 118 #07CC00
+1190 9 118 #08E600
+1191 0 119 #000000
+1192 1 119 #001A00
+1193 2 119 #013300
+1194 3 119 #014D00
+1195 4 119 #026600
+1196 5 119 #028000
+1197 6 119 #039900
+1198 7 119 #03B300
+1199 8 119 #03CC00
+1200 9 119 #04E600
+1201 0 120 #000000
+1202 1 120 #001A00
+1203 2 120 #003300
+1204 3 120 #004D00
+1205 4 120 #006600
+1206 5 120 #008000
+1207 6 120 #009900
+1208 7 120 #00B300
+1209 8 120 #00CC00
+1210 9 120 #00E600
+1211 0 121 #000000
+1212 1 121 #001A00
+1213 2 121 #003301
+1214 3 121 #004D01
+1215 4 121 #006602
+1216 5 121 #008002
+1217 6 121 #009903
+1218 7 121 #00B303
+1219 8 121 #00CC03
+1220 9 121 #00E604
+1221 0 122 #000000
+1222 1 122 #001A01
+1223 2 122 #003302
+1224 3 122 #004D03
+1225 4 122 #006603
+1226 5 122 #008004
+1227 6 122 #009905
+1228 7 122 #00B306
+1229 8 122 #00CC07
+1230 9 122 #00E608
+1231 0 123 #000000
+1232 1 123 #001A01
+1233 2 123 #003303
+1234 3 123 #004D04
+1235 4 123 #006605
+1236 5 123 #008006
+1237 6 123 #009908
+1238 7 123 #00B309
+1239 8 123 #00CC0A
+1240 9 123 #00E60B
+1241 0 124 #000000
+1242 1 124 #001A02
+1243 2 124 #003303
+1244 3 124 #004D05
+1245 4 124 #006607
+1246 5 124 #008009
+1247 6 124 #00990A
+1248 7 124 #00B30C
+1249 8 124 #00CC0E
+1250 9 124 #00E60F
+1251 0 125 #000000
+1252 1 125 #001A02
+1253 2 125 #003304
+1254 3 125 #004D06
+1255 4 125 #006609
+1256 5 125 #00800B
+1257 6 125 #00990D
+1258 7 125 #00B30F
+1259 8 125 #00CC11
+1260 9 125 #00E613
+1261 0 126 #000000
+1262 1 126 #001A03
+1263 2 126 #003305
+1264 3 126 #004D08
+1265 4 126 #00660A
+1266 5 126 #00800D
+1267 6 126 #00990F
+1268 7 126 #00B312
+1269 8 126 #00CC14
+1270 9 126 #00E617
+1271 0 127 #000000
+1272 1 127 #001A03
+1273 2 127 #003306
+1274 3 127 #004D09
+1275 4 127 #00660C
+1276 5 127 #00800F
+1277 6 127 #009912
+1278 7 127 #00B315
+1279 8 127 #00CC18
+1280 9 127 #00E61B
+1281 0 128 #000000
+1282 1 128 #001A03
+1283 2 128 #003307
+1284 3 128 #004D0A
+1285 4 128 #00660E
+1286 5 128 #008011
+1287 6 128 #009914
+1288 7 128 #00B318
+1289 8 128 #00CC1B
+1290 9 128 #00E61F
+1291 0 129 #000000
+1292 1 129 #001A04
+1293 2 129 #003308
+1294 3 129 #004D0B
+1295 4 129 #00660F
+1296 5 129 #008013
+1297 6 129 #009917
+1298 7 129 #00B31B
+1299 8 129 #00CC1F
+1300 9 129 #00E622
+1301 0 130 #000000
+1302 1 130 #001A04
+1303 2 130 #003308
+1304 3 130 #004D0D
+1305 4 130 #006611
+1306 5 130 #008015
+1307 6 130 #009919
+1308 7 130 #00B31E
+1309 8 130 #00CC22
+1310 9 130 #00E626
+1311 0 131 #000000
+1312 1 131 #001A05
+1313 2 131 #003309
+1314 3 131 #004D0E
+1315 4 131 #006613
+1316 5 131 #008017
+1317 6 131 #00991C
+1318 7 131 #00B321
+1319 8 131 #00CC25
+1320 9 131 #00E62A
+1321 0 132 #000000
+1322 1 132 #001A05
+1323 2 132 #00330A
+1324 3 132 #004D0F
+1325 4 132 #006614
+1326 5 132 #00801A
+1327 6 132 #00991F
+1328 7 132 #00B324
+1329 8 132 #00CC29
+1330 9 132 #00E62E
+1331 0 133 #000000
+1332 1 133 #001A06
+1333 2 133 #00330B
+1334 3 133 #004D11
+1335 4 133 #006616
+1336 5 133 #00801C
+1337 6 133 #009921
+1338 7 133 #00B327
+1339 8 133 #00CC2C
+1340 9 133 #00E632
+1341 0 134 #000000
+1342 1 134 #001A06
+1343 2 134 #00330C
+1344 3 134 #004D12
+1345 4 134 #006618
+1346 5 134 #00801E
+1347 6 134 #009924
+1348 7 134 #00B32A
+1349 8 134 #00CC30
+1350 9 134 #00E636
+1351 0 135 #000000
+1352 1 135 #001A06
+1353 2 135 #00330D
+1354 3 135 #004D13
+1355 4 135 #00661A
+1356 5 135 #008020
+1357 6 135 #009926
+1358 7 135 #00B32D
+1359 8 135 #00CC33
+1360 9 135 #00E639
+1361 0 136 #000000
+1362 1 136 #001A07
+1363 2 136 #00330E
+1364 3 136 #004D14
+1365 4 136 #00661B
+1366 5 136 #008022
+1367 6 136 #009929
+1368 7 136 #00B330
+1369 8 136 #00CC36
+1370 9 136 #00E63D
+1371 0 137 #000000
+1372 1 137 #001A07
+1373 2 137 #00330E
+1374 3 137 #004D16
+1375 4 137 #00661D
+1376 5 137 #008024
+1377 6 137 #00992B
+1378 7 137 #00B333
+1379 8 137 #00CC3A
+1380 9 137 #00E641
+1381 0 138 #000000
+1382 1 138 #001A08
+1383 2 138 #00330F
+1384 3 138 #004D17
+1385 4 138 #00661F
+1386 5 138 #008026
+1387 6 138 #00992E
+1388 7 138 #00B336
+1389 8 138 #00CC3D
+1390 9 138 #00E645
+1391 0 139 #000000
+1392 1 139 #001A08
+1393 2 139 #003310
+1394 3 139 #004D18
+1395 4 139 #006620
+1396 5 139 #008028
+1397 6 139 #009930
+1398 7 139 #00B339
+1399 8 139 #00CC41
+1400 9 139 #00E649
+1401 0 140 #000000
+1402 1 140 #001A09
+1403 2 140 #003311
+1404 3 140 #004D1A
+1405 4 140 #006622
+1406 5 140 #00802B
+1407 6 140 #009933
+1408 7 140 #00B33C
+1409 8 140 #00CC44
+1410 9 140 #00E64D
+1411 0 141 #000000
+1412 1 141 #001A09
+1413 2 141 #003312
+1414 3 141 #004D1B
+1415 4 141 #006624
+1416 5 141 #00802D
+1417 6 141 #009936
+1418 7 141 #00B33E
+1419 8 141 #00CC47
+1420 9 141 #00E650
+1421 0 142 #000000
+1422 1 142 #001A09
+1423 2 142 #003313
+1424 3 142 #004D1C
+1425 4 142 #006625
+1426 5 142 #00802F
+1427 6 142 #009938
+1428 7 142 #00B341
+1429 8 142 #00CC4B
+1430 9 142 #00E654
+1431 0 143 #000000
+1432 1 143 #001A0A
+1433 2 143 #003314
+1434 3 143 #004D1D
+1435 4 143 #006627
+1436 5 143 #008031
+1437 6 143 #00993B
+1438 7 143 #00B344
+1439 8 143 #00CC4E
+1440 9 143 #00E658
+1441 0 144 #000000
+1442 1 144 #001A0A
+1443 2 144 #003314
+1444 3 144 #004D1F
+1445 4 144 #006629
+1446 5 144 #008033
+1447 6 144 #00993D
+1448 7 144 #00B347
+1449 8 144 #00CC52
+1450 9 144 #00E65C
+1451 0 145 #000000
+1452 1 145 #001A0B
+1453 2 145 #003315
+1454 3 145 #004D20
+1455 4 145 #00662A
+1456 5 145 #008035
+1457 6 145 #009940
+1458 7 145 #00B34A
+1459 8 145 #00CC55
+1460 9 145 #00E660
+1461 0 146 #000000
+1462 1 146 #001A0B
+1463 2 146 #003316
+1464 3 146 #004D21
+1465 4 146 #00662C
+1466 5 146 #008037
+1467 6 146 #009942
+1468 7 146 #00B34D
+1469 8 146 #00CC58
+1470 9 146 #00E663
+1471 0 147 #000000
+1472 1 147 #001A0B
+1473 2 147 #003317
+1474 3 147 #004D22
+1475 4 147 #00662E
+1476 5 147 #008039
+1477 6 147 #009945
+1478 7 147 #00B350
+1479 8 147 #00CC5C
+1480 9 147 #00E667
+1481 0 148 #000000
+1482 1 148 #001A0C
+1483 2 148 #003318
+1484 3 148 #004D24
+1485 4 148 #006630
+1486 5 148 #00803C
+1487 6 148 #009947
+1488 7 148 #00B353
+1489 8 148 #00CC5F
+1490 9 148 #00E66B
+1491 0 149 #000000
+1492 1 149 #001A0C
+1493 2 149 #003319
+1494 3 149 #004D25
+1495 4 149 #006631
+1496 5 149 #00803E
+1497 6 149 #00994A
+1498 7 149 #00B356
+1499 8 149 #00CC63
+1500 9 149 #00E66F
+1501 0 150 #000000
+1502 1 150 #001A0D
+1503 2 150 #00331A
+1504 3 150 #004D26
+1505 4 150 #006633
+1506 5 150 #008040
+1507 6 150 #00994D
+1508 7 150 #00B359
+1509 8 150 #00CC66
+1510 9 150 #00E673
+1511 0 151 #000000
+1512 1 151 #001A0D
+1513 2 151 #00331A
+1514 3 151 #004D28
+1515 4 151 #006635
+1516 5 151 #008042
+1517 6 151 #00994F
+1518 7 151 #00B35C
+1519 8 151 #00CC69
+1520 9 151 #00E677
+1521 0 152 #000000
+1522 1 152 #001A0E
+1523 2 152 #00331B
+1524 3 152 #004D29
+1525 4 152 #006636
+1526 5 152 #008044
+1527 6 152 #009952
+1528 7 152 #00B35F
+1529 8 152 #00CC6D
+1530 9 152 #00E67A
+1531 0 153 #000000
+1532 1 153 #001A0E
+1533 2 153 #00331C
+1534 3 153 #004D2A
+1535 4 153 #006638
+1536 5 153 #008046
+1537 6 153 #009954
+1538 7 153 #00B362
+1539 8 153 #00CC70
+1540 9 153 #00E67E
+1541 0 154 #000000
+1542 1 154 #001A0E
+1543 2 154 #00331D
+1544 3 154 #004D2B
+1545 4 154 #00663A
+1546 5 154 #008048
+1547 6 154 #009957
+1548 7 154 #00B365
+1549 8 154 #00CC74
+1550 9 154 #00E682
+1551 0 155 #000000
+1552 1 155 #001A0F
+1553 2 155 #00331E
+1554 3 155 #004D2D
+1555 4 155 #00663C
+1556 5 155 #00804A
+1557 6 155 #009959
+1558 7 155 #00B368
+1559 8 155 #00CC77
+1560 9 155 #00E686
+1561 0 156 #000000
+1562 1 156 #001A0F
+1563 2 156 #00331F
+1564 3 156 #004D2E
+1565 4 156 #00663D
+1566 5 156 #00804D
+1567 6 156 #00995C
+1568 7 156 #00B36B
+1569 8 156 #00CC7A
+1570 9 156 #00E68A
+1571 0 157 #000000
+1572 1 157 #001A10
+1573 2 157 #00331F
+1574 3 157 #004D2F
+1575 4 157 #00663F
+1576 5 157 #00804F
+1577 6 157 #00995E
+1578 7 157 #00B36E
+1579 8 157 #00CC7E
+1580 9 157 #00E68E
+1581 0 158 #000000
+1582 1 158 #001A10
+1583 2 158 #003320
+1584 3 158 #004D30
+1585 4 158 #006641
+1586 5 158 #008051
+1587 6 158 #009961
+1588 7 158 #00B371
+1589 8 158 #00CC81
+1590 9 158 #00E691
+1591 0 159 #000000
+1592 1 159 #001A11
+1593 2 159 #003321
+1594 3 159 #004D32
+1595 4 159 #006642
+1596 5 159 #008053
+1597 6 159 #009963
+1598 7 159 #00B374
+1599 8 159 #00CC85
+1600 9 159 #00E695
+1601 0 160 #000000
+1602 1 160 #001A11
+1603 2 160 #003322
+1604 3 160 #004D33
+1605 4 160 #006644
+1606 5 160 #008055
+1607 6 160 #009966
+1608 7 160 #00B377
+1609 8 160 #00CC88
+1610 9 160 #00E699
+1611 0 161 #000000
+1612 1 161 #001A11
+1613 2 161 #003323
+1614 3 161 #004D34
+1615 4 161 #006646
+1616 5 161 #008057
+1617 6 161 #009969
+1618 7 161 #00B37A
+1619 8 161 #00CC8B
+1620 9 161 #00E69D
+1621 0 162 #000000
+1622 1 162 #001A12
+1623 2 162 #003324
+1624 3 162 #004D36
+1625 4 162 #006647
+1626 5 162 #008059
+1627 6 162 #00996B
+1628 7 162 #00B37D
+1629 8 162 #00CC8F
+1630 9 162 #00E6A1
+1631 0 163 #000000
+1632 1 163 #001A12
+1633 2 163 #003325
+1634 3 163 #004D37
+1635 4 163 #006649
+1636 5 163 #00805B
+1637 6 163 #00996E
+1638 7 163 #00B380
+1639 8 163 #00CC92
+1640 9 163 #00E6A4
+1641 0 164 #000000
+1642 1 164 #001A13
+1643 2 164 #003325
+1644 3 164 #004D38
+1645 4 164 #00664B
+1646 5 164 #00805E
+1647 6 164 #009970
+1648 7 164 #00B383
+1649 8 164 #00CC96
+1650 9 164 #00E6A8
+1651 0 165 #000000
+1652 1 165 #001A13
+1653 2 165 #003326
+1654 3 165 #004D39
+1655 4 165 #00664D
+1656 5 165 #008060
+1657 6 165 #009973
+1658 7 165 #00B386
+1659 8 165 #00CC99
+1660 9 165 #00E6AC
+1661 0 166 #000000
+1662 1 166 #001A14
+1663 2 166 #003327
+1664 3 166 #004D3B
+1665 4 166 #00664E
+1666 5 166 #008062
+1667 6 166 #009975
+1668 7 166 #00B389
+1669 8 166 #00CC9C
+1670 9 166 #00E6B0
+1671 0 167 #000000
+1672 1 167 #001A14
+1673 2 167 #003328
+1674 3 167 #004D3C
+1675 4 167 #006650
+1676 5 167 #008064
+1677 6 167 #009978
+1678 7 167 #00B38C
+1679 8 167 #00CCA0
+1680 9 167 #00E6B4
+1681 0 168 #000000
+1682 1 168 #001A14
+1683 2 168 #003329
+1684 3 168 #004D3D
+1685 4 168 #006652
+1686 5 168 #008066
+1687 6 168 #00997A
+1688 7 168 #00B38F
+1689 8 168 #00CCA3
+1690 9 168 #00E6B8
+1691 0 169 #000000
+1692 1 169 #001A15
+1693 2 169 #00332A
+1694 3 169 #004D3E
+1695 4 169 #006653
+1696 5 169 #008068
+1697 6 169 #00997D
+1698 7 169 #00B392
+1699 8 169 #00CCA7
+1700 9 169 #00E6BB
+1701 0 170 #000000
+1702 1 170 #001A15
+1703 2 170 #00332B
+1704 3 170 #004D40
+1705 4 170 #006655
+1706 5 170 #00806A
+1707 6 170 #009980
+1708 7 170 #00B395
+1709 8 170 #00CCAA
+1710 9 170 #00E6BF
+1711 0 171 #000000
+1712 1 171 #001A16
+1713 2 171 #00332B
+1714 3 171 #004D41
+1715 4 171 #006657
+1716 5 171 #00806C
+1717 6 171 #009982
+1718 7 171 #00B398
+1719 8 171 #00CCAD
+1720 9 171 #00E6C3
+1721 0 172 #000000
+1722 1 172 #001A16
+1723 2 172 #00332C
+1724 3 172 #004D42
+1725 4 172 #006658
+1726 5 172 #00806F
+1727 6 172 #009985
+1728 7 172 #00B39B
+1729 8 172 #00CCB1
+1730 9 172 #00E6C7
+1731 0 173 #000000
+1732 1 173 #001A17
+1733 2 173 #00332D
+1734 3 173 #004D44
+1735 4 173 #00665A
+1736 5 173 #008071
+1737 6 173 #009987
+1738 7 173 #00B39E
+1739 8 173 #00CCB4
+1740 9 173 #00E6CB
+1741 0 174 #000000
+1742 1 174 #001A17
+1743 2 174 #00332E
+1744 3 174 #004D45
+1745 4 174 #00665C
+1746 5 174 #008073
+1747 6 174 #00998A
+1748 7 174 #00B3A1
+1749 8 174 #00CCB8
+1750 9 174 #00E6CF
+1751 0 175 #000000
+1752 1 175 #001A17
+1753 2 175 #00332F
+1754 3 175 #004D46
+1755 4 175 #00665E
+1756 5 175 #008075
+1757 6 175 #00998C
+1758 7 175 #00B3A4
+1759 8 175 #00CCBB
+1760 9 175 #00E6D2
+1761 0 176 #000000
+1762 1 176 #001A18
+1763 2 176 #003330
+1764 3 176 #004D47
+1765 4 176 #00665F
+1766 5 176 #008077
+1767 6 176 #00998F
+1768 7 176 #00B3A7
+1769 8 176 #00CCBE
+1770 9 176 #00E6D6
+1771 0 177 #000000
+1772 1 177 #001A18
+1773 2 177 #003330
+1774 3 177 #004D49
+1775 4 177 #006661
+1776 5 177 #008079
+1777 6 177 #009991
+1778 7 177 #00B3AA
+1779 8 177 #00CCC2
+1780 9 177 #00E6DA
+1781 0 178 #000000
+1782 1 178 #001A19
+1783 2 178 #003331
+1784 3 178 #004D4A
+1785 4 178 #006663
+1786 5 178 #00807B
+1787 6 178 #009994
+1788 7 178 #00B3AD
+1789 8 178 #00CCC5
+1790 9 178 #00E6DE
+1791 0 179 #000000
+1792 1 179 #001A19
+1793 2 179 #003332
+1794 3 179 #004D4B
+1795 4 179 #006664
+1796 5 179 #00807D
+1797 6 179 #009996
+1798 7 179 #00B3B0
+1799 8 179 #00CCC9
+1800 9 179 #00E6E2
+1801 0 180 #000000
+1802 1 180 #001A1A
+1803 2 180 #003333
+1804 3 180 #004D4D
+1805 4 180 #006666
+1806 5 180 #008080
+1807 6 180 #009999
+1808 7 180 #00B3B3
+1809 8 180 #00CCCC
+1810 9 180 #00E6E6
+1811 0 181 #000000
+1812 1 181 #00191A
+1813 2 181 #003233
+1814 3 181 #004B4D
+1815 4 181 #006466
+1816 5 181 #007D80
+1817 6 181 #009699
+1818 7 181 #00B0B3
+1819 8 181 #00C9CC
+1820 9 181 #00E2E6
+1821 0 182 #000000
+1822 1 182 #00191A
+1823 2 182 #003133
+1824 3 182 #004A4D
+1825 4 182 #006366
+1826 5 182 #007B80
+1827 6 182 #009499
+1828 7 182 #00ADB3
+1829 8 182 #00C5CC
+1830 9 182 #00DEE6
+1831 0 183 #000000
+1832 1 183 #00181A
+1833 2 183 #003033
+1834 3 183 #00494D
+1835 4 183 #006166
+1836 5 183 #007980
+1837 6 183 #009199
+1838 7 183 #00AAB3
+1839 8 183 #00C2CC
+1840 9 183 #00DAE6
+1841 0 184 #000000
+1842 1 184 #00181A
+1843 2 184 #003033
+1844 3 184 #00474D
+1845 4 184 #005F66
+1846 5 184 #007780
+1847 6 184 #008F99
+1848 7 184 #00A7B3
+1849 8 184 #00BECC
+1850 9 184 #00D6E6
+1851 0 185 #000000
+1852 1 185 #00171A
+1853 2 185 #002F33
+1854 3 185 #00464D
+1855 4 185 #005E66
+1856 5 185 #007580
+1857 6 185 #008C99
+1858 7 185 #00A4B3
+1859 8 185 #00BBCC
+1860 9 185 #00D2E6
+1861 0 186 #000000
+1862 1 186 #00171A
+1863 2 186 #002E33
+1864 3 186 #00454D
+1865 4 186 #005C66
+1866 5 186 #007380
+1867 6 186 #008A99
+1868 7 186 #00A1B3
+1869 8 186 #00B8CC
+1870 9 186 #00CFE6
+1871 0 187 #000000
+1872 1 187 #00171A
+1873 2 187 #002D33
+1874 3 187 #00444D
+1875 4 187 #005A66
+1876 5 187 #007180
+1877 6 187 #008799
+1878 7 187 #009EB3
+1879 8 187 #00B4CC
+1880 9 187 #00CBE6
+1881 0 188 #000000
+1882 1 188 #00161A
+1883 2 188 #002C33
+1884 3 188 #00424D
+1885 4 188 #005866
+1886 5 188 #006F80
+1887 6 188 #008599
+1888 7 188 #009BB3
+1889 8 188 #00B1CC
+1890 9 188 #00C7E6
+1891 0 189 #000000
+1892 1 189 #00161A
+1893 2 189 #002B33
+1894 3 189 #00414D
+1895 4 189 #005766
+1896 5 189 #006C80
+1897 6 189 #008299
+1898 7 189 #0098B3
+1899 8 189 #00ADCC
+1900 9 189 #00C3E6
+1901 0 190 #000000
+1902 1 190 #00151A
+1903 2 190 #002B33
+1904 3 190 #00404D
+1905 4 190 #005566
+1906 5 190 #006A80
+1907 6 190 #008099
+1908 7 190 #0095B3
+1909 8 190 #00AACC
+1910 9 190 #00BFE6
+1911 0 191 #000000
+1912 1 191 #00151A
+1913 2 191 #002A33
+1914 3 191 #003E4D
+1915 4 191 #005366
+1916 5 191 #006880
+1917 6 191 #007D99
+1918 7 191 #0092B3
+1919 8 191 #00A7CC
+1920 9 191 #00BBE6
+1921 0 192 #000000
+1922 1 192 #00141A
+1923 2 192 #002933
+1924 3 192 #003D4D
+1925 4 192 #005266
+1926 5 192 #006680
+1927 6 192 #007A99
+1928 7 192 #008FB3
+1929 8 192 #00A3CC
+1930 9 192 #00B8E6
+1931 0 193 #000000
+1932 1 193 #00141A
+1933 2 193 #002833
+1934 3 193 #003C4D
+1935 4 193 #005066
+1936 5 193 #006480
+1937 6 193 #007899
+1938 7 193 #008CB3
+1939 8 193 #00A0CC
+1940 9 193 #00B4E6
+1941 0 194 #000000
+1942 1 194 #00141A
+1943 2 194 #002733
+1944 3 194 #003B4D
+1945 4 194 #004E66
+1946 5 194 #006280
+1947 6 194 #007599
+1948 7 194 #0089B3
+1949 8 194 #009CCC
+1950 9 194 #00B0E6
+1951 0 195 #000000
+1952 1 195 #00131A
+1953 2 195 #002633
+1954 3 195 #00394D
+1955 4 195 #004D66
+1956 5 195 #006080
+1957 6 195 #007399
+1958 7 195 #0086B3
+1959 8 195 #0099CC
+1960 9 195 #00ACE6
+1961 0 196 #000000
+1962 1 196 #00131A
+1963 2 196 #002533
+1964 3 196 #00384D
+1965 4 196 #004B66
+1966 5 196 #005E80
+1967 6 196 #007099
+1968 7 196 #0083B3
+1969 8 196 #0096CC
+1970 9 196 #00A8E6
+1971 0 197 #000000
+1972 1 197 #00121A
+1973 2 197 #002533
+1974 3 197 #00374D
+1975 4 197 #004966
+1976 5 197 #005B80
+1977 6 197 #006E99
+1978 7 197 #0080B3
+1979 8 197 #0092CC
+1980 9 197 #00A4E6
+1981 0 198 #000000
+1982 1 198 #00121A
+1983 2 198 #002433
+1984 3 198 #00364D
+1985 4 198 #004766
+1986 5 198 #005980
+1987 6 198 #006B99
+1988 7 198 #007DB3
+1989 8 198 #008FCC
+1990 9 198 #00A1E6
+1991 0 199 #000000
+1992 1 199 #00111A
+1993 2 199 #002333
+1994 3 199 #00344D
+1995 4 199 #004666
+1996 5 199 #005780
+1997 6 199 #006999
+1998 7 199 #007AB3
+1999 8 199 #008BCC
+2000 9 199 #009DE6
+2001 0 200 #000000
+2002 1 200 #00111A
+2003 2 200 #002233
+2004 3 200 #00334D
+2005 4 200 #004466
+2006 5 200 #005580
+2007 6 200 #006699
+2008 7 200 #0077B3
+2009 8 200 #0088CC
+2010 9 200 #0099E6
+2011 0 201 #000000
+2012 1 201 #00111A
+2013 2 201 #002133
+2014 3 201 #00324D
+2015 4 201 #004266
+2016 5 201 #005380
+2017 6 201 #006399
+2018 7 201 #0074B3
+2019 8 201 #0085CC
+2020 9 201 #0095E6
+2021 0 202 #000000
+2022 1 202 #00101A
+2023 2 202 #002033
+2024 3 202 #00304D
+2025 4 202 #004166
+2026 5 202 #005180
+2027 6 202 #006199
+2028 7 202 #0071B3
+2029 8 202 #0081CC
+2030 9 202 #0091E6
+2031 0 203 #000000
+2032 1 203 #00101A
+2033 2 203 #001F33
+2034 3 203 #002F4D
+2035 4 203 #003F66
+2036 5 203 #004F80
+2037 6 203 #005E99
+2038 7 203 #006EB3
+2039 8 203 #007ECC
+2040 9 203 #008EE6
+2041 0 204 #000000
+2042 1 204 #000F1A
+2043 2 204 #001F33
+2044 3 204 #002E4D
+2045 4 204 #003D66
+2046 5 204 #004D80
+2047 6 204 #005C99
+2048 7 204 #006BB3
+2049 8 204 #007ACC
+2050 9 204 #008AE6
+2051 0 205 #000000
+2052 1 205 #000F1A
+2053 2 205 #001E33
+2054 3 205 #002D4D
+2055 4 205 #003C66
+2056 5 205 #004A80
+2057 6 205 #005999
+2058 7 205 #0068B3
+2059 8 205 #0077CC
+2060 9 205 #0086E6
+2061 0 206 #000000
+2062 1 206 #000E1A
+2063 2 206 #001D33
+2064 3 206 #002B4D
+2065 4 206 #003A66
+2066 5 206 #004880
+2067 6 206 #005799
+2068 7 206 #0065B3
+2069 8 206 #0074CC
+2070 9 206 #0082E6
+2071 0 207 #000000
+2072 1 207 #000E1A
+2073 2 207 #001C33
+2074 3 207 #002A4D
+2075 4 207 #003866
+2076 5 207 #004680
+2077 6 207 #005499
+2078 7 207 #0062B3
+2079 8 207 #0070CC
+2080 9 207 #007EE6
+2081 0 208 #000000
+2082 1 208 #000E1A
+2083 2 208 #001B33
+2084 3 208 #00294D
+2085 4 208 #003666
+2086 5 208 #004480
+2087 6 208 #005299
+2088 7 208 #005FB3
+2089 8 208 #006DCC
+2090 9 208 #007AE6
+2091 0 209 #000000
+2092 1 209 #000D1A
+2093 2 209 #001A33
+2094 3 209 #00284D
+2095 4 209 #003566
+2096 5 209 #004280
+2097 6 209 #004F99
+2098 7 209 #005CB3
+2099 8 209 #0069CC
+2100 9 209 #0077E6
+2101 0 210 #000000
+2102 1 210 #000D1A
+2103 2 210 #001A33
+2104 3 210 #00264D
+2105 4 210 #003366
+2106 5 210 #004080
+2107 6 210 #004D99
+2108 7 210 #0059B3
+2109 8 210 #0066CC
+2110 9 210 #0073E6
+2111 0 211 #000000
+2112 1 211 #000C1A
+2113 2 211 #001933
+2114 3 211 #00254D
+2115 4 211 #003166
+2116 5 211 #003E80
+2117 6 211 #004A99
+2118 7 211 #0056B3
+2119 8 211 #0063CC
+2120 9 211 #006FE6
+2121 0 212 #000000
+2122 1 212 #000C1A
+2123 2 212 #001833
+2124 3 212 #00244D
+2125 4 212 #003066
+2126 5 212 #003C80
+2127 6 212 #004799
+2128 7 212 #0053B3
+2129 8 212 #005FCC
+2130 9 212 #006BE6
+2131 0 213 #000000
+2132 1 213 #000B1A
+2133 2 213 #001733
+2134 3 213 #00224D
+2135 4 213 #002E66
+2136 5 213 #003980
+2137 6 213 #004599
+2138 7 213 #0050B3
+2139 8 213 #005CCC
+2140 9 213 #0067E6
+2141 0 214 #000000
+2142 1 214 #000B1A
+2143 2 214 #001633
+2144 3 214 #00214D
+2145 4 214 #002C66
+2146 5 214 #003780
+2147 6 214 #004299
+2148 7 214 #004DB3
+2149 8 214 #0058CC
+2150 9 214 #0063E6
+2151 0 215 #000000
+2152 1 215 #000B1A
+2153 2 215 #001533
+2154 3 215 #00204D
+2155 4 215 #002A66
+2156 5 215 #003580
+2157 6 215 #004099
+2158 7 215 #004AB3
+2159 8 215 #0055CC
+2160 9 215 #0060E6
+2161 0 216 #000000
+2162 1 216 #000A1A
+2163 2 216 #001433
+2164 3 216 #001F4D
+2165 4 216 #002966
+2166 5 216 #003380
+2167 6 216 #003D99
+2168 7 216 #0047B3
+2169 8 216 #0052CC
+2170 9 216 #005CE6
+2171 0 217 #000000
+2172 1 217 #000A1A
+2173 2 217 #001433
+2174 3 217 #001D4D
+2175 4 217 #002766
+2176 5 217 #003180
+2177 6 217 #003B99
+2178 7 217 #0044B3
+2179 8 217 #004ECC
+2180 9 217 #0058E6
+2181 0 218 #000000
+2182 1 218 #00091A
+2183 2 218 #001333
+2184 3 218 #001C4D
+2185 4 218 #002566
+2186 5 218 #002F80
+2187 6 218 #003899
+2188 7 218 #0041B3
+2189 8 218 #004BCC
+2190 9 218 #0054E6
+2191 0 219 #000000
+2192 1 219 #00091A
+2193 2 219 #001233
+2194 3 219 #001B4D
+2195 4 219 #002466
+2196 5 219 #002D80
+2197 6 219 #003699
+2198 7 219 #003EB3
+2199 8 219 #0047CC
+2200 9 219 #0050E6
+2201 0 220 #000000
+2202 1 220 #00091A
+2203 2 220 #001133
+2204 3 220 #001A4D
+2205 4 220 #002266
+2206 5 220 #002B80
+2207 6 220 #003399
+2208 7 220 #003CB3
+2209 8 220 #0044CC
+2210 9 220 #004DE6
+2211 0 221 #000000
+2212 1 221 #00081A
+2213 2 221 #001033
+2214 3 221 #00184D
+2215 4 221 #002066
+2216 5 221 #002880
+2217 6 221 #003099
+2218 7 221 #0039B3
+2219 8 221 #0041CC
+2220 9 221 #0049E6
+2221 0 222 #000000
+2222 1 222 #00081A
+2223 2 222 #000F33
+2224 3 222 #00174D
+2225 4 222 #001F66
+2226 5 222 #002680
+2227 6 222 #002E99
+2228 7 222 #0036B3
+2229 8 222 #003DCC
+2230 9 222 #0045E6
+2231 0 223 #000000
+2232 1 223 #00071A
+2233 2 223 #000E33
+2234 3 223 #00164D
+2235 4 223 #001D66
+2236 5 223 #002480
+2237 6 223 #002B99
+2238 7 223 #0033B3
+2239 8 223 #003ACC
+2240 9 223 #0041E6
+2241 0 224 #000000
+2242 1 224 #00071A
+2243 2 224 #000E33
+2244 3 224 #00144D
+2245 4 224 #001B66
+2246 5 224 #002280
+2247 6 224 #002999
+2248 7 224 #0030B3
+2249 8 224 #0036CC
+2250 9 224 #003DE6
+2251 0 225 #000000
+2252 1 225 #00061A
+2253 2 225 #000D33
+2254 3 225 #00134D
+2255 4 225 #001A66
+2256 5 225 #002080
+2257 6 225 #002699
+2258 7 225 #002DB3
+2259 8 225 #0033CC
+2260 9 225 #0039E6
+2261 0 226 #000000
+2262 1 226 #00061A
+2263 2 226 #000C33
+2264 3 226 #00124D
+2265 4 226 #001866
+2266 5 226 #001E80
+2267 6 226 #002499
+2268 7 226 #002AB3
+2269 8 226 #0030CC
+2270 9 226 #0036E6
+2271 0 227 #000000
+2272 1 227 #00061A
+2273 2 227 #000B33
+2274 3 227 #00114D
+2275 4 227 #001666
+2276 5 227 #001C80
+2277 6 227 #002199
+2278 7 227 #0027B3
+2279 8 227 #002CCC
+2280 9 227 #0032E6
+2281 0 228 #000000
+2282 1 228 #00051A
+2283 2 228 #000A33
+2284 3 228 #000F4D
+2285 4 228 #001466
+2286 5 228 #001A80
+2287 6 228 #001F99
+2288 7 228 #0024B3
+2289 8 228 #0029CC
+2290 9 228 #002EE6
+2291 0 229 #000000
+2292 1 229 #00051A
+2293 2 229 #000933
+2294 3 229 #000E4D
+2295 4 229 #001366
+2296 5 229 #001780
+2297 6 229 #001C99
+2298 7 229 #0021B3
+2299 8 229 #0025CC
+2300 9 229 #002AE6
+2301 0 230 #000000
+2302 1 230 #00041A
+2303 2 230 #000833
+2304 3 230 #000D4D
+2305 4 230 #001166
+2306 5 230 #001580
+2307 6 230 #001999
+2308 7 230 #001EB3
+2309 8 230 #0022CC
+2310 9 230 #0026E6
+2311 0 231 #000000
+2312 1 231 #00041A
+2313 2 231 #000833
+2314 3 231 #000B4D
+2315 4 231 #000F66
+2316 5 231 #001380
+2317 6 231 #001799
+2318 7 231 #001BB3
+2319 8 231 #001FCC
+2320 9 231 #0022E6
+2321 0 232 #000000
+2322 1 232 #00031A
+2323 2 232 #000733
+2324 3 232 #000A4D
+2325 4 232 #000E66
+2326 5 232 #001180
+2327 6 232 #001499
+2328 7 232 #0018B3
+2329 8 232 #001BCC
+2330 9 232 #001FE6
+2331 0 233 #000000
+2332 1 233 #00031A
+2333 2 233 #000633
+2334 3 233 #00094D
+2335 4 233 #000C66
+2336 5 233 #000F80
+2337 6 233 #001299
+2338 7 233 #0015B3
+2339 8 233 #0018CC
+2340 9 233 #001BE6
+2341 0 234 #000000
+2342 1 234 #00031A
+2343 2 234 #000533
+2344 3 234 #00084D
+2345 4 234 #000A66
+2346 5 234 #000D80
+2347 6 234 #000F99
+2348 7 234 #0012B3
+2349 8 234 #0014CC
+2350 9 234 #0017E6
+2351 0 235 #000000
+2352 1 235 #00021A
+2353 2 235 #000433
+2354 3 235 #00064D
+2355 4 235 #000966
+2356 5 235 #000B80
+2357 6 235 #000D99
+2358 7 235 #000FB3
+2359 8 235 #0011CC
+2360 9 235 #0013E6
+2361 0 236 #000000
+2362 1 236 #00021A
+2363 2 236 #000333
+2364 3 236 #00054D
+2365 4 236 #000766
+2366 5 236 #000980
+2367 6 236 #000A99
+2368 7 236 #000CB3
+2369 8 236 #000ECC
+2370 9 236 #000FE6
+2371 0 237 #000000
+2372 1 237 #00011A
+2373 2 237 #000333
+2374 3 237 #00044D
+2375 4 237 #000566
+2376 5 237 #000680
+2377 6 237 #000899
+2378 7 237 #0009B3
+2379 8 237 #000ACC
+2380 9 237 #000BE6
+2381 0 238 #000000
+2382 1 238 #00011A
+2383 2 238 #000233
+2384 3 238 #00034D
+2385 4 238 #000366
+2386 5 238 #000480
+2387 6 238 #000599
+2388 7 238 #0006B3
+2389 8 238 #0007CC
+2390 9 238 #0008E6
+2391 0 239 #000000
+2392 1 239 #00001A
+2393 2 239 #000133
+2394 3 239 #00014D
+2395 4 239 #000266
+2396 5 239 #000280
+2397 6 239 #000399
+2398 7 239 #0003B3
+2399 8 239 #0003CC
+2400 9 239 #0004E6
+2401 0 240 #000000
+2402 1 240 #00001A
+2403 2 240 #000033
+2404 3 240 #00004D
+2405 4 240 #000066
+2406 5 240 #000080
+2407 6 240 #000099
+2408 7 240 #0000B3
+2409 8 240 #0000CC
+2410 9 240 #0000E6
+2411 0 241 #000000
+2412 1 241 #00001A
+2413 2 241 #010033
+2414 3 241 #01004D
+2415 4 241 #020066
+2416 5 241 #020080
+2417 6 241 #030099
+2418 7 241 #0300B3
+2419 8 241 #0300CC
+2420 9 241 #0400E6
+2421 0 242 #000000
+2422 1 242 #01001A
+2423 2 242 #020033
+2424 3 242 #03004D
+2425 4 242 #030066
+2426 5 242 #040080
+2427 6 242 #050099
+2428 7 242 #0600B3
+2429 8 242 #0700CC
+2430 9 242 #0800E6
+2431 0 243 #000000
+2432 1 243 #01001A
+2433 2 243 #030033
+2434 3 243 #04004D
+2435 4 243 #050066
+2436 5 243 #060080
+2437 6 243 #080099
+2438 7 243 #0900B3
+2439 8 243 #0A00CC
+2440 9 243 #0B00E6
+2441 0 244 #000000
+2442 1 244 #02001A
+2443 2 244 #030033
+2444 3 244 #05004D
+2445 4 244 #070066
+2446 5 244 #080080
+2447 6 244 #0A0099
+2448 7 244 #0C00B3
+2449 8 244 #0E00CC
+2450 9 244 #0F00E6
+2451 0 245 #000000
+2452 1 245 #02001A
+2453 2 245 #040033
+2454 3 245 #06004D
+2455 4 245 #080066
+2456 5 245 #0B0080
+2457 6 245 #0D0099
+2458 7 245 #0F00B3
+2459 8 245 #1100CC
+2460 9 245 #1300E6
+2461 0 246 #000000
+2462 1 246 #03001A
+2463 2 246 #050033
+2464 3 246 #08004D
+2465 4 246 #0A0066
+2466 5 246 #0D0080
+2467 6 246 #0F0099
+2468 7 246 #1200B3
+2469 8 246 #1400CC
+2470 9 246 #1700E6
+2471 0 247 #000000
+2472 1 247 #03001A
+2473 2 247 #060033
+2474 3 247 #09004D
+2475 4 247 #0C0066
+2476 5 247 #0F0080
+2477 6 247 #120099
+2478 7 247 #1500B3
+2479 8 247 #1800CC
+2480 9 247 #1B00E6
+2481 0 248 #000000
+2482 1 248 #03001A
+2483 2 248 #070033
+2484 3 248 #0A004D
+2485 4 248 #0E0066
+2486 5 248 #110080
+2487 6 248 #140099
+2488 7 248 #1800B3
+2489 8 248 #1B00CC
+2490 9 248 #1F00E6
+2491 0 249 #000000
+2492 1 249 #04001A
+2493 2 249 #080033
+2494 3 249 #0B004D
+2495 4 249 #0F0066
+2496 5 249 #130080
+2497 6 249 #170099
+2498 7 249 #1B00B3
+2499 8 249 #1F00CC
+2500 9 249 #2200E6
+2501 0 250 #000000
+2502 1 250 #04001A
+2503 2 250 #090033
+2504 3 250 #0D004D
+2505 4 250 #110066
+2506 5 250 #150080
+2507 6 250 #1A0099
+2508 7 250 #1E00B3
+2509 8 250 #2200CC
+2510 9 250 #2600E6
+2511 0 251 #000000
+2512 1 251 #05001A
+2513 2 251 #090033
+2514 3 251 #0E004D
+2515 4 251 #130066
+2516 5 251 #170080
+2517 6 251 #1C0099
+2518 7 251 #2100B3
+2519 8 251 #2500CC
+2520 9 251 #2A00E6
+2521 0 252 #000000
+2522 1 252 #05001A
+2523 2 252 #0A0033
+2524 3 252 #0F004D
+2525 4 252 #140066
+2526 5 252 #1A0080
+2527 6 252 #1F0099
+2528 7 252 #2400B3
+2529 8 252 #2900CC
+2530 9 252 #2E00E6
+2531 0 253 #000000
+2532 1 253 #06001A
+2533 2 253 #0B0033
+2534 3 253 #11004D
+2535 4 253 #160066
+2536 5 253 #1C0080
+2537 6 253 #210099
+2538 7 253 #2700B3
+2539 8 253 #2C00CC
+2540 9 253 #3200E6
+2541 0 254 #000000
+2542 1 254 #06001A
+2543 2 254 #0C0033
+2544 3 254 #12004D
+2545 4 254 #180066
+2546 5 254 #1E0080
+2547 6 254 #240099
+2548 7 254 #2A00B3
+2549 8 254 #3000CC
+2550 9 254 #3600E6
+2551 0 255 #000000
+2552 1 255 #06001A
+2553 2 255 #0D0033
+2554 3 255 #13004D
+2555 4 255 #1A0066
+2556 5 255 #200080
+2557 6 255 #260099
+2558 7 255 #2D00B3
+2559 8 255 #3300CC
+2560 9 255 #3900E6
+2561 0 256 #000000
+2562 1 256 #07001A
+2563 2 256 #0E0033
+2564 3 256 #14004D
+2565 4 256 #1B0066
+2566 5 256 #220080
+2567 6 256 #290099
+2568 7 256 #3000B3
+2569 8 256 #3600CC
+2570 9 256 #3D00E6
+2571 0 257 #000000
+2572 1 257 #07001A
+2573 2 257 #0E0033
+2574 3 257 #16004D
+2575 4 257 #1D0066
+2576 5 257 #240080
+2577 6 257 #2B0099
+2578 7 257 #3300B3
+2579 8 257 #3A00CC
+2580 9 257 #4100E6
+2581 0 258 #000000
+2582 1 258 #08001A
+2583 2 258 #0F0033
+2584 3 258 #17004D
+2585 4 258 #1F0066
+2586 5 258 #260080
+2587 6 258 #2E0099
+2588 7 258 #3600B3
+2589 8 258 #3D00CC
+2590 9 258 #4500E6
+2591 0 259 #000000
+2592 1 259 #08001A
+2593 2 259 #100033
+2594 3 259 #18004D
+2595 4 259 #200066
+2596 5 259 #280080
+2597 6 259 #300099
+2598 7 259 #3900B3
+2599 8 259 #4100CC
+2600 9 259 #4900E6
+2601 0 260 #000000
+2602 1 260 #08001A
+2603 2 260 #110033
+2604 3 260 #19004D
+2605 4 260 #220066
+2606 5 260 #2A0080
+2607 6 260 #330099
+2608 7 260 #3B00B3
+2609 8 260 #4400CC
+2610 9 260 #4C00E6
+2611 0 261 #000000
+2612 1 261 #09001A
+2613 2 261 #120033
+2614 3 261 #1B004D
+2615 4 261 #240066
+2616 5 261 #2D0080
+2617 6 261 #360099
+2618 7 261 #3E00B3
+2619 8 261 #4700CC
+2620 9 261 #5000E6
+2621 0 262 #000000
+2622 1 262 #09001A
+2623 2 262 #130033
+2624 3 262 #1C004D
+2625 4 262 #250066
+2626 5 262 #2F0080
+2627 6 262 #380099
+2628 7 262 #4100B3
+2629 8 262 #4B00CC
+2630 9 262 #5400E6
+2631 0 263 #000000
+2632 1 263 #0A001A
+2633 2 263 #140033
+2634 3 263 #1D004D
+2635 4 263 #270066
+2636 5 263 #310080
+2637 6 263 #3B0099
+2638 7 263 #4400B3
+2639 8 263 #4E00CC
+2640 9 263 #5800E6
+2641 0 264 #000000
+2642 1 264 #0A001A
+2643 2 264 #140033
+2644 3 264 #1F004D
+2645 4 264 #290066
+2646 5 264 #330080
+2647 6 264 #3D0099
+2648 7 264 #4700B3
+2649 8 264 #5200CC
+2650 9 264 #5C00E6
+2651 0 265 #000000
+2652 1 265 #0B001A
+2653 2 265 #150033
+2654 3 265 #20004D
+2655 4 265 #2B0066
+2656 5 265 #350080
+2657 6 265 #400099
+2658 7 265 #4A00B3
+2659 8 265 #5500CC
+2660 9 265 #6000E6
+2661 0 266 #000000
+2662 1 266 #0B001A
+2663 2 266 #160033
+2664 3 266 #21004D
+2665 4 266 #2C0066
+2666 5 266 #370080
+2667 6 266 #420099
+2668 7 266 #4D00B3
+2669 8 266 #5800CC
+2670 9 266 #6300E6
+2671 0 267 #000000
+2672 1 267 #0B001A
+2673 2 267 #170033
+2674 3 267 #22004D
+2675 4 267 #2E0066
+2676 5 267 #390080
+2677 6 267 #450099
+2678 7 267 #5000B3
+2679 8 267 #5C00CC
+2680 9 267 #6700E6
+2681 0 268 #000000
+2682 1 268 #0C001A
+2683 2 268 #180033
+2684 3 268 #24004D
+2685 4 268 #300066
+2686 5 268 #3C0080
+2687 6 268 #470099
+2688 7 268 #5300B3
+2689 8 268 #5F00CC
+2690 9 268 #6B00E6
+2691 0 269 #000000
+2692 1 269 #0C001A
+2693 2 269 #190033
+2694 3 269 #25004D
+2695 4 269 #310066
+2696 5 269 #3E0080
+2697 6 269 #4A0099
+2698 7 269 #5600B3
+2699 8 269 #6300CC
+2700 9 269 #6F00E6
+2701 0 270 #000000
+2702 1 270 #0D001A
+2703 2 270 #1A0033
+2704 3 270 #26004D
+2705 4 270 #330066
+2706 5 270 #400080
+2707 6 270 #4D0099
+2708 7 270 #5900B3
+2709 8 270 #6600CC
+2710 9 270 #7300E6
+2711 0 271 #000000
+2712 1 271 #0D001A
+2713 2 271 #1A0033
+2714 3 271 #28004D
+2715 4 271 #350066
+2716 5 271 #420080
+2717 6 271 #4F0099
+2718 7 271 #5C00B3
+2719 8 271 #6900CC
+2720 9 271 #7700E6
+2721 0 272 #000000
+2722 1 272 #0E001A
+2723 2 272 #1B0033
+2724 3 272 #29004D
+2725 4 272 #360066
+2726 5 272 #440080
+2727 6 272 #520099
+2728 7 272 #5F00B3
+2729 8 272 #6D00CC
+2730 9 272 #7A00E6
+2731 0 273 #000000
+2732 1 273 #0E001A
+2733 2 273 #1C0033
+2734 3 273 #2A004D
+2735 4 273 #380066
+2736 5 273 #460080
+2737 6 273 #540099
+2738 7 273 #6200B3
+2739 8 273 #7000CC
+2740 9 273 #7E00E6
+2741 0 274 #000000
+2742 1 274 #0E001A
+2743 2 274 #1D0033
+2744 3 274 #2B004D
+2745 4 274 #3A0066
+2746 5 274 #480080
+2747 6 274 #570099
+2748 7 274 #6500B3
+2749 8 274 #7400CC
+2750 9 274 #8200E6
+2751 0 275 #000000
+2752 1 275 #0F001A
+2753 2 275 #1E0033
+2754 3 275 #2D004D
+2755 4 275 #3B0066
+2756 5 275 #4A0080
+2757 6 275 #590099
+2758 7 275 #6800B3
+2759 8 275 #7700CC
+2760 9 275 #8600E6
+2761 0 276 #000000
+2762 1 276 #0F001A
+2763 2 276 #1F0033
+2764 3 276 #2E004D
+2765 4 276 #3D0066
+2766 5 276 #4C0080
+2767 6 276 #5C0099
+2768 7 276 #6B00B3
+2769 8 276 #7A00CC
+2770 9 276 #8A00E6
+2771 0 277 #000000
+2772 1 277 #10001A
+2773 2 277 #1F0033
+2774 3 277 #2F004D
+2775 4 277 #3F0066
+2776 5 277 #4F0080
+2777 6 277 #5E0099
+2778 7 277 #6E00B3
+2779 8 277 #7E00CC
+2780 9 277 #8E00E6
+2781 0 278 #000000
+2782 1 278 #10001A
+2783 2 278 #200033
+2784 3 278 #30004D
+2785 4 278 #410066
+2786 5 278 #510080
+2787 6 278 #610099
+2788 7 278 #7100B3
+2789 8 278 #8100CC
+2790 9 278 #9100E6
+2791 0 279 #000000
+2792 1 279 #11001A
+2793 2 279 #210033
+2794 3 279 #32004D
+2795 4 279 #420066
+2796 5 279 #530080
+2797 6 279 #630099
+2798 7 279 #7400B3
+2799 8 279 #8500CC
+2800 9 279 #9500E6
+2801 0 280 #000000
+2802 1 280 #11001A
+2803 2 280 #220033
+2804 3 280 #33004D
+2805 4 280 #440066
+2806 5 280 #550080
+2807 6 280 #660099
+2808 7 280 #7700B3
+2809 8 280 #8800CC
+2810 9 280 #9900E6
+2811 0 281 #000000
+2812 1 281 #11001A
+2813 2 281 #230033
+2814 3 281 #34004D
+2815 4 281 #460066
+2816 5 281 #570080
+2817 6 281 #690099
+2818 7 281 #7A00B3
+2819 8 281 #8B00CC
+2820 9 281 #9D00E6
+2821 0 282 #000000
+2822 1 282 #12001A
+2823 2 282 #240033
+2824 3 282 #36004D
+2825 4 282 #470066
+2826 5 282 #590080
+2827 6 282 #6B0099
+2828 7 282 #7D00B3
+2829 8 282 #8F00CC
+2830 9 282 #A100E6
+2831 0 283 #000000
+2832 1 283 #12001A
+2833 2 283 #250033
+2834 3 283 #37004D
+2835 4 283 #490066
+2836 5 283 #5B0080
+2837 6 283 #6E0099
+2838 7 283 #8000B3
+2839 8 283 #9200CC
+2840 9 283 #A400E6
+2841 0 284 #000000
+2842 1 284 #13001A
+2843 2 284 #250033
+2844 3 284 #38004D
+2845 4 284 #4B0066
+2846 5 284 #5E0080
+2847 6 284 #700099
+2848 7 284 #8300B3
+2849 8 284 #9600CC
+2850 9 284 #A800E6
+2851 0 285 #000000
+2852 1 285 #13001A
+2853 2 285 #260033
+2854 3 285 #39004D
+2855 4 285 #4D0066
+2856 5 285 #600080
+2857 6 285 #730099
+2858 7 285 #8600B3
+2859 8 285 #9900CC
+2860 9 285 #AC00E6
+2861 0 286 #000000
+2862 1 286 #14001A
+2863 2 286 #270033
+2864 3 286 #3B004D
+2865 4 286 #4E0066
+2866 5 286 #620080
+2867 6 286 #750099
+2868 7 286 #8900B3
+2869 8 286 #9C00CC
+2870 9 286 #B000E6
+2871 0 287 #000000
+2872 1 287 #14001A
+2873 2 287 #280033
+2874 3 287 #3C004D
+2875 4 287 #500066
+2876 5 287 #640080
+2877 6 287 #780099
+2878 7 287 #8C00B3
+2879 8 287 #A000CC
+2880 9 287 #B400E6
+2881 0 288 #000000
+2882 1 288 #14001A
+2883 2 288 #290033
+2884 3 288 #3D004D
+2885 4 288 #520066
+2886 5 288 #660080
+2887 6 288 #7A0099
+2888 7 288 #8F00B3
+2889 8 288 #A300CC
+2890 9 288 #B800E6
+2891 0 289 #000000
+2892 1 289 #15001A
+2893 2 289 #2A0033
+2894 3 289 #3E004D
+2895 4 289 #530066
+2896 5 289 #680080
+2897 6 289 #7D0099
+2898 7 289 #9200B3
+2899 8 289 #A700CC
+2900 9 289 #BB00E6
+2901 0 290 #000000
+2902 1 290 #15001A
+2903 2 290 #2A0033
+2904 3 290 #40004D
+2905 4 290 #550066
+2906 5 290 #6A0080
+2907 6 290 #7F0099
+2908 7 290 #9500B3
+2909 8 290 #AA00CC
+2910 9 290 #BF00E6
+2911 0 291 #000000
+2912 1 291 #16001A
+2913 2 291 #2B0033
+2914 3 291 #41004D
+2915 4 291 #570066
+2916 5 291 #6C0080
+2917 6 291 #820099
+2918 7 291 #9800B3
+2919 8 291 #AD00CC
+2920 9 291 #C300E6
+2921 0 292 #000000
+2922 1 292 #16001A
+2923 2 292 #2C0033
+2924 3 292 #42004D
+2925 4 292 #580066
+2926 5 292 #6E0080
+2927 6 292 #850099
+2928 7 292 #9B00B3
+2929 8 292 #B100CC
+2930 9 292 #C700E6
+2931 0 293 #000000
+2932 1 293 #17001A
+2933 2 293 #2D0033
+2934 3 293 #44004D
+2935 4 293 #5A0066
+2936 5 293 #710080
+2937 6 293 #870099
+2938 7 293 #9E00B3
+2939 8 293 #B400CC
+2940 9 293 #CB00E6
+2941 0 294 #000000
+2942 1 294 #17001A
+2943 2 294 #2E0033
+2944 3 294 #45004D
+2945 4 294 #5C0066
+2946 5 294 #730080
+2947 6 294 #8A0099
+2948 7 294 #A100B3
+2949 8 294 #B800CC
+2950 9 294 #CF00E6
+2951 0 295 #000000
+2952 1 295 #17001A
+2953 2 295 #2F0033
+2954 3 295 #46004D
+2955 4 295 #5E0066
+2956 5 295 #750080
+2957 6 295 #8C0099
+2958 7 295 #A400B3
+2959 8 295 #BB00CC
+2960 9 295 #D200E6
+2961 0 296 #000000
+2962 1 296 #18001A
+2963 2 296 #300033
+2964 3 296 #47004D
+2965 4 296 #5F0066
+2966 5 296 #770080
+2967 6 296 #8F0099
+2968 7 296 #A700B3
+2969 8 296 #BE00CC
+2970 9 296 #D600E6
+2971 0 297 #000000
+2972 1 297 #18001A
+2973 2 297 #300033
+2974 3 297 #49004D
+2975 4 297 #610066
+2976 5 297 #790080
+2977 6 297 #910099
+2978 7 297 #AA00B3
+2979 8 297 #C200CC
+2980 9 297 #DA00E6
+2981 0 298 #000000
+2982 1 298 #19001A
+2983 2 298 #310033
+2984 3 298 #4A004D
+2985 4 298 #630066
+2986 5 298 #7B0080
+2987 6 298 #940099
+2988 7 298 #AD00B3
+2989 8 298 #C500CC
+2990 9 298 #DE00E6
+2991 0 299 #000000
+2992 1 299 #19001A
+2993 2 299 #320033
+2994 3 299 #4B004D
+2995 4 299 #640066
+2996 5 299 #7D0080
+2997 6 299 #960099
+2998 7 299 #B000B3
+2999 8 299 #C900CC
+3000 9 299 #E200E6
+3001 0 300 #000000
+3002 1 300 #1A001A
+3003 2 300 #330033
+3004 3 300 #4D004D
+3005 4 300 #660066
+3006 5 300 #800080
+3007 6 300 #990099
+3008 7 300 #B300B3
+3009 8 300 #CC00CC
+3010 9 300 #E600E6
+3011 0 301 #000000
+3012 1 301 #1A0019
+3013 2 301 #330032
+3014 3 301 #4D004B
+3015 4 301 #660064
+3016 5 301 #80007D
+3017 6 301 #990096
+3018 7 301 #B300B0
+3019 8 301 #CC00C9
+3020 9 301 #E600E2
+3021 0 302 #000000
+3022 1 302 #1A0019
+3023 2 302 #330031
+3024 3 302 #4D004A
+3025 4 302 #660063
+3026 5 302 #80007B
+3027 6 302 #990094
+3028 7 302 #B300AD
+3029 8 302 #CC00C5
+3030 9 302 #E600DE
+3031 0 303 #000000
+3032 1 303 #1A0018
+3033 2 303 #330030
+3034 3 303 #4D0049
+3035 4 303 #660061
+3036 5 303 #800079
+3037 6 303 #990091
+3038 7 303 #B300AA
+3039 8 303 #CC00C2
+3040 9 303 #E600DA
+3041 0 304 #000000
+3042 1 304 #1A0018
+3043 2 304 #330030
+3044 3 304 #4D0047
+3045 4 304 #66005F
+3046 5 304 #800077
+3047 6 304 #99008F
+3048 7 304 #B300A7
+3049 8 304 #CC00BE
+3050 9 304 #E600D6
+3051 0 305 #000000
+3052 1 305 #1A0017
+3053 2 305 #33002F
+3054 3 305 #4D0046
+3055 4 305 #66005E
+3056 5 305 #800075
+3057 6 305 #99008C
+3058 7 305 #B300A4
+3059 8 305 #CC00BB
+3060 9 305 #E600D2
+3061 0 306 #000000
+3062 1 306 #1A0017
+3063 2 306 #33002E
+3064 3 306 #4D0045
+3065 4 306 #66005C
+3066 5 306 #800073
+3067 6 306 #99008A
+3068 7 306 #B300A1
+3069 8 306 #CC00B8
+3070 9 306 #E600CF
+3071 0 307 #000000
+3072 1 307 #1A0017
+3073 2 307 #33002D
+3074 3 307 #4D0044
+3075 4 307 #66005A
+3076 5 307 #800071
+3077 6 307 #990087
+3078 7 307 #B3009E
+3079 8 307 #CC00B4
+3080 9 307 #E600CB
+3081 0 308 #000000
+3082 1 308 #1A0016
+3083 2 308 #33002C
+3084 3 308 #4D0042
+3085 4 308 #660058
+3086 5 308 #80006E
+3087 6 308 #990085
+3088 7 308 #B3009B
+3089 8 308 #CC00B1
+3090 9 308 #E600C7
+3091 0 309 #000000
+3092 1 309 #1A0016
+3093 2 309 #33002B
+3094 3 309 #4D0041
+3095 4 309 #660057
+3096 5 309 #80006C
+3097 6 309 #990082
+3098 7 309 #B30098
+3099 8 309 #CC00AD
+3100 9 309 #E600C3
+3101 0 310 #000000
+3102 1 310 #1A0015
+3103 2 310 #33002A
+3104 3 310 #4D0040
+3105 4 310 #660055
+3106 5 310 #80006A
+3107 6 310 #99007F
+3108 7 310 #B30095
+3109 8 310 #CC00AA
+3110 9 310 #E600BF
+3111 0 311 #000000
+3112 1 311 #1A0015
+3113 2 311 #33002A
+3114 3 311 #4D003E
+3115 4 311 #660053
+3116 5 311 #800068
+3117 6 311 #99007D
+3118 7 311 #B30092
+3119 8 311 #CC00A7
+3120 9 311 #E600BB
+3121 0 312 #000000
+3122 1 312 #1A0014
+3123 2 312 #330029
+3124 3 312 #4D003D
+3125 4 312 #660052
+3126 5 312 #800066
+3127 6 312 #99007A
+3128 7 312 #B3008F
+3129 8 312 #CC00A3
+3130 9 312 #E600B8
+3131 0 313 #000000
+3132 1 313 #1A0014
+3133 2 313 #330028
+3134 3 313 #4D003C
+3135 4 313 #660050
+3136 5 313 #800064
+3137 6 313 #990078
+3138 7 313 #B3008C
+3139 8 313 #CC00A0
+3140 9 313 #E600B4
+3141 0 314 #000000
+3142 1 314 #1A0014
+3143 2 314 #330027
+3144 3 314 #4D003B
+3145 4 314 #66004E
+3146 5 314 #800062
+3147 6 314 #990075
+3148 7 314 #B30089
+3149 8 314 #CC009C
+3150 9 314 #E600B0
+3151 0 315 #000000
+3152 1 315 #1A0013
+3153 2 315 #330026
+3154 3 315 #4D0039
+3155 4 315 #66004D
+3156 5 315 #800060
+3157 6 315 #990073
+3158 7 315 #B30086
+3159 8 315 #CC0099
+3160 9 315 #E600AC
+3161 0 316 #000000
+3162 1 316 #1A0013
+3163 2 316 #330025
+3164 3 316 #4D0038
+3165 4 316 #66004B
+3166 5 316 #80005E
+3167 6 316 #990070
+3168 7 316 #B30083
+3169 8 316 #CC0096
+3170 9 316 #E600A8
+3171 0 317 #000000
+3172 1 317 #1A0012
+3173 2 317 #330025
+3174 3 317 #4D0037
+3175 4 317 #660049
+3176 5 317 #80005B
+3177 6 317 #99006E
+3178 7 317 #B30080
+3179 8 317 #CC0092
+3180 9 317 #E600A4
+3181 0 318 #000000
+3182 1 318 #1A0012
+3183 2 318 #330024
+3184 3 318 #4D0036
+3185 4 318 #660047
+3186 5 318 #800059
+3187 6 318 #99006B
+3188 7 318 #B3007D
+3189 8 318 #CC008F
+3190 9 318 #E600A1
+3191 0 319 #000000
+3192 1 319 #1A0011
+3193 2 319 #330023
+3194 3 319 #4D0034
+3195 4 319 #660046
+3196 5 319 #800057
+3197 6 319 #990069
+3198 7 319 #B3007A
+3199 8 319 #CC008B
+3200 9 319 #E6009D
+3201 0 320 #000000
+3202 1 320 #1A0011
+3203 2 320 #330022
+3204 3 320 #4D0033
+3205 4 320 #660044
+3206 5 320 #800055
+3207 6 320 #990066
+3208 7 320 #B30077
+3209 8 320 #CC0088
+3210 9 320 #E60099
+3211 0 321 #000000
+3212 1 321 #1A0011
+3213 2 321 #330021
+3214 3 321 #4D0032
+3215 4 321 #660042
+3216 5 321 #800053
+3217 6 321 #990063
+3218 7 321 #B30074
+3219 8 321 #CC0085
+3220 9 321 #E60095
+3221 0 322 #000000
+3222 1 322 #1A0010
+3223 2 322 #330020
+3224 3 322 #4D0030
+3225 4 322 #660041
+3226 5 322 #800051
+3227 6 322 #990061
+3228 7 322 #B30071
+3229 8 322 #CC0081
+3230 9 322 #E60091
+3231 0 323 #000000
+3232 1 323 #1A0010
+3233 2 323 #33001F
+3234 3 323 #4D002F
+3235 4 323 #66003F
+3236 5 323 #80004F
+3237 6 323 #99005E
+3238 7 323 #B3006E
+3239 8 323 #CC007E
+3240 9 323 #E6008E
+3241 0 324 #000000
+3242 1 324 #1A000F
+3243 2 324 #33001F
+3244 3 324 #4D002E
+3245 4 324 #66003D
+3246 5 324 #80004C
+3247 6 324 #99005C
+3248 7 324 #B3006B
+3249 8 324 #CC007A
+3250 9 324 #E6008A
+3251 0 325 #000000
+3252 1 325 #1A000F
+3253 2 325 #33001E
+3254 3 325 #4D002D
+3255 4 325 #66003B
+3256 5 325 #80004A
+3257 6 325 #990059
+3258 7 325 #B30068
+3259 8 325 #CC0077
+3260 9 325 #E60086
+3261 0 326 #000000
+3262 1 326 #1A000E
+3263 2 326 #33001D
+3264 3 326 #4D002B
+3265 4 326 #66003A
+3266 5 326 #800048
+3267 6 326 #990057
+3268 7 326 #B30065
+3269 8 326 #CC0074
+3270 9 326 #E60082
+3271 0 327 #000000
+3272 1 327 #1A000E
+3273 2 327 #33001C
+3274 3 327 #4D002A
+3275 4 327 #660038
+3276 5 327 #800046
+3277 6 327 #990054
+3278 7 327 #B30062
+3279 8 327 #CC0070
+3280 9 327 #E6007E
+3281 0 328 #000000
+3282 1 328 #1A000E
+3283 2 328 #33001B
+3284 3 328 #4D0029
+3285 4 328 #660036
+3286 5 328 #800044
+3287 6 328 #990052
+3288 7 328 #B3005F
+3289 8 328 #CC006D
+3290 9 328 #E6007A
+3291 0 329 #000000
+3292 1 329 #1A000D
+3293 2 329 #33001A
+3294 3 329 #4D0028
+3295 4 329 #660035
+3296 5 329 #800042
+3297 6 329 #99004F
+3298 7 329 #B3005C
+3299 8 329 #CC0069
+3300 9 329 #E60077
+3301 0 330 #000000
+3302 1 330 #1A000D
+3303 2 330 #33001A
+3304 3 330 #4D0026
+3305 4 330 #660033
+3306 5 330 #800040
+3307 6 330 #99004D
+3308 7 330 #B30059
+3309 8 330 #CC0066
+3310 9 330 #E60073
+3311 0 331 #000000
+3312 1 331 #1A000C
+3313 2 331 #330019
+3314 3 331 #4D0025
+3315 4 331 #660031
+3316 5 331 #80003E
+3317 6 331 #99004A
+3318 7 331 #B30056
+3319 8 331 #CC0063
+3320 9 331 #E6006F
+3321 0 332 #000000
+3322 1 332 #1A000C
+3323 2 332 #330018
+3324 3 332 #4D0024
+3325 4 332 #660030
+3326 5 332 #80003C
+3327 6 332 #990047
+3328 7 332 #B30053
+3329 8 332 #CC005F
+3330 9 332 #E6006B
+3331 0 333 #000000
+3332 1 333 #1A000B
+3333 2 333 #330017
+3334 3 333 #4D0022
+3335 4 333 #66002E
+3336 5 333 #800039
+3337 6 333 #990045
+3338 7 333 #B30050
+3339 8 333 #CC005C
+3340 9 333 #E60067
+3341 0 334 #000000
+3342 1 334 #1A000B
+3343 2 334 #330016
+3344 3 334 #4D0021
+3345 4 334 #66002C
+3346 5 334 #800037
+3347 6 334 #990042
+3348 7 334 #B3004D
+3349 8 334 #CC0058
+3350 9 334 #E60063
+3351 0 335 #000000
+3352 1 335 #1A000B
+3353 2 335 #330015
+3354 3 335 #4D0020
+3355 4 335 #66002B
+3356 5 335 #800035
+3357 6 335 #990040
+3358 7 335 #B3004A
+3359 8 335 #CC0055
+3360 9 335 #E60060
+3361 0 336 #000000
+3362 1 336 #1A000A
+3363 2 336 #330014
+3364 3 336 #4D001F
+3365 4 336 #660029
+3366 5 336 #800033
+3367 6 336 #99003D
+3368 7 336 #B30047
+3369 8 336 #CC0052
+3370 9 336 #E6005C
+3371 0 337 #000000
+3372 1 337 #1A000A
+3373 2 337 #330014
+3374 3 337 #4D001D
+3375 4 337 #660027
+3376 5 337 #800031
+3377 6 337 #99003B
+3378 7 337 #B30044
+3379 8 337 #CC004E
+3380 9 337 #E60058
+3381 0 338 #000000
+3382 1 338 #1A0009
+3383 2 338 #330013
+3384 3 338 #4D001C
+3385 4 338 #660025
+3386 5 338 #80002F
+3387 6 338 #990038
+3388 7 338 #B30041
+3389 8 338 #CC004B
+3390 9 338 #E60054
+3391 0 339 #000000
+3392 1 339 #1A0009
+3393 2 339 #330012
+3394 3 339 #4D001B
+3395 4 339 #660024
+3396 5 339 #80002D
+3397 6 339 #990036
+3398 7 339 #B3003E
+3399 8 339 #CC0047
+3400 9 339 #E60050
+3401 0 340 #000000
+3402 1 340 #1A0008
+3403 2 340 #330011
+3404 3 340 #4D0019
+3405 4 340 #660022
+3406 5 340 #80002A
+3407 6 340 #990033
+3408 7 340 #B3003B
+3409 8 340 #CC0044
+3410 9 340 #E6004C
+3411 0 341 #000000
+3412 1 341 #1A0008
+3413 2 341 #330010
+3414 3 341 #4D0018
+3415 4 341 #660020
+3416 5 341 #800028
+3417 6 341 #990030
+3418 7 341 #B30039
+3419 8 341 #CC0041
+3420 9 341 #E60049
+3421 0 342 #000000
+3422 1 342 #1A0008
+3423 2 342 #33000F
+3424 3 342 #4D0017
+3425 4 342 #66001F
+3426 5 342 #800026
+3427 6 342 #99002E
+3428 7 342 #B30036
+3429 8 342 #CC003D
+3430 9 342 #E60045
+3431 0 343 #000000
+3432 1 343 #1A0007
+3433 2 343 #33000E
+3434 3 343 #4D0016
+3435 4 343 #66001D
+3436 5 343 #800024
+3437 6 343 #99002B
+3438 7 343 #B30033
+3439 8 343 #CC003A
+3440 9 343 #E60041
+3441 0 344 #000000
+3442 1 344 #1A0007
+3443 2 344 #33000E
+3444 3 344 #4D0014
+3445 4 344 #66001B
+3446 5 344 #800022
+3447 6 344 #990029
+3448 7 344 #B30030
+3449 8 344 #CC0036
+3450 9 344 #E6003D
+3451 0 345 #000000
+3452 1 345 #1A0006
+3453 2 345 #33000D
+3454 3 345 #4D0013
+3455 4 345 #66001A
+3456 5 345 #800020
+3457 6 345 #990026
+3458 7 345 #B3002D
+3459 8 345 #CC0033
+3460 9 345 #E60039
+3461 0 346 #000000
+3462 1 346 #1A0006
+3463 2 346 #33000C
+3464 3 346 #4D0012
+3465 4 346 #660018
+3466 5 346 #80001E
+3467 6 346 #990024
+3468 7 346 #B3002A
+3469 8 346 #CC0030
+3470 9 346 #E60036
+3471 0 347 #000000
+3472 1 347 #1A0006
+3473 2 347 #33000B
+3474 3 347 #4D0011
+3475 4 347 #660016
+3476 5 347 #80001C
+3477 6 347 #990021
+3478 7 347 #B30027
+3479 8 347 #CC002C
+3480 9 347 #E60032
+3481 0 348 #000000
+3482 1 348 #1A0005
+3483 2 348 #33000A
+3484 3 348 #4D000F
+3485 4 348 #660014
+3486 5 348 #80001A
+3487 6 348 #99001F
+3488 7 348 #B30024
+3489 8 348 #CC0029
+3490 9 348 #E6002E
+3491 0 349 #000000
+3492 1 349 #1A0005
+3493 2 349 #330009
+3494 3 349 #4D000E
+3495 4 349 #660013
+3496 5 349 #800017
+3497 6 349 #99001C
+3498 7 349 #B30021
+3499 8 349 #CC0025
+3500 9 349 #E6002A
+3501 0 350 #000000
+3502 1 350 #1A0004
+3503 2 350 #330009
+3504 3 350 #4D000D
+3505 4 350 #660011
+3506 5 350 #800015
+3507 6 350 #99001A
+3508 7 350 #B3001E
+3509 8 350 #CC0022
+3510 9 350 #E60026
+3511 0 351 #000000
+3512 1 351 #1A0004
+3513 2 351 #330008
+3514 3 351 #4D000B
+3515 4 351 #66000F
+3516 5 351 #800013
+3517 6 351 #990017
+3518 7 351 #B3001B
+3519 8 351 #CC001F
+3520 9 351 #E60022
+3521 0 352 #000000
+3522 1 352 #1A0003
+3523 2 352 #330007
+3524 3 352 #4D000A
+3525 4 352 #66000E
+3526 5 352 #800011
+3527 6 352 #990014
+3528 7 352 #B30018
+3529 8 352 #CC001B
+3530 9 352 #E6001F
+3531 0 353 #000000
+3532 1 353 #1A0003
+3533 2 353 #330006
+3534 3 353 #4D0009
+3535 4 353 #66000C
+3536 5 353 #80000F
+3537 6 353 #990012
+3538 7 353 #B30015
+3539 8 353 #CC0018
+3540 9 353 #E6001B
+3541 0 354 #000000
+3542 1 354 #1A0003
+3543 2 354 #330005
+3544 3 354 #4D0008
+3545 4 354 #66000A
+3546 5 354 #80000D
+3547 6 354 #99000F
+3548 7 354 #B30012
+3549 8 354 #CC0014
+3550 9 354 #E60017
+3551 0 355 #000000
+3552 1 355 #1A0002
+3553 2 355 #330004
+3554 3 355 #4D0006
+3555 4 355 #660008
+3556 5 355 #80000B
+3557 6 355 #99000D
+3558 7 355 #B3000F
+3559 8 355 #CC0011
+3560 9 355 #E60013
+3561 0 356 #000000
+3562 1 356 #1A0002
+3563 2 356 #330003
+3564 3 356 #4D0005
+3565 4 356 #660007
+3566 5 356 #800008
+3567 6 356 #99000A
+3568 7 356 #B3000C
+3569 8 356 #CC000E
+3570 9 356 #E6000F
+3571 0 357 #000000
+3572 1 357 #1A0001
+3573 2 357 #330003
+3574 3 357 #4D0004
+3575 4 357 #660005
+3576 5 357 #800006
+3577 6 357 #990008
+3578 7 357 #B30009
+3579 8 357 #CC000A
+3580 9 357 #E6000B
+3581 0 358 #000000
+3582 1 358 #1A0001
+3583 2 358 #330002
+3584 3 358 #4D0003
+3585 4 358 #660003
+3586 5 358 #800004
+3587 6 358 #990005
+3588 7 358 #B30006
+3589 8 358 #CC0007
+3590 9 358 #E60008
+3591 0 359 #000000
+3592 1 359 #1A0000
+3593 2 359 #330001
+3594 3 359 #4D0001
+3595 4 359 #660002
+3596 5 359 #800002
+3597 6 359 #990003
+3598 7 359 #B30003
+3599 8 359 #CC0003
+3600 9 359 #E60004
+#+end_example
+
+***** Overview
+
+Finally, let's plot this thing. Even though most os the filters are
+redundant (like sequence == 1 and hour between 8 and 17), I'll keep
+them here for when I add more pictures.
+
+#+header: :var dep0=peg_palette
+#+begin_src R :results output graphics :file img/PEG_2014_small-v2.png :exports both :width 1400 :height 1000 :session
+library(ggplot2);
+df %>% 
+  # This is not necessary for HSV
+  #filter(variable >= lowLimit, variable < highLimit) %>%
+  filter(value != 0) %>%
+  filter(Hour >= 8, Hour <= 17) %>%
+  filter(Sequence == 1) %>%
+  group_by(Mask) %>%
+  mutate(value = (value/Count)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Day, y = value, fill=as.factor(variable))) +
+  geom_bar(stat='identity', width=1) +
+  ylim(0,NA) +
+  theme_bw (base_size=16) +
+  xlab("Day of the Year (2014)") +
+  ylab("Normalized size of bins") +
+  scale_fill_manual(values=palette$Color) +
+  theme(#axis.ticks = element_blank(),
+    #axis.text = element_blank(),
+    plot.margin = unit(c(0,0,0,0), "cm"),
+    legend.spacing = unit(1, "mm"),
+    panel.grid = element_blank(),
+    legend.position = "top",
+    legend.justification = "left",
+    legend.box.spacing = unit(0, "pt"),
+    legend.box.margin = margin(0,0,0,0),
+    legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:img/PEG_2014_small-v2.png]]
+
+Okay, it's a big mess. I probably messed up the sequencing, as the
+plots are showing very few days of the year... I'll migrate this to
+Rstudio for now, as I think it is faster to develop there.
+
+*** HSV with single, non static V
+As discussed with Lucas, we will try to plot a single histogram (as
+previous implementations already did). 
+
+Instead of fixing the V value to 1, however, we will be sampling the V
+values (using the double histogram method) and assigning the mode of V
+to the whole data set.
+
+Let's start by loading the necessary packages into our session and doing a little bit of setup...
+#+BEGIN_SRC R :session analysis2
+library(tidyverse)
+library(colorspace)
+library(phenovisr)
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Now, let's read the mask we will be using into a tibble.
+#+BEGIN_SRC R :session analysis2 :results output
+df.masks <- tibble(Mask.Filename = list.files('data/70', 
+  recursive = TRUE, 
+  pattern = 'jpg', 
+  full.names = TRUE)) %>%
+    separate(Mask.Filename, sep = '/', into = c('A', 'B', 'C', 'Mask'), remove = FALSE) %>%
+    mutate(Mask = gsub('.jpg', '', Mask)) %>%
+    mutate(Mask = gsub('-', '_', Mask)) %>%
+    select(-A, -B, -C)
+    df.masks
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                                                 Mask          
+:   <chr>                                                         <chr>         
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+
+Then, let's read the description of the images into another tibble
+#+BEGIN_SRC R :session analysis2 :results output
+df.peg <- tibble(Picture.Filename = 
+  list.files('Output_PEG', pattern = 'jpg', recursive = TRUE, full.names = TRUE)) %>%
+    separate(Picture.Filename, sep = '/', into = c('A', 'B', 'Picture'), remove = FALSE) %>%
+    select(-A, -B) %>%
+    mutate(Picture = gsub('.jpg', '', Picture))
+df.peg
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 5,281 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+To make the plots faster, I'll get rid of most images and keep only
+one image per day
+#+BEGIN_SRC R :session analysis2 :results output
+df.peg <- df.peg %>%
+  separate(Picture, sep = '_', into = c('Year', 'Day', 'Hour', 'Sequence'), remove = FALSE) %>%
+  mutate(Sequence = as.numeric(Sequence)) %>%
+  mutate(Hour = as.numeric(Hour)) %>%
+  filter(Sequence == 1) %>%
+  filter(Hour == 10) %>%
+  select(Picture.Filename, Picture)
+df.peg
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_092_10_1.jpg 2014_092_10_1
+ 3 Output_PEG/2014/2014_093_10_1.jpg 2014_093_10_1
+ 4 Output_PEG/2014/2014_094_10_1.jpg 2014_094_10_1
+ 5 Output_PEG/2014/2014_095_10_1.jpg 2014_095_10_1
+ 6 Output_PEG/2014/2014_096_10_1.jpg 2014_096_10_1
+ 7 Output_PEG/2014/2014_097_10_1.jpg 2014_097_10_1
+ 8 Output_PEG/2014/2014_098_10_1.jpg 2014_098_10_1
+ 9 Output_PEG/2014/2014_099_10_1.jpg 2014_099_10_1
+10 Output_PEG/2014/2014_100_10_1.jpg 2014_100_10_1
+# ... with 112 more rows
+#+end_example
+
+We have 122 pictures, which is relatively fast to process. Now we need
+to create all possible combinations of masks and pictures.
+#+BEGIN_SRC R :session analysis2 :results output
+df.join <- df.masks %>%
+  mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.peg %>% mutate(dummy = TRUE), by = 'dummy') %>%
+  select(-dummy)
+df.join
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 4
+# Groups:   Mask [1]
+   Mask.Filename                     Mask      Picture.Filename       Picture  
+   <chr>                             <chr>     <chr>                  <chr>    
+ 1 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_091…
+ 2 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_092…
+ 3 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_093…
+ 4 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_094…
+ 5 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_095…
+ 6 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_096…
+ 7 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_097…
+ 8 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_098…
+ 9 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_099…
+10 data/70/a49c79-ab5d-43f4-99d8-5b… Comunida… Output_PEG/2014/2014_… 2014_100…
+# ... with 112 more rows
+#+end_example
+
+
+Okay, we are now ready to calculate the histograms for all the
+pictures. Here, we define the function that will perform the
+calculations and apply this funciton for all the rows in the df.join
+tibble. Depending on the number of pictures, this process may take a
+long time.
+#+BEGIN_SRC R :session analysis2 :results output
+gethist <- function(df, nsubins = 10) {
+  mask <- df %>% slice(1) %>% pull(Mask.Filename)
+  picture <- df %>% pull(Picture.Filename)
+  phenovis_read_mask(mask)
+  phenovis_get_HSV_double_histogram(phenovis_H(), picture, nsubins) %>%
+    as.tibble
+}
+
+df.histograms <- df.join %>%
+  do(gethist(.)) %>%
+  ungroup()
+
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > > # A tibble: 43,920 x 17
+   Mask   Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
+   <chr>  <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
+ 1 Comun… Outp…  1280    960 508770     0 729875 726071   700   891   671   506
+ 2 Comun… Outp…  1280    960 508770     1     32      0     4     2     2     4
+ 3 Comun… Outp…  1280    960 508770     2    330     11    26    33    51    63
+ 4 Comun… Outp…  1280    960 508770     3    318     44    13    18    39    53
+ 5 Comun… Outp…  1280    960 508770     4    277     79    34    31    37    28
+ 6 Comun… Outp…  1280    960 508770     5    772    114    86   115   117   106
+ 7 Comun… Outp…  1280    960 508770     6    252    125    10    25    19    16
+ 8 Comun… Outp…  1280    960 508770     7    368    117    16    28    37    41
+ 9 Comun… Outp…  1280    960 508770     8    359    135    10    13    23    34
+10 Comun… Outp…  1280    960 508770     9   1005     58    94   136   189   167
+# ... with 43,910 more rows, and 5 more variables: V5 <int>, V6 <int>,
+#   V7 <int>, V8 <int>, V9 <int>
+#+end_example
+
+For each row, let's get the mode of the collected V values. In case of
+a tie (i.e. two bins with the same value), we'll get the last one to
+get a more vibrant color.
+#+BEGIN_SRC R :session analysis2 :results output
+v.bins <- df.histograms %>%
+  select(V0, V1, V2, V3, V4, V5, V6, V7, V8, V9)
+binsMode <- colnames(v.bins)[max.col(v.bins, ties.method = 'last')]
+
+df.histograms.mode <- df.histograms %>%
+  mutate(V.Mode = max.bins)
+
+df.histograms.mode %>% head(10) %>% as.data.frame
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+             Mask                              Name Width Height Pixels H
+1  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 0
+2  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 1
+3  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 2
+4  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 3
+5  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 4
+6  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 5
+7  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 6
+8  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 7
+9  Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 8
+10 Comunidade_PEG Output_PEG/2014/2014_091_10_1.jpg  1280    960 508770 9
+    Count     V0  V1  V2  V3  V4  V5  V6  V7 V8  V9 V.Mode
+1  729875 726071 700 891 671 506 331 252 130 62 261     V0
+2      32      0   4   2   2   4   6   4   5  3   2     V5
+3     330     11  26  33  51  63  48  37  29 15  17     V4
+4     318     44  13  18  39  53  45  43  27 15  21     V4
+5     277     79  34  31  37  28  19  15  12  8  14     V0
+6     772    114  86 115 117 106  77  65  52 18  22     V3
+7     252    125  10  25  19  16  15   8  11  5  18     V0
+8     368    117  16  28  37  41  34  33  26 15  21     V0
+9     359    135  10  13  23  34  31  40  28 15  30     V0
+10   1005     58  94 136 189 167 139  90  64 28  40     V3
+#+end_example
+
+Now let's tidy the data. Let's also remove the bins information (V0 to
+V9) because they are not relevant anymore.
+#+BEGIN_SRC R :session analysis2 :results output
+df.histograms.mode.tidy <- df.histograms.mode %>%
+  select(-V0, -V1, -V2, -V3, -V4, -V5, -V6, -V7, -V8, -V9) %>%
+  mutate(V.Mode = as.integer(substr(V.Mode, 2, 100))) %>%
+  mutate(value = V.Mode*360 + H) %>%
+  separate(Name, sep = '/', into = c('Dir', 'Year', 'Filename')) %>%
+  select(-Dir, -Year) %>%
+  separate(Filename, sep = '_', into = c('Year', 'Day', 'Hour', 'Sequence'), convert = TRUE) %>%
+  mutate(Sequence = gsub('.jpg', '', Sequence))
+
+df.histograms.mode.tidy %>% head(10) %>% as.data.frame
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+             Mask Year Day Hour Sequence Width Height Pixels H  Count V.Mode
+1  Comunidade_PEG 2014  91   10        1  1280    960 508770 0 729875      0
+2  Comunidade_PEG 2014  91   10        1  1280    960 508770 1     32      5
+3  Comunidade_PEG 2014  91   10        1  1280    960 508770 2    330      4
+4  Comunidade_PEG 2014  91   10        1  1280    960 508770 3    318      4
+5  Comunidade_PEG 2014  91   10        1  1280    960 508770 4    277      0
+6  Comunidade_PEG 2014  91   10        1  1280    960 508770 5    772      3
+7  Comunidade_PEG 2014  91   10        1  1280    960 508770 6    252      0
+8  Comunidade_PEG 2014  91   10        1  1280    960 508770 7    368      0
+9  Comunidade_PEG 2014  91   10        1  1280    960 508770 8    359      0
+10 Comunidade_PEG 2014  91   10        1  1280    960 508770 9   1005      3
+   value
+1      0
+2    365
+3    724
+4   1084
+5   1440
+6   1803
+7   2160
+8   2520
+9   2880
+10  3243
+#+end_example
+
+The last step is to create the color palette
+#+BEGIN_SRC R :session analysis2 :results output
+palette <- expand.grid(V = seq(0, 9), H = seq(0, 359), S = 1) %>%
+  mutate(Color = hex(HSV(H, S, V/10)))
+
+palette %>% as.tibble
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,600 x 4
+       V     H     S Color  
+   <int> <int> <dbl> <chr>  
+ 1     0     0    1. #000000
+ 2     1     0    1. #1A0000
+ 3     2     0    1. #330000
+ 4     3     0    1. #4D0000
+ 5     4     0    1. #660000
+ 6     5     0    1. #800000
+ 7     6     0    1. #990000
+ 8     7     0    1. #B30000
+ 9     8     0    1. #CC0000
+10     9     0    1. #E60000
+# ... with 3,590 more rows
+#+end_example
+
+Now, let's finally plot it...
+#+BEGIN_SRC R :session analysis2 :results output graphics :file img/PEG_2014_small.png :exports both :width 1400 :height 1000
+df.histograms.mode.tidy %>%
+  ggplot(aes(x = Day, y = Count/value, fill = as.factor(value))) +
+    geom_bar(stat = 'identity', width = 1) + 
+    ylim(0, NA) + 
+    theme_bw(base_size = 16) +
+    xlab('Day of the Year 2014') +
+    ylab('Normalized size of bins') +
+    scale_fill_manual(values=palette$Color) +
+    theme(
+      plot.margin = unit(c(0,0,0,0), "cm"),
+      legend.spacing = unit(1, "mm"),
+      panel.grid = element_blank(),
+      legend.position = "top",
+      legend.justification = "left",
+      legend.box.spacing = unit(0, "pt"),
+      legend.box.margin = margin(0,0,0,0),
+      legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    facet_grid(Hour~Mask, scales = 'free')
+#+END_SRC
+
+#+RESULTS:
+[[file:img/PEG_2014_small.png]]
