@@ -4138,8 +4138,7 @@ df %>%
   facet_grid(Hour~Mask, scales="free")
 #+end_src
 
-#+RESULTS:
-[[file:img/PEG_2014_small-v2.png]]
+
 
 Okay, it's a big mess. I probably messed up the sequencing, as the
 plots are showing very few days of the year... I'll migrate this to
@@ -4826,9 +4825,11 @@ amount of information from that number of pixels to 3600 bins (360 H \times
 
 Next sections show an example for each strategy.
 
-**** Calculate the double histogram
+**** Calculate the double histogram and tidy the data
 
-The same histogram is used for both strategies.
+The same histogram is used for both strategies. Note that while H
+histogram (columns H and H.count) is already tidy, V data is spreaded,
+we should gather it in two columns (V, V.count) as done below.
 
 #+begin_src R :results output :session :exports both
 options(crayon.enabled = FALSE)
@@ -4849,60 +4850,25 @@ df.histograms <- df.masks %>%
     left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
     select(-dummy) %>%
     do(gethist(.)) %>%
-    ungroup()
-
-df.histograms
-#+end_src
-
-#+RESULTS:
-#+begin_example
-|======================================================|100% ~0 s remaining     > > # A tibble: 43,920 x 17
-   Mask  Name  Width Height Pixels     H  Count     V0    V1    V2    V3    V4
-   <chr> <fct> <int>  <int>  <int> <int>  <int>  <int> <int> <int> <int> <int>
- 1 Comu… Outp…  1280    960 508770     0 729544 726399   544   770   578   380
- 2 Comu… Outp…  1280    960 508770     1      6      0     0     0     0     1
- 3 Comu… Outp…  1280    960 508770     2    152      7    13    15    21    24
- 4 Comu… Outp…  1280    960 508770     3    182     30    10     8    19    22
- 5 Comu… Outp…  1280    960 508770     4    166     65    16    22    15    11
- 6 Comu… Outp…  1280    960 508770     5    623     85    67   106    93    87
- 7 Comu… Outp…  1280    960 508770     6    212    137     7    15     8    13
- 8 Comu… Outp…  1280    960 508770     7    269    138     7    11    18    18
- 9 Comu… Outp…  1280    960 508770     8    292    157     5     9    15    25
-10 Comu… Outp…  1280    960 508770     9    801     49    72   106   155   118
-# ... with 43,910 more rows, and 5 more variables: V5 <int>, V6 <int>,
-#   V7 <int>, V8 <int>, V9 <int>
-#+end_example
-
-**** Strategy #1: 3600 bins (360 H \times 10 V)
-***** Tidy data
-
-So, V data is spreaded, we should gather it in two columns (V,
-V.count) below. After doing so, we map the range of the V value (0
-to 9) to something acceptable by the =colorspace= package, so (0 to
-1). The same is valid for the S, which we define as set to 1, fixed.
-
-#+begin_src R :results output :session :exports both
-suppressMessages(library(tidyverse));
-df <- df.histograms %>%
+    ungroup() %>%
     rename(H.count = Count) %>%
+    # V histogram is spread, let's gather it
     gather(V, V.count, -Mask, -Name, -Width, -Height, -Pixels, -H, -H.count) %>%
     # Remove the V, convert to integer
     mutate(V = as.integer(gsub("V", "", V))) %>%
     # Map to [0,1], convert to double
     mutate(V = as.numeric(round(V/9, 2))) %>%
-    # I don't understand why next line is necessary
-    #  mutate(V = V*360 + H) %>%
     # Cosmetics
     separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
     select(-Dir, -Year) %>%
     separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Seq"), convert=TRUE) %>%
     mutate(Seq = as.integer(gsub(".jpg", "", Seq)))
-df
+df.histograms
 #+end_src
 
 #+RESULTS:
 #+begin_example
-# A tibble: 439,200 x 12
+|======================================================|100% ~0 s remaining     > # A tibble: 439,200 x 12
    Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
    <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
  1 Com…  2014    91    10     1  1280    960 508770     0  729544     0  726399
@@ -4918,10 +4884,55 @@ df
 # ... with 439,190 more rows
 #+end_example
 
+**** H(fixed S)V Color Palette
+
+A color coding is necessary since we are handling colors manually.
+- We first define a tibble with all possible HSV combinations
+- Then we define a list with the color mapping (code \to color)
+  - This shall be used to color the ggplot object
+
+#+begin_src R :results output :session :exports both
+suppressMessages(library(colorspace))
+palette <- expand.grid(
+    H = seq(0, 359),
+    S = 1,
+    V = seq(0, 9)/10) %>%
+    # The color code
+    mutate(Color.Code = H+V) %>%
+    # The color itself
+    mutate(Color = hex(HSV(H, S, V/10))) %>%
+    as_tibble %>%
+    print
+
+palette.list <- as.character(palette$Color)
+names(palette.list) <- palette$Color.Code
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,600 x 5
+       H     S     V Color.Code Color  
+   <int> <dbl> <dbl>      <dbl> <chr>  
+ 1     0     1     0          0 #000000
+ 2     1     1     0          1 #000000
+ 3     2     1     0          2 #000000
+ 4     3     1     0          3 #000000
+ 5     4     1     0          4 #000000
+ 6     5     1     0          5 #000000
+ 7     6     1     0          6 #000000
+ 8     7     1     0          7 #000000
+ 9     8     1     0          8 #000000
+10     9     1     0          9 #000000
+# ... with 3,590 more rows
+#+end_example
+
+**** Strategy #1: 3600 bins (360 H \times 10 V)
+***** Confirme we have tidy data
+
 Let's just confirm we have 3.6K bins
 
 #+begin_src R :results output :session :exports both
-df %>%
+df.histograms %>%
     group_by(Mask, Year, Day, Hour, Seq, Width, Height, Pixels) %>%
     summarize(N.Bins=n())
 #+end_src
@@ -4946,6 +4957,70 @@ df %>%
 #+end_example
 
 Yes, we do have 3.6K bins for each of the 122 pictures.
+
+***** Plot
+
+#+begin_src R :results output :session :exports both
+df.histograms %>%
+    mutate(Color.Code = H+V) -> df;
+
+df %>%
+    select(-Mask, -Year, -Hour, -Seq, -Width, -Height) %>%
+    filter(Day %in% c(91)) %>%
+    filter(H != 0) %>%
+    select(H, H.count, Pixels)
+#    pull(H.count) %>% sum
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,590 x 3
+       H H.count Pixels
+   <int>   <int>  <int>
+ 1     1       6 508770
+ 2     2     152 508770
+ 3     3     182 508770
+ 4     4     166 508770
+ 5     5     623 508770
+ 6     6     212 508770
+ 7     7     269 508770
+ 8     8     292 508770
+ 9     9     801 508770
+10    10    1479 508770
+# ... with 3,580 more rows
+#+end_example
+
+#+begin_src R :results output graphics :file img/peg_2014-122-v3.png :exports both :width 600 :height 400 :session
+library(ggplot2);
+df %>% 
+    #filter(H != 0) %>%
+    filter(Day < 92) %>%
+    filter(Seq == 1) %>%
+    ggplot(aes(x = Day, y = H.count, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values=palette.list) +
+    geom_bar(stat='identity', width=1) +
+    ylim(0,NA) +
+#    coord_cartesian(xlim=c(0,100), ylim=c(0,100)) +
+    theme_bw (base_size=16) +
+ #   xlab("Day of the Year (2014)") +
+ #   ylab("Normalized size of bins") +
+
+    theme(#axis.ticks = element_blank(),
+                                        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(1, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    facet_grid(Hour~Mask, scales="free")
+#+end_src
+
+#+RESULTS:
+[[file:img/peg_2014-122-v3.png]]
 
 **** Strategy #2: 360 bins (360 H of the most frequent V)
 
