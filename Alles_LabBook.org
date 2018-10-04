@@ -4874,6 +4874,79 @@ df.histograms
 #+end_example
 
 **** Strategy #1: 3600 bins (360 H \times 10 V)
+***** Tidy data
+
+So, V data is spreaded, we should gather it in two columns (V,
+V.count) below. After doing so, we map the range of the V value (0
+to 9) to something acceptable by the =colorspace= package, so (0 to
+1). The same is valid for the S, which we define as set to 1, fixed.
+
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse));
+df <- df.histograms %>%
+    rename(H.count = Count) %>%
+    gather(V, V.count, -Mask, -Name, -Width, -Height, -Pixels, -H, -H.count) %>%
+    # Remove the V, convert to integer
+    mutate(V = as.integer(gsub("V", "", V))) %>%
+    # Map to [0,1], convert to double
+    mutate(V = as.numeric(round(V/9, 2))) %>%
+    # I don't understand why next line is necessary
+    #  mutate(V = V*360 + H) %>%
+    # Cosmetics
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Seq"), convert=TRUE) %>%
+    mutate(Seq = as.integer(gsub(".jpg", "", Seq)))
+df
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 439,200 x 12
+   Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
+   <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
+ 1 Com…  2014    91    10     1  1280    960 508770     0  729544     0  726399
+ 2 Com…  2014    91    10     1  1280    960 508770     1       6     0       0
+ 3 Com…  2014    91    10     1  1280    960 508770     2     152     0       7
+ 4 Com…  2014    91    10     1  1280    960 508770     3     182     0      30
+ 5 Com…  2014    91    10     1  1280    960 508770     4     166     0      65
+ 6 Com…  2014    91    10     1  1280    960 508770     5     623     0      85
+ 7 Com…  2014    91    10     1  1280    960 508770     6     212     0     137
+ 8 Com…  2014    91    10     1  1280    960 508770     7     269     0     138
+ 9 Com…  2014    91    10     1  1280    960 508770     8     292     0     157
+10 Com…  2014    91    10     1  1280    960 508770     9     801     0      49
+# ... with 439,190 more rows
+#+end_example
+
+Let's just confirm we have 3.6K bins
+
+#+begin_src R :results output :session :exports both
+df %>%
+    group_by(Mask, Year, Day, Hour, Seq, Width, Height, Pixels) %>%
+    summarize(N.Bins=n())
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 9
+# Groups:   Mask, Year, Day, Hour, Seq, Width, Height [?]
+   Mask            Year   Day  Hour   Seq Width Height Pixels N.Bins
+   <chr>          <int> <int> <int> <int> <int>  <int>  <int>  <int>
+ 1 Comunidade_PEG  2014    91    10     1  1280    960 508770   3600
+ 2 Comunidade_PEG  2014    92    10     1  1280    960 508770   3600
+ 3 Comunidade_PEG  2014    93    10     1  1280    960 508770   3600
+ 4 Comunidade_PEG  2014    94    10     1  1280    960 508770   3600
+ 5 Comunidade_PEG  2014    95    10     1  1280    960 508770   3600
+ 6 Comunidade_PEG  2014    96    10     1  1280    960 508770   3600
+ 7 Comunidade_PEG  2014    97    10     1  1280    960 508770   3600
+ 8 Comunidade_PEG  2014    98    10     1  1280    960 508770   3600
+ 9 Comunidade_PEG  2014    99    10     1  1280    960 508770   3600
+10 Comunidade_PEG  2014   100    10     1  1280    960 508770   3600
+# ... with 112 more rows
+#+end_example
+
+Yes, we do have 3.6K bins for each of the 122 pictures.
+
 **** Strategy #2: 360 bins (360 H of the most frequent V)
 
 
