@@ -1,5 +1,5 @@
-#+TITLE: Lucas's PEG LabBook
-#+AUTHOR: Lucas Mello Schnorr
+#+TITLE: Alles's PEG LabBook
+#+AUTHOR: Guilherme Alles
 #+LATEX_HEADER: \usepackage[margin=2cm,a4paper]{geometry}
 #+STARTUP: overview indent
 #+TAGS: Lucas(L) noexport(n) deprecated(d)
