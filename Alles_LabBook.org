@@ -4444,6 +4444,82 @@ df.histograms.mode.tidy %>%
 #+RESULTS:
 [[file:img/PEG_2014_small.png]]
 * Temporal Entries
+** 2018-10-04 Test the phenovisr package
+
+#+begin_src R :results output :session :exports both
+options(crayon.enabled = FALSE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+
+mask <- "data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg"
+picture <- "Output_PEG/2014/2014_091_10_1.jpg"
+
+phenovis_read_mask(mask);
+vGrain = 10;
+df <- phenovis_get_HSV_double_histogram(phenovis_H(), picture, vGrain) %>%
+    rename(P.Mask = Pixels) %>%
+    select(Width, Height, P.Mask, H, Count) %>%
+    mutate(Count = case_when(H == 0 ~ P.Mask,
+                             TRUE ~ .$Count)) %>%
+    filter(H!=0) %>%
+    as_tibble %>%
+    print
+df %>% pull(Count) %>% sum
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 359 x 5
+   Width Height P.Mask     H Count
+   <int>  <int>  <int> <int> <int>
+ 1  1280    960 508770     1     6
+ 2  1280    960 508770     2   152
+ 3  1280    960 508770     3   182
+ 4  1280    960 508770     4   166
+ 5  1280    960 508770     5   623
+ 6  1280    960 508770     6   212
+ 7  1280    960 508770     7   269
+ 8  1280    960 508770     8   292
+ 9  1280    960 508770     9   801
+10  1280    960 508770    10  1479
+# ... with 349 more rows
+[1] 499256
+#+end_example
+
+#+begin_src R :results output :session :exports both
+
+
+
+gethist <- function(df, vGrain=10)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+
+    
+        as_tibble()
+}
+
+df.histograms <- df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() %>%
+    rename(H.count = Count) %>%
+    # V histogram is spread, let's gather it
+    gather(V, V.count, -Mask, -Name, -Width, -Height, -Pixels, -H, -H.count) %>%
+    # Remove the V, convert to integer
+    mutate(V = as.integer(gsub("V", "", V))) %>%
+    # Map to [0,1], convert to double
+    mutate(V = as.numeric(round(V/9, 2))) %>%
+    # Cosmetics
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Seq"), convert=TRUE) %>%
+    mutate(Seq = as.integer(gsub(".jpg", "", Seq)))
+df.histograms
+#+end_src
+
 ** 2018-10-04 Organizing data manipulation procedures
 *** Overview
 
