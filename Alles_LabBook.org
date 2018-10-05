@@ -5070,13 +5070,12 @@ st0.df  %>%
 #+RESULTS:
 [[file:img/peg_2014-122-st1-v3.png]]
 
-**** TODO Strategy #2: 3600 bins (360 H \times 10 V)
+**** Strategy #2: 3600 bins (360 H \times 10 V)
 ***** H(fixed S)V Color Palette
 
-A color coding is necessary since we are handling colors manually.
-- We first define a tibble with all possible HSV combinations
-- Then we define a list with the color mapping (code \to color)
-  - This shall be used to color the ggplot object
+In this color coding, only S is fixed to 1.
+
+The color code is H+V.
 
 #+begin_src R :results output :session :exports both
 suppressMessages(library(colorspace))
@@ -5085,9 +5084,9 @@ palette <- expand.grid(
     S = 1,
     V = seq(0, 9)/10) %>%
     # The color code
-    mutate(Color.Code = H+V) %>%
+    mutate(Color.Code = as.integer((H+V)*10)) %>%
     # The color itself
-    mutate(Color = hex(HSV(H, S, V/10))) %>%
+    mutate(Color = hex(HSV(H, S, V))) %>%
     as_tibble %>%
     print
 
@@ -5099,20 +5098,21 @@ names(palette.list) <- palette$Color.Code
 #+begin_example
 # A tibble: 3,600 x 5
        H     S     V Color.Code Color  
-   <int> <dbl> <dbl>      <dbl> <chr>  
+   <int> <dbl> <dbl>      <int> <chr>  
  1     0     1     0          0 #000000
- 2     1     1     0          1 #000000
- 3     2     1     0          2 #000000
- 4     3     1     0          3 #000000
- 5     4     1     0          4 #000000
- 6     5     1     0          5 #000000
- 7     6     1     0          6 #000000
- 8     7     1     0          7 #000000
- 9     8     1     0          8 #000000
-10     9     1     0          9 #000000
+ 2     1     1     0         10 #000000
+ 3     2     1     0         20 #000000
+ 4     3     1     0         30 #000000
+ 5     4     1     0         40 #000000
+ 6     5     1     0         50 #000000
+ 7     6     1     0         60 #000000
+ 8     7     1     0         70 #000000
+ 9     8     1     0         80 #000000
+10     9     1     0         90 #000000
 # ... with 3,590 more rows
 #+end_example
-***** Confirme we have tidy data of H and V
+***** Data Manipulation (+ Confirm we have tidy data of H and V)
+****** Confirm and some checks
 
 Let's just confirm we have 3.6K bins
 
@@ -5143,40 +5143,232 @@ df.histograms %>%
 
 Yes, we do have 3.6K bins for each of the 122 pictures.
 
-***** Plot
+Now I want to check whether the sum of V.count for a given H is equal
+to H.count. The next piece of code should return no values.
 
-#+begin_src R :results output graphics :file img/peg_2014-122-v3.png :exports both :width 600 :height 400 :session
-library(ggplot2);
-df %>% 
-    select(-V, -V.count, -Color.Code) %>%
-    unique %>%
-    filter(Day < 100) %>%
-    filter(Seq == 1) %>%
-    ggplot(aes(x = Day, y = H.count, color=as.factor(Color.Code))) +
-    scale_fill_manual(values=palette.list) +
-    geom_bar(stat='identity', width=1) +
-    ylim(0,NA) +
-#    coord_cartesian(xlim=c(0,100), ylim=c(0,100)) +
-    theme_bw (base_size=16) +
- #   xlab("Day of the Year (2014)") +
- #   ylab("Normalized size of bins") +
-
-    theme(#axis.ticks = element_blank(),
-                                        #axis.text = element_blank(),
-        plot.margin = unit(c(0,0,0,0), "cm"),
-        legend.spacing = unit(1, "mm"),
-        panel.grid = element_blank(),
-        legend.position = "none",
-        legend.justification = "left",
-        legend.box.spacing = unit(0, "pt"),
-        legend.box.margin = margin(0,0,0,0),
-        legend.title = element_blank()) +
-    guides(fill = guide_legend(nrow = 1)) +
-    facet_grid(Hour~Mask, scales="free")
+#+begin_src R :results output :session :exports both
+df.histograms %>%
+    select(-Mask, -Year) %>%
+    group_by(Day, H) %>%
+    mutate(N=n(), SUM.V.count=sum(V.count)) %>%
+    filter(H.count != SUM.V.count)
 #+end_src
 
 #+RESULTS:
-[[file:img/peg_2014-122-v3.png]]
-**** TODO Strategy #3: (360 H, fixed S=1, but V is the mode)
+: # A tibble: 0 x 12
+: # Groups:   Day, H [0]
+: # ... with 12 variables: Day <int>, Hour <int>, Seq <int>, Width <int>,
+: #   Height <int>, Pixels <int>, H <int>, H.count <int>, V <dbl>, V.count <int>,
+: #   N <int>, SUM.V.count <int>
 
+Great, we are ready.
+
+****** Save in its own tibble
+
+#+begin_src R :results output :session :exports both
+st1.df <- df.histograms %>%
+    print
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 437,980 x 12
+   Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
+   <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
+ 1 Com…  2014    91    10     1  1280    960 508770     1       6     0       0
+ 2 Com…  2014    91    10     1  1280    960 508770     2     152     0       7
+ 3 Com…  2014    91    10     1  1280    960 508770     3     182     0      30
+ 4 Com…  2014    91    10     1  1280    960 508770     4     166     0      65
+ 5 Com…  2014    91    10     1  1280    960 508770     5     623     0      85
+ 6 Com…  2014    91    10     1  1280    960 508770     6     212     0     137
+ 7 Com…  2014    91    10     1  1280    960 508770     7     269     0     138
+ 8 Com…  2014    91    10     1  1280    960 508770     8     292     0     157
+ 9 Com…  2014    91    10     1  1280    960 508770     9     801     0      49
+10 Com…  2014    91    10     1  1280    960 508770    10    1479     0     366
+# ... with 437,970 more rows
+#+end_example
+
+***** Color tentatives
+
+#+begin_src R :results output :session :exports both
+MEU.H=32
+st1.df %>%
+    filter(H==MEU.H) %>%
+    filter(Day==91) %>%
+    mutate(Color.Code = as.integer((H+V)*10)) %>%
+    select(-Mask, -Year)
+
+palette %>%
+    filter(H==MEU.H) -> x
+x
+palette.list <- as.character(x$Color)
+names(palette.list) <- x$Color.Code
+palette.list
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 10 x 11
+     Day  Hour   Seq Width Height Pixels     H H.count     V V.count Color.Code
+   <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>      <int>
+ 1    91    10     1  1280    960 508770    32    7004  0        485        320
+ 2    91    10     1  1280    960 508770    32    7004  0.11     917        321
+ 3    91    10     1  1280    960 508770    32    7004  0.22    1414        322
+ 4    91    10     1  1280    960 508770    32    7004  0.33    1097        323
+ 5    91    10     1  1280    960 508770    32    7004  0.44    1040        324
+ 6    91    10     1  1280    960 508770    32    7004  0.56     794        325
+ 7    91    10     1  1280    960 508770    32    7004  0.67     584        326
+ 8    91    10     1  1280    960 508770    32    7004  0.78     327        327
+ 9    91    10     1  1280    960 508770    32    7004  0.89     166        328
+10    91    10     1  1280    960 508770    32    7004  1        180        330
+# A tibble: 10 x 5
+       H     S     V Color.Code Color  
+   <int> <dbl> <dbl>      <int> <chr>  
+ 1    32     0   0          320 #000000
+ 2    32     0   0.1        321 #1A1A1A
+ 3    32     0   0.2        322 #333333
+ 4    32     0   0.3        323 #4D4D4D
+ 5    32     0   0.4        324 #666666
+ 6    32     0   0.5        325 #808080
+ 7    32     0   0.6        326 #999999
+ 8    32     0   0.7        327 #B3B3B3
+ 9    32     0   0.8        328 #CCCCCC
+10    32     0   0.9        329 #E6E6E6
+      320       321       322       323       324       325       326       327 
+"#000000" "#1A1A1A" "#333333" "#4D4D4D" "#666666" "#808080" "#999999" "#B3B3B3" 
+      328       329 
+"#CCCCCC" "#E6E6E6"
+#+end_example
+
+***** Plot
+
+#+begin_src R :results output graphics :file img/peg_2014-122-st2-v3.png :exports both :width 1400 :height 600 :session
+st1.df  %>%
+    mutate(Color.Code = as.integer((H+V)*10)) %>%
+    ggplot(aes(x = Day, y = V.count, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins")
+    #coord_flip() +
+    #coord_cartesian(ylim=c(2.5e+5, 2.6e+5)) +
+#+end_src
+
+#+RESULTS:
+[[file:img/peg_2014-122-st2-v3.png]]
+
+**** Strategy #3: (360 H, fixed S=1, but V is the mode)
+***** H(fixed S)V Color Palette
+
+In this color coding, only S is fixed to 1.
+
+The color code is still based on H+V, as in the strategy #2.
+
+#+begin_src R :results output :session :exports both
+suppressMessages(library(colorspace))
+palette <- expand.grid(
+    H = seq(0, 359),
+    S = 1,
+    V = seq(0, 9)/10) %>%
+    # The color code
+    mutate(Color.Code = as.integer((H+V)*10)) %>%
+    # The color itself
+    mutate(Color = hex(HSV(H, S, V))) %>%
+    as_tibble %>%
+    print
+
+palette.list <- as.character(palette$Color)
+names(palette.list) <- palette$Color.Code
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,600 x 5
+       H     S     V Color.Code Color  
+   <int> <dbl> <dbl>      <int> <chr>  
+ 1     0     1     0          0 #000000
+ 2     1     1     0         10 #000000
+ 3     2     1     0         20 #000000
+ 4     3     1     0         30 #000000
+ 5     4     1     0         40 #000000
+ 6     5     1     0         50 #000000
+ 7     6     1     0         60 #000000
+ 8     7     1     0         70 #000000
+ 9     8     1     0         80 #000000
+10     9     1     0         90 #000000
+# ... with 3,590 more rows
+#+end_example
+
+***** Data Manipulation (+ Confirm we have tidy data of H and V)
+
+#+begin_src R :results output :session :exports both
+st3.df <- df.histograms %>%
+    group_by(Mask, Year, Day, Hour, Seq, Width, Height, Pixels, H) %>%
+    # Compute the maximum V.count (the mode)
+    mutate(V.max.count = max(V.count)) %>%
+    # Get only that maximum among other Vs
+    filter(V.count == V.max.count) %>%
+    # Get rid of the computed value
+    select(-V.max.count) %>%
+    ungroup() %>%
+    print
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 78,607 x 12
+   Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
+   <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
+ 1 Com…  2014    91    10     1  1280    960 508770     4     166     0      65
+ 2 Com…  2014    91    10     1  1280    960 508770     6     212     0     137
+ 3 Com…  2014    91    10     1  1280    960 508770     7     269     0     138
+ 4 Com…  2014    91    10     1  1280    960 508770     8     292     0     157
+ 5 Com…  2014    91    10     1  1280    960 508770    10    1479     0     366
+ 6 Com…  2014    91    10     1  1280    960 508770    12    1953     0     588
+ 7 Com…  2014    91    10     1  1280    960 508770    13     233     0     142
+ 8 Com…  2014    91    10     1  1280    960 508770    15    1251     0     514
+ 9 Com…  2014    91    10     1  1280    960 508770    17     577     0     157
+10 Com…  2014    91    10     1  1280    960 508770    18     815     0     151
+# ... with 78,597 more rows
+#+end_example
+***** Plot
+
+#+begin_src R :results output graphics :file img/peg_2014-122-st3-v3.png :exports both :width 1400 :height 600 :session
+st3.df  %>%
+    mutate(Color.Code = as.integer((H+V)*10)) %>%
+    ggplot(aes(x = Day, y = H.count, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins")
+    #coord_flip() +
+    #coord_cartesian(ylim=c(2.5e+5, 2.6e+5)) +
+#+end_src
+
+#+RESULTS:
+[[file:img/peg_2014-122-st3-v3.png]]
 
