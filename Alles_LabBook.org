@@ -4893,19 +4893,21 @@ amount of information from that number of pixels to 3600 bins (360 H \times
    S and V components are fixed. This implies a change of the color
    observed in the picture.
    - X is day, Y is H.count, color is H
-   - stacked bar to stack the H.count is used
+   - geom bar to stack the H.count is used
 
 2. We define a color for every single possibility out of those 3600
    bins (360 H \times 10 V). The color definition is straightforward, since
    we have H and V (considering S as constant value).
-   - X is day, Y is ???, color is H+V
-   - stacke bar to stack the ??? is used
+   - X is day, Y is V.count, color is H+V
+   - geom bar to stack the V.count is used
 
 3. We define a color for each H value, and a constant S value. Instead
    of choosing any V value (constant, mean), we instead choose the one
    that is capable to represent best the corresponding H value. This
    means that from the 10 possible values, we select the one that is
    most frequent. So, at the end, we have 360 colors.
+   - identical to #1, but color is based on H+V for the most frequent
+     V of each H
 
 A color coding is necessary since we are handling colors manually.
 - We first define a tibble with all possible HSV combinations
