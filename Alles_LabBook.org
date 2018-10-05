@@ -5373,4 +5373,210 @@ st3.df  %>%
 
 #+RESULTS:
 [[file:img/peg_2014-122-st3-v3.png]]
+* Analysis of the AHS dataset
+** Dataset overview
+I have downloaded the AHS dataset for the year of 2017 and put it in
+the PEN directory. After organizing the files around, the structure
+looks like this:
+
+#+BEGIN_SRC sh :exports both
+ls PEN/AHS/2017/
+#+END_SRC
+
+#+RESULTS:
+: pen.jamstec.go.jp
+
+Each one of the two directories (t24-d and f02-u) contains pictures
+taken from a different angle. According to Lucas' spreadsheet: 
+ - t24-d: images from the top of the tower
+ - f02-u: images from the forest floor.
+
+
+The file structure is similar for both directories.
+#+BEGIN_SRC sh :exports both
+ls PEN/AHS/2017/t24_d
+#+END_SRC
+
+#+RESULTS:
+| dc_2017_001_0500+0000_AHS_t24_d.jpg |
+| dc_2017_001_0530+0000_AHS_t24_d.jpg |
+| dc_2017_001_0600+0000_AHS_t24_d.jpg |
+| dc_2017_001_0630+0000_AHS_t24_d.jpg |
+| dc_2017_001_0700+0000_AHS_t24_d.jpg |
+| dc_2017_001_0730+0000_AHS_t24_d.jpg |
+| dc_2017_001_0800+0000_AHS_t24_d.jpg |
+| dc_2017_001_0830+0000_AHS_t24_d.jpg |
+| dc_2017_001_0900+0000_AHS_t24_d.jpg |
+| dc_2017_001_0930+0000_AHS_t24_d.jpg |
+| dc_2017_001_1000+0000_AHS_t24_d.jpg |
+| dc_2017_001_1030+0000_AHS_t24_d.jpg |
+| dc_2017_001_1100+0000_AHS_t24_d.jpg |
+| dc_2017_001_1130+0000_AHS_t24_d.jpg |
+| dc_2017_001_1200+0000_AHS_t24_d.jpg |
+| dc_2017_001_1230+0000_AHS_t24_d.jpg |
+| dc_2017_001_1300+0000_AHS_t24_d.jpg |
+| dc_2017_001_1330+0000_AHS_t24_d.jpg |
+| dc_2017_001_1400+0000_AHS_t24_d.jpg |
+| dc_2017_001_1430+0000_AHS_t24_d.jpg |
+| dc_2017_001_1500+0000_AHS_t24_d.jpg |
+| dc_2017_001_1530+0000_AHS_t24_d.jpg |
+| dc_2017_001_1600+0000_AHS_t24_d.jpg |
+| dc_2017_001_1630+0000_AHS_t24_d.jpg |
+| dc_2017_001_1700+0000_AHS_t24_d.jpg |
+| dc_2017_001_1730+0000_AHS_t24_d.jpg |
+| dc_2017_001_1800+0000_AHS_t24_d.jpg |
+| dc_2017_001_1830+0000_AHS_t24_d.jpg |
+| dc_2017_001_1900+0000_AHS_t24_d.jpg |
+| dc_2017_001_1930+0000_AHS_t24_d.jpg |
+| dc_2017_001_2000+0000_AHS_t24_d.jpg |
+| dc_2017_001_2030+0000_AHS_t24_d.jpg |
+| dc_2017_001_2100+0000_AHS_t24_d.jpg |
+** 2017 analysis
+The first step is to load the dependencies into our R session.
+#+BEGIN_SRC R :session pen-2017 :results none
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+*** First day of 2017
+
+While we wait for the rest of the dataset to download, let's start by
+taking a look at the first day of 2017. The first step is to read the
+file names into a tibble
+
+#+BEGIN_SRC R :session pen-2017 :results output
+df.pen <- tibble(
+    Picture.Filename=list.files("PEN/AHS/2017/t24_d", pattern='jpg', recursive=TRUE, full.names=TRUE)
+) %>%
+    separate(Picture.Filename, sep = '/', into=c('A', 'B', 'C', 'D', 'Picture'), remove = FALSE) %>%
+    select(-A, -B, -C, -D) %>%
+    mutate(Picture = gsub('dc_2017_', '', Picture)) %>%
+    mutate(Picture = gsub('\\+0000_AHS_t24_d.jpg', '', Picture))
+df.pen
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 33 x 2
+   Picture.Filename                                       Picture 
+   <chr>                                                  <chr>   
+ 1 PEN/AHS/2017/t24_d/dc_2017_001_0500+0000_AHS_t24_d.jpg 001_0500
+ 2 PEN/AHS/2017/t24_d/dc_2017_001_0530+0000_AHS_t24_d.jpg 001_0530
+ 3 PEN/AHS/2017/t24_d/dc_2017_001_0600+0000_AHS_t24_d.jpg 001_0600
+ 4 PEN/AHS/2017/t24_d/dc_2017_001_0630+0000_AHS_t24_d.jpg 001_0630
+ 5 PEN/AHS/2017/t24_d/dc_2017_001_0700+0000_AHS_t24_d.jpg 001_0700
+ 6 PEN/AHS/2017/t24_d/dc_2017_001_0730+0000_AHS_t24_d.jpg 001_0730
+ 7 PEN/AHS/2017/t24_d/dc_2017_001_0800+0000_AHS_t24_d.jpg 001_0800
+ 8 PEN/AHS/2017/t24_d/dc_2017_001_0830+0000_AHS_t24_d.jpg 001_0830
+ 9 PEN/AHS/2017/t24_d/dc_2017_001_0900+0000_AHS_t24_d.jpg 001_0900
+10 PEN/AHS/2017/t24_d/dc_2017_001_0930+0000_AHS_t24_d.jpg 001_0930
+# ... with 23 more rows
+#+end_example
+
+Then, let's read the community mask (for now we will use the same mask
+as the PEG analysis) and join it to the pictures data frame
+#+BEGIN_SRC R :session pen-2017 :results output
+df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C) %>%
+    mutate(dummy = TRUE)
+
+df.pen.masks <- df.pen %>% 
+    mutate(dummy = TRUE) %>%
+    left_join(df.masks, by=c('dummy')) %>%
+    select(-dummy)
+df.pen.masks
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 33 x 4
+   Picture.Filename              Picture Mask.Filename                 Mask    
+   <chr>                         <chr>   <chr>                         <chr>   
+ 1 PEN/AHS/2017/t24_d/dc_2017_0… 001_05… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 2 PEN/AHS/2017/t24_d/dc_2017_0… 001_05… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 3 PEN/AHS/2017/t24_d/dc_2017_0… 001_06… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 4 PEN/AHS/2017/t24_d/dc_2017_0… 001_06… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 5 PEN/AHS/2017/t24_d/dc_2017_0… 001_07… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 6 PEN/AHS/2017/t24_d/dc_2017_0… 001_07… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 7 PEN/AHS/2017/t24_d/dc_2017_0… 001_08… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 8 PEN/AHS/2017/t24_d/dc_2017_0… 001_08… data/70/a49c79-ab5d-43f4-99d… Comunid…
+ 9 PEN/AHS/2017/t24_d/dc_2017_0… 001_09… data/70/a49c79-ab5d-43f4-99d… Comunid…
+10 PEN/AHS/2017/t24_d/dc_2017_0… 001_09… data/70/a49c79-ab5d-43f4-99d… Comunid…
+# ... with 23 more rows
+#+end_example
+
+Now, let's calculate the histograms for each picture
+#+BEGIN_SRC R :session pen-2017 :results output
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), vGrain) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms <- df.pen.masks %>%
+    do(gethist(.))
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+# A tibble: 11,847 x 16
+   Name     Width Height Pixels     H Count    V0    V1    V2    V3    V4    V5
+   <fct>    <int>  <int>  <int> <int> <int> <int> <int> <int> <int> <int> <int>
+ 1 PEN/AHS…  2272   1704     -1     1     0     0     0     0     0     0     0
+ 2 PEN/AHS…  2272   1704     -1     2     1     1     0     0     0     0     0
+ 3 PEN/AHS…  2272   1704     -1     3     0     0     0     0     0     0     0
+ 4 PEN/AHS…  2272   1704     -1     4     1     0     0     0     0     0     1
+ 5 PEN/AHS…  2272   1704     -1     5     2     2     0     0     0     0     0
+ 6 PEN/AHS…  2272   1704     -1     6    20    20     0     0     0     0     0
+ 7 PEN/AHS…  2272   1704     -1     7     1     0     0     0     0     0     0
+ 8 PEN/AHS…  2272   1704     -1     8     0     0     0     0     0     0     0
+ 9 PEN/AHS…  2272   1704     -1     9     1     1     0     0     0     0     0
+10 PEN/AHS…  2272   1704     -1    10    18    16     1     0     0     0     0
+# ... with 11,837 more rows, and 4 more variables: V6 <int>, V7 <int>,
+#   V8 <int>, V9 <int>
+#+end_example
+Okay, obviously the masks from the PEG analysis won't work here. I
+will have to sort this out.
+
 
