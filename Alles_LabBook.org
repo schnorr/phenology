@@ -5045,7 +5045,7 @@ st0.df <- df.histograms %>%
 
 ***** Plot
 
-#+begin_src R :results output graphics :file img/peg_2014-122-st1-v3.png :exports both :width 1200 :height 400 :session
+#+begin_src R :results output graphics :file img/peg_2014-122-st1-v3.png :exports both :width 1400 :height 600 :session
 st0.df  %>%
     mutate(Color.Code = H) %>%    
     ggplot(aes(x = Day, y = H.count, fill=as.factor(Color.Code))) +#, fill=as.factor(Color.Code))) +
