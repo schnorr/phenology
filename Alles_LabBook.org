@@ -4961,19 +4961,19 @@ df.histograms
 #+RESULTS:
 #+begin_example
 |======================================================|100% ~0 s remaining     > # A tibble: 437,980 x 12
-   Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
-   <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
- 1 Com…  2014    91    10     1  1280    960 508770     1       6     0       0
- 2 Com…  2014    91    10     1  1280    960 508770     2     152     0       7
- 3 Com…  2014    91    10     1  1280    960 508770     3     182     0      30
- 4 Com…  2014    91    10     1  1280    960 508770     4     166     0      65
- 5 Com…  2014    91    10     1  1280    960 508770     5     623     0      85
- 6 Com…  2014    91    10     1  1280    960 508770     6     212     0     137
- 7 Com…  2014    91    10     1  1280    960 508770     7     269     0     138
- 8 Com…  2014    91    10     1  1280    960 508770     8     292     0     157
- 9 Com…  2014    91    10     1  1280    960 508770     9     801     0      49
-10 Com…  2014    91    10     1  1280    960 508770    10    1479     0     366
-# ... with 437,970 more rows
+   Mask          Year   Day  Hour   Seq Width Height Pixels     H H.count     V
+   <chr>        <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>
+ 1 Comunidade_…  2014    91    10     1  1280    960 508770     1       6    0.
+ 2 Comunidade_…  2014    91    10     1  1280    960 508770     2     152    0.
+ 3 Comunidade_…  2014    91    10     1  1280    960 508770     3     182    0.
+ 4 Comunidade_…  2014    91    10     1  1280    960 508770     4     166    0.
+ 5 Comunidade_…  2014    91    10     1  1280    960 508770     5     623    0.
+ 6 Comunidade_…  2014    91    10     1  1280    960 508770     6     212    0.
+ 7 Comunidade_…  2014    91    10     1  1280    960 508770     7     269    0.
+ 8 Comunidade_…  2014    91    10     1  1280    960 508770     8     292    0.
+ 9 Comunidade_…  2014    91    10     1  1280    960 508770     9     801    0.
+10 Comunidade_…  2014    91    10     1  1280    960 508770    10    1479    0.
+# ... with 437,970 more rows, and 1 more variable: V.count <int>
 #+end_example
 
 **** Strategy #1: 360 bins (360 H and a fixed S=1, V=1) CPM-like
@@ -5300,16 +5300,16 @@ names(palette.list) <- palette$Color.Code
 # A tibble: 3,600 x 5
        H     S     V Color.Code Color  
    <int> <dbl> <dbl>      <int> <chr>  
- 1     0     1     0          0 #000000
- 2     1     1     0         10 #000000
- 3     2     1     0         20 #000000
- 4     3     1     0         30 #000000
- 5     4     1     0         40 #000000
- 6     5     1     0         50 #000000
- 7     6     1     0         60 #000000
- 8     7     1     0         70 #000000
- 9     8     1     0         80 #000000
-10     9     1     0         90 #000000
+ 1     0    1.    0.          0 #000000
+ 2     1    1.    0.         10 #000000
+ 3     2    1.    0.         20 #000000
+ 4     3    1.    0.         30 #000000
+ 5     4    1.    0.         40 #000000
+ 6     5    1.    0.         50 #000000
+ 7     6    1.    0.         60 #000000
+ 8     7    1.    0.         70 #000000
+ 9     8    1.    0.         80 #000000
+10     9    1.    0.         90 #000000
 # ... with 3,590 more rows
 #+end_example
 
@@ -5331,19 +5331,19 @@ st3.df <- df.histograms %>%
 #+RESULTS:
 #+begin_example
 # A tibble: 78,607 x 12
-   Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
-   <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
- 1 Com…  2014    91    10     1  1280    960 508770     4     166     0      65
- 2 Com…  2014    91    10     1  1280    960 508770     6     212     0     137
- 3 Com…  2014    91    10     1  1280    960 508770     7     269     0     138
- 4 Com…  2014    91    10     1  1280    960 508770     8     292     0     157
- 5 Com…  2014    91    10     1  1280    960 508770    10    1479     0     366
- 6 Com…  2014    91    10     1  1280    960 508770    12    1953     0     588
- 7 Com…  2014    91    10     1  1280    960 508770    13     233     0     142
- 8 Com…  2014    91    10     1  1280    960 508770    15    1251     0     514
- 9 Com…  2014    91    10     1  1280    960 508770    17     577     0     157
-10 Com…  2014    91    10     1  1280    960 508770    18     815     0     151
-# ... with 78,597 more rows
+   Mask          Year   Day  Hour   Seq Width Height Pixels     H H.count     V
+   <chr>        <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>
+ 1 Comunidade_…  2014    91    10     1  1280    960 508770     4     166    0.
+ 2 Comunidade_…  2014    91    10     1  1280    960 508770     6     212    0.
+ 3 Comunidade_…  2014    91    10     1  1280    960 508770     7     269    0.
+ 4 Comunidade_…  2014    91    10     1  1280    960 508770     8     292    0.
+ 5 Comunidade_…  2014    91    10     1  1280    960 508770    10    1479    0.
+ 6 Comunidade_…  2014    91    10     1  1280    960 508770    12    1953    0.
+ 7 Comunidade_…  2014    91    10     1  1280    960 508770    13     233    0.
+ 8 Comunidade_…  2014    91    10     1  1280    960 508770    15    1251    0.
+ 9 Comunidade_…  2014    91    10     1  1280    960 508770    17     577    0.
+10 Comunidade_…  2014    91    10     1  1280    960 508770    18     815    0.
+# ... with 78,597 more rows, and 1 more variable: V.count <int>
 #+end_example
 ***** Plot
 
@@ -5475,14 +5475,18 @@ df.pen
 # ... with 23 more rows
 #+end_example
 
-Then, let's read the community mask (for now we will use the same mask
-as the PEG analysis) and join it to the pictures data frame
+Then, let's read the community mask. Because we need the mask to have
+the same dimensions for the mask and all the images, the previous
+masks from the PEG Analysis are not useful here. For now I'll use a
+mask from the TKY dataset, which has the same dimensions.Let's read it
+and join it to the pictures data frame.
 #+BEGIN_SRC R :session pen-2017 :results output
-df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
-    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+    separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
     mutate(Mask = gsub(".jpg", "", Mask)) %>%
     mutate(Mask = gsub("-", "_", Mask)) %>%
-    select(-A, -B, -C) %>%
+    select(-Directory) %>%
     mutate(dummy = TRUE)
 
 df.pen.masks <- df.pen %>% 
@@ -5495,18 +5499,18 @@ df.pen.masks
 #+RESULTS:
 #+begin_example
 # A tibble: 33 x 4
-   Picture.Filename              Picture Mask.Filename                 Mask    
-   <chr>                         <chr>   <chr>                         <chr>   
- 1 PEN/AHS/2017/t24_d/dc_2017_0… 001_05… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 2 PEN/AHS/2017/t24_d/dc_2017_0… 001_05… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 3 PEN/AHS/2017/t24_d/dc_2017_0… 001_06… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 4 PEN/AHS/2017/t24_d/dc_2017_0… 001_06… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 5 PEN/AHS/2017/t24_d/dc_2017_0… 001_07… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 6 PEN/AHS/2017/t24_d/dc_2017_0… 001_07… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 7 PEN/AHS/2017/t24_d/dc_2017_0… 001_08… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 8 PEN/AHS/2017/t24_d/dc_2017_0… 001_08… data/70/a49c79-ab5d-43f4-99d… Comunid…
- 9 PEN/AHS/2017/t24_d/dc_2017_0… 001_09… data/70/a49c79-ab5d-43f4-99d… Comunid…
-10 PEN/AHS/2017/t24_d/dc_2017_0… 001_09… data/70/a49c79-ab5d-43f4-99d… Comunid…
+   Picture.Filename                Picture Mask.Filename          Mask         
+   <chr>                           <chr>   <chr>                  <chr>        
+ 1 PEN/AHS/2017/t24_d/dc_2017_001… 001_05… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 2 PEN/AHS/2017/t24_d/dc_2017_001… 001_05… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 3 PEN/AHS/2017/t24_d/dc_2017_001… 001_06… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 4 PEN/AHS/2017/t24_d/dc_2017_001… 001_06… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 5 PEN/AHS/2017/t24_d/dc_2017_001… 001_07… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 6 PEN/AHS/2017/t24_d/dc_2017_001… 001_07… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 7 PEN/AHS/2017/t24_d/dc_2017_001… 001_08… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 8 PEN/AHS/2017/t24_d/dc_2017_001… 001_08… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 9 PEN/AHS/2017/t24_d/dc_2017_001… 001_09… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+10 PEN/AHS/2017/t24_d/dc_2017_001… 001_09… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
 # ... with 23 more rows
 #+end_example
 
@@ -5527,56 +5531,21 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
 # A tibble: 11,847 x 16
    Name     Width Height Pixels     H Count    V0    V1    V2    V3    V4    V5
    <fct>    <int>  <int>  <int> <int> <int> <int> <int> <int> <int> <int> <int>
- 1 PEN/AHS…  2272   1704     -1     1     0     0     0     0     0     0     0
- 2 PEN/AHS…  2272   1704     -1     2     1     1     0     0     0     0     0
- 3 PEN/AHS…  2272   1704     -1     3     0     0     0     0     0     0     0
- 4 PEN/AHS…  2272   1704     -1     4     1     0     0     0     0     0     1
- 5 PEN/AHS…  2272   1704     -1     5     2     2     0     0     0     0     0
- 6 PEN/AHS…  2272   1704     -1     6    20    20     0     0     0     0     0
- 7 PEN/AHS…  2272   1704     -1     7     1     0     0     0     0     0     0
- 8 PEN/AHS…  2272   1704     -1     8     0     0     0     0     0     0     0
- 9 PEN/AHS…  2272   1704     -1     9     1     1     0     0     0     0     0
-10 PEN/AHS…  2272   1704     -1    10    18    16     1     0     0     0     0
+ 1 PEN/AHS…  2272   1704 1.29e6     1     0     0     0     0     0     0     0
+ 2 PEN/AHS…  2272   1704 1.29e6     2     0     0     0     0     0     0     0
+ 3 PEN/AHS…  2272   1704 1.29e6     3     0     0     0     0     0     0     0
+ 4 PEN/AHS…  2272   1704 1.29e6     4     0     0     0     0     0     0     0
+ 5 PEN/AHS…  2272   1704 1.29e6     5     1     1     0     0     0     0     0
+ 6 PEN/AHS…  2272   1704 1.29e6     6    15    15     0     0     0     0     0
+ 7 PEN/AHS…  2272   1704 1.29e6     7     0     0     0     0     0     0     0
+ 8 PEN/AHS…  2272   1704 1.29e6     8     0     0     0     0     0     0     0
+ 9 PEN/AHS…  2272   1704 1.29e6     9     0     0     0     0     0     0     0
+10 PEN/AHS…  2272   1704 1.29e6    10    11    11     0     0     0     0     0
 # ... with 11,837 more rows, and 4 more variables: V6 <int>, V7 <int>,
 #   V8 <int>, V9 <int>
 #+end_example
-Okay, obviously the masks from the PEG analysis won't work here. I
-will have to sort this out.
 
 
