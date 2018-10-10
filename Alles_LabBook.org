@@ -5352,6 +5352,35 @@ st3.df  %>%
 
 #+RESULTS:
 [[file:img/peg_2014-122-st3-v3.png]]
+** 2018-10-09 Meeting with Comba
+We discussed the results and strategies obtained so far (PEG dataset
+with HSV color palette). Comba pointed out that Roger's past work
+already did some exploration with strategy 1 (360 bins for H, fixed S
+and V) and that the results we obtained are different for the same
+dataset.
+
+Comba's first suggestion is for me to revise the algorithm that
+obtains the histogram values in order to make it match the previous
+work. For clarification, here is a comparison of the analysis obtained
+by Roger and our results so far:
+ - Roger's results, [[file:img/roger-gcc-hcc-hist][here]] (extracted from his thesis).
+ - Our results, [[file:img/peg_2014-122-st1-v3][here]].
+
+As the images indicate, there is a clear pattern to be observed in
+Roger's analysis that is ansent in our approach. We need to understand
+why that is the case in order to move forward.
+
+*** Alles' comment
+Now that I think of it, the results may be different because of the
+way HSV values are obtained. Roger obtained the HSV plot by changing
+the color palette, but the metric used to calculate the histograms is
+still the /gcc/.
+
+Our approach, on the other hand, removes the /gcc/ completely,
+obtaining the HSV value directly from the pictures.
+
+*I am not quite sure that is the complete explanation. I'll check
+ Lucas' opinion on this.*
 * Analysis of the AHS dataset
 ** Dataset overview
 I have downloaded the AHS dataset for the year of 2017 and put it in
