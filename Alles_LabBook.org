@@ -5379,8 +5379,8 @@ still the /gcc/.
 Our approach, on the other hand, removes the /gcc/ completely,
 obtaining the HSV value directly from the pictures.
 
-*I am not quite sure that is the complete explanation. I'll check
- Lucas' opinion on this.*
+*I am not quite sure that this difference is the complete
+explanation. I'll check Lucas' opinion on this.*
 * Analysis of the AHS dataset
 ** Dataset overview
 I have downloaded the AHS dataset for the year of 2017 and put it in
