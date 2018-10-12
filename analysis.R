@@ -43,7 +43,6 @@ gethist <- function(df, grain=10) {
     filter(H != 0) %>%
     as_tibble()
 }
-
 df.histograms <- df.peg.selected.masks %>%
   group_by(Mask) %>%
   do(gethist(.)) %>%
