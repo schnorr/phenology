@@ -6191,6 +6191,85 @@ y  %>%
 #+RESULTS:
 [[file:img/test0-synthetic.png]]
 
+** 2018-10-12 Converting image to HSV palette
+From our tests on the JPEG reading and masking, we could not find any
+bugs that indicate incorrect reading of the image. The next step is to
+convert the original image to an HSV counterpart, to try and figure
+out why there is so little green in the histograms when we use the HSV
+plot.
+
+In order to do that, I developed a python script that calculates the
+HSV components for a given image, then creates a new image with only
+the H value (keeping S and V fixed in 1). The colors in this image are
+equivalent to those plotted in HSV's strategy 1, so we should see a
+color distribution that is similar to the one presented by the
+histograms.
+
+Let's execute the script.
+*** Load directory
+The python script is located in the /hsv-picture/ directory.
+#+BEGIN_SRC shell :session hsv-pic :results output
+cd hsv-picture
+ls
+#+END_SRC
+
+#+RESULTS:
+: 
+: bash-3.2$ __pycache__		convertToHsv.py		requirements.txt
+: colors.py		hsv-image.jpg		venv
+*** Virtualenv (venv) creation
+I recommend using a virtualenv for this, to prevent messing up with
+other python environments in your system).
+
+*If you already have a virtualenv configured in the directory /venv/ (from
+previous executions, for instance), this step is not necessary*
+#+BEGIN_SRC shell :session hsv-pic :results output
+virtualenv venv
+#+END_SRC
+
+#+RESULTS:
+: Using base prefix '/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7'
+: New python executable in /Users/alles/Workspace/phenology/hsv-picture/venv/bin/python3.7
+: Not overwriting existing python script /Users/alles/Workspace/phenology/hsv-picture/venv/bin/python (you must use /Users/alles/Workspace/phenology/hsv-picture/venv/bin/python3.7)
+: Installing setuptools, pip, wheel...done.
+*** Virtualenv activation
+Let's now activate our virtualenv and check that it is working
+#+BEGIN_SRC shell :session hsv-pic :results output
+source venv/bin/activate
+pip -V
+#+END_SRC
+
+#+RESULTS:
+: 
+: pip 18.1 from /Users/alles/Workspace/phenology/hsv-picture/venv/lib/python3.7/site-packages/pip (python 3.7)
+*** Installing dependencies
+Now let's install our dependencies. For now the only dependency is
+Pillow, which is the library that will handle image manipulation.
+
+#+BEGIN_SRC shell :session hsv-pic :results output
+pip install -r requirements.txt
+#+END_SRC
+
+#+RESULTS:
+: Requirement already satisfied: Pillow==5.3.0 in ./venv/lib/python3.7/site-packages (from -r requirements.txt (line 1)) (5.3.0)
+*** Running the script
+Finally, let's run the script.
+#+BEGIN_SRC shell :session hsv-pic :results output
+python convertToHsv.py
+#+END_SRC
+
+#+RESULTS:
+: No source image path provided. Using default:
+: ../Output_PEG/2014/2014_091_13_1.jpg
+: Saved new image to "./hsv-image.jpg"
+
+The output image is saved in the current directory, [[file://./hsv-image.jpg][here]].
+*** Conclusion
+The relevant part of the image (excluding the red borders, tower, etc)
+show that the majority of the pixels are indeed painted with a yellow
+hue. This, in my point of view, explains the histogram distribution
+that is shown in the phenology analysis and further confirms that it
+is indeed correct.
 * Analysis of the AHS dataset
 ** Dataset overview
 I have downloaded the AHS dataset for the year of 2017 and put it in
