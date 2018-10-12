@@ -5379,8 +5379,818 @@ still the /gcc/.
 Our approach, on the other hand, removes the /gcc/ completely,
 obtaining the HSV value directly from the pictures.
 
-*I am not quite sure that is the complete explanation. I'll check
- Lucas' opinion on this.*
+*I am not quite sure that this difference is the complete
+explanation. I'll check Lucas' opinion on this.*
+** 2018-10-11 Testing the JPEG reading/masking
+*** H(fixed S)(fixed V) Color Palette
+
+In this color coding, S and V are fixed to 1.
+
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(colorspace))
+palette <- expand.grid(
+    H = seq(0, 359),
+    S = 1,
+    V = 1) %>%
+    # The color code
+    mutate(Color.Code = as.factor(H)) %>%
+    # The color itself
+    mutate(Color = hex(HSV(H, S, V))) %>%
+    as_tibble %>%
+    print
+
+palette.list <- as.character(palette$Color)
+names(palette.list) <- palette$Color.Code
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 360 x 5
+       H     S     V Color.Code Color  
+   <int> <dbl> <dbl> <fct>      <chr>  
+ 1     0     1     1 0          #FF0000
+ 2     1     1     1 1          #FF0400
+ 3     2     1     1 2          #FF0800
+ 4     3     1     1 3          #FF0D00
+ 5     4     1     1 4          #FF1100
+ 6     5     1     1 5          #FF1500
+ 7     6     1     1 6          #FF1900
+ 8     7     1     1 7          #FF1E00
+ 9     8     1     1 8          #FF2200
+10     9     1     1 9          #FF2600
+# ... with 350 more rows
+#+end_example
+
+*** Load
+#+begin_src R :results output :session :exports both
+suppressMessages(library(tidyverse))
+library(phenovisr)
+picture <- "Untitled.jpg"
+mask <- "Mask.jpg"
+phenovis_read_mask(mask);
+vGrain = 1
+phenovis_get_HSV_double_histogram(phenovis_H(), c(picture), vGrain) %>%
+    filter(H != 0) %>%
+    mutate(T=Width*Height) -> x;
+#+end_src
+
+#+RESULTS:
+
+*** Data Manipulation
+
+We need to get rid of V values to work only with H.
+
+#+begin_src R :results output :session :exports both
+x %>%
+    rename(H.count = Count) %>%
+    # V histogram is spread, let's gather it
+    gather(V, V.count, -Name, -Width, -Height, -Pixels, -H, -H.count) %>%
+    select(-V, -V.count) %>%
+    print -> y
+#+end_src
+
+#+RESULTS:
+#+begin_example
+            Name Width Height Pixels   H H.count
+1   Untitled.jpg  1920   1080 293499   1       0
+2   Untitled.jpg  1920   1080 293499   2       0
+3   Untitled.jpg  1920   1080 293499   3       0
+4   Untitled.jpg  1920   1080 293499   4       0
+5   Untitled.jpg  1920   1080 293499   5       0
+6   Untitled.jpg  1920   1080 293499   6       0
+7   Untitled.jpg  1920   1080 293499   7       0
+8   Untitled.jpg  1920   1080 293499   8       0
+9   Untitled.jpg  1920   1080 293499   9       0
+10  Untitled.jpg  1920   1080 293499  10       0
+11  Untitled.jpg  1920   1080 293499  11       0
+12  Untitled.jpg  1920   1080 293499  12       0
+13  Untitled.jpg  1920   1080 293499  13       0
+14  Untitled.jpg  1920   1080 293499  14       0
+15  Untitled.jpg  1920   1080 293499  15       0
+16  Untitled.jpg  1920   1080 293499  16       0
+17  Untitled.jpg  1920   1080 293499  17       0
+18  Untitled.jpg  1920   1080 293499  18       0
+19  Untitled.jpg  1920   1080 293499  19       0
+20  Untitled.jpg  1920   1080 293499  20       0
+21  Untitled.jpg  1920   1080 293499  21       0
+22  Untitled.jpg  1920   1080 293499  22       0
+23  Untitled.jpg  1920   1080 293499  23       0
+24  Untitled.jpg  1920   1080 293499  24       0
+25  Untitled.jpg  1920   1080 293499  25       0
+26  Untitled.jpg  1920   1080 293499  26       0
+27  Untitled.jpg  1920   1080 293499  27       0
+28  Untitled.jpg  1920   1080 293499  28       0
+29  Untitled.jpg  1920   1080 293499  29       0
+30  Untitled.jpg  1920   1080 293499  30       0
+31  Untitled.jpg  1920   1080 293499  31       0
+32  Untitled.jpg  1920   1080 293499  32       0
+33  Untitled.jpg  1920   1080 293499  33       0
+34  Untitled.jpg  1920   1080 293499  34       0
+35  Untitled.jpg  1920   1080 293499  35       0
+36  Untitled.jpg  1920   1080 293499  36       0
+37  Untitled.jpg  1920   1080 293499  37       0
+38  Untitled.jpg  1920   1080 293499  38       0
+39  Untitled.jpg  1920   1080 293499  39       0
+40  Untitled.jpg  1920   1080 293499  40       0
+41  Untitled.jpg  1920   1080 293499  41       0
+42  Untitled.jpg  1920   1080 293499  42       0
+43  Untitled.jpg  1920   1080 293499  43       0
+44  Untitled.jpg  1920   1080 293499  44       0
+45  Untitled.jpg  1920   1080 293499  45       0
+46  Untitled.jpg  1920   1080 293499  46       0
+47  Untitled.jpg  1920   1080 293499  47       0
+48  Untitled.jpg  1920   1080 293499  48       0
+49  Untitled.jpg  1920   1080 293499  49       0
+50  Untitled.jpg  1920   1080 293499  50       0
+51  Untitled.jpg  1920   1080 293499  51       0
+52  Untitled.jpg  1920   1080 293499  52       0
+53  Untitled.jpg  1920   1080 293499  53       0
+54  Untitled.jpg  1920   1080 293499  54       0
+55  Untitled.jpg  1920   1080 293499  55       0
+56  Untitled.jpg  1920   1080 293499  56       0
+57  Untitled.jpg  1920   1080 293499  57       0
+58  Untitled.jpg  1920   1080 293499  58       0
+59  Untitled.jpg  1920   1080 293499  59       0
+60  Untitled.jpg  1920   1080 293499  60       0
+61  Untitled.jpg  1920   1080 293499  61       0
+62  Untitled.jpg  1920   1080 293499  62       0
+63  Untitled.jpg  1920   1080 293499  63       0
+64  Untitled.jpg  1920   1080 293499  64       0
+65  Untitled.jpg  1920   1080 293499  65       0
+66  Untitled.jpg  1920   1080 293499  66       0
+67  Untitled.jpg  1920   1080 293499  67       0
+68  Untitled.jpg  1920   1080 293499  68       0
+69  Untitled.jpg  1920   1080 293499  69       0
+70  Untitled.jpg  1920   1080 293499  70       0
+71  Untitled.jpg  1920   1080 293499  71       0
+72  Untitled.jpg  1920   1080 293499  72       0
+73  Untitled.jpg  1920   1080 293499  73       0
+74  Untitled.jpg  1920   1080 293499  74       0
+75  Untitled.jpg  1920   1080 293499  75       0
+76  Untitled.jpg  1920   1080 293499  76       0
+77  Untitled.jpg  1920   1080 293499  77       0
+78  Untitled.jpg  1920   1080 293499  78       0
+79  Untitled.jpg  1920   1080 293499  79       0
+80  Untitled.jpg  1920   1080 293499  80       0
+81  Untitled.jpg  1920   1080 293499  81       0
+82  Untitled.jpg  1920   1080 293499  82       0
+83  Untitled.jpg  1920   1080 293499  83       0
+84  Untitled.jpg  1920   1080 293499  84       0
+85  Untitled.jpg  1920   1080 293499  85       0
+86  Untitled.jpg  1920   1080 293499  86       0
+87  Untitled.jpg  1920   1080 293499  87       0
+88  Untitled.jpg  1920   1080 293499  88       0
+89  Untitled.jpg  1920   1080 293499  89       0
+90  Untitled.jpg  1920   1080 293499  90       0
+91  Untitled.jpg  1920   1080 293499  91       0
+92  Untitled.jpg  1920   1080 293499  92       0
+93  Untitled.jpg  1920   1080 293499  93       0
+94  Untitled.jpg  1920   1080 293499  94       0
+95  Untitled.jpg  1920   1080 293499  95       0
+96  Untitled.jpg  1920   1080 293499  96       0
+97  Untitled.jpg  1920   1080 293499  97       0
+98  Untitled.jpg  1920   1080 293499  98       0
+99  Untitled.jpg  1920   1080 293499  99       0
+100 Untitled.jpg  1920   1080 293499 100       0
+101 Untitled.jpg  1920   1080 293499 101       0
+102 Untitled.jpg  1920   1080 293499 102       0
+103 Untitled.jpg  1920   1080 293499 103       0
+104 Untitled.jpg  1920   1080 293499 104       0
+105 Untitled.jpg  1920   1080 293499 105       0
+106 Untitled.jpg  1920   1080 293499 106       0
+107 Untitled.jpg  1920   1080 293499 107       0
+108 Untitled.jpg  1920   1080 293499 108       0
+109 Untitled.jpg  1920   1080 293499 109       0
+110 Untitled.jpg  1920   1080 293499 110       0
+111 Untitled.jpg  1920   1080 293499 111       0
+112 Untitled.jpg  1920   1080 293499 112       0
+113 Untitled.jpg  1920   1080 293499 113       0
+114 Untitled.jpg  1920   1080 293499 114       0
+115 Untitled.jpg  1920   1080 293499 115       0
+116 Untitled.jpg  1920   1080 293499 116       0
+117 Untitled.jpg  1920   1080 293499 117       0
+118 Untitled.jpg  1920   1080 293499 118       0
+119 Untitled.jpg  1920   1080 293499 119       0
+120 Untitled.jpg  1920   1080 293499 120  293499
+121 Untitled.jpg  1920   1080 293499 121       0
+122 Untitled.jpg  1920   1080 293499 122       0
+123 Untitled.jpg  1920   1080 293499 123       0
+124 Untitled.jpg  1920   1080 293499 124       0
+125 Untitled.jpg  1920   1080 293499 125       0
+126 Untitled.jpg  1920   1080 293499 126       0
+127 Untitled.jpg  1920   1080 293499 127       0
+128 Untitled.jpg  1920   1080 293499 128       0
+129 Untitled.jpg  1920   1080 293499 129       0
+130 Untitled.jpg  1920   1080 293499 130       0
+131 Untitled.jpg  1920   1080 293499 131       0
+132 Untitled.jpg  1920   1080 293499 132       0
+133 Untitled.jpg  1920   1080 293499 133       0
+134 Untitled.jpg  1920   1080 293499 134       0
+135 Untitled.jpg  1920   1080 293499 135       0
+136 Untitled.jpg  1920   1080 293499 136       0
+137 Untitled.jpg  1920   1080 293499 137       0
+138 Untitled.jpg  1920   1080 293499 138       0
+139 Untitled.jpg  1920   1080 293499 139       0
+140 Untitled.jpg  1920   1080 293499 140       0
+141 Untitled.jpg  1920   1080 293499 141       0
+142 Untitled.jpg  1920   1080 293499 142       0
+143 Untitled.jpg  1920   1080 293499 143       0
+144 Untitled.jpg  1920   1080 293499 144       0
+145 Untitled.jpg  1920   1080 293499 145       0
+146 Untitled.jpg  1920   1080 293499 146       0
+147 Untitled.jpg  1920   1080 293499 147       0
+148 Untitled.jpg  1920   1080 293499 148       0
+149 Untitled.jpg  1920   1080 293499 149       0
+150 Untitled.jpg  1920   1080 293499 150       0
+151 Untitled.jpg  1920   1080 293499 151       0
+152 Untitled.jpg  1920   1080 293499 152       0
+153 Untitled.jpg  1920   1080 293499 153       0
+154 Untitled.jpg  1920   1080 293499 154       0
+155 Untitled.jpg  1920   1080 293499 155       0
+156 Untitled.jpg  1920   1080 293499 156       0
+157 Untitled.jpg  1920   1080 293499 157       0
+158 Untitled.jpg  1920   1080 293499 158       0
+159 Untitled.jpg  1920   1080 293499 159       0
+160 Untitled.jpg  1920   1080 293499 160       0
+161 Untitled.jpg  1920   1080 293499 161       0
+162 Untitled.jpg  1920   1080 293499 162       0
+163 Untitled.jpg  1920   1080 293499 163       0
+164 Untitled.jpg  1920   1080 293499 164       0
+165 Untitled.jpg  1920   1080 293499 165       0
+166 Untitled.jpg  1920   1080 293499 166       0
+167 Untitled.jpg  1920   1080 293499 167       0
+168 Untitled.jpg  1920   1080 293499 168       0
+169 Untitled.jpg  1920   1080 293499 169       0
+170 Untitled.jpg  1920   1080 293499 170       0
+171 Untitled.jpg  1920   1080 293499 171       0
+172 Untitled.jpg  1920   1080 293499 172       0
+173 Untitled.jpg  1920   1080 293499 173       0
+174 Untitled.jpg  1920   1080 293499 174       0
+175 Untitled.jpg  1920   1080 293499 175       0
+176 Untitled.jpg  1920   1080 293499 176       0
+177 Untitled.jpg  1920   1080 293499 177       0
+178 Untitled.jpg  1920   1080 293499 178       0
+179 Untitled.jpg  1920   1080 293499 179       0
+180 Untitled.jpg  1920   1080 293499 180       0
+181 Untitled.jpg  1920   1080 293499 181       0
+182 Untitled.jpg  1920   1080 293499 182       0
+183 Untitled.jpg  1920   1080 293499 183       0
+184 Untitled.jpg  1920   1080 293499 184       0
+185 Untitled.jpg  1920   1080 293499 185       0
+186 Untitled.jpg  1920   1080 293499 186       0
+187 Untitled.jpg  1920   1080 293499 187       0
+188 Untitled.jpg  1920   1080 293499 188       0
+189 Untitled.jpg  1920   1080 293499 189       0
+190 Untitled.jpg  1920   1080 293499 190       0
+191 Untitled.jpg  1920   1080 293499 191       0
+192 Untitled.jpg  1920   1080 293499 192       0
+193 Untitled.jpg  1920   1080 293499 193       0
+194 Untitled.jpg  1920   1080 293499 194       0
+195 Untitled.jpg  1920   1080 293499 195       0
+196 Untitled.jpg  1920   1080 293499 196       0
+197 Untitled.jpg  1920   1080 293499 197       0
+198 Untitled.jpg  1920   1080 293499 198       0
+199 Untitled.jpg  1920   1080 293499 199       0
+200 Untitled.jpg  1920   1080 293499 200       0
+201 Untitled.jpg  1920   1080 293499 201       0
+202 Untitled.jpg  1920   1080 293499 202       0
+203 Untitled.jpg  1920   1080 293499 203       0
+204 Untitled.jpg  1920   1080 293499 204       0
+205 Untitled.jpg  1920   1080 293499 205       0
+206 Untitled.jpg  1920   1080 293499 206       0
+207 Untitled.jpg  1920   1080 293499 207       0
+208 Untitled.jpg  1920   1080 293499 208       0
+209 Untitled.jpg  1920   1080 293499 209       0
+210 Untitled.jpg  1920   1080 293499 210       0
+211 Untitled.jpg  1920   1080 293499 211       0
+212 Untitled.jpg  1920   1080 293499 212       0
+213 Untitled.jpg  1920   1080 293499 213       0
+214 Untitled.jpg  1920   1080 293499 214       0
+215 Untitled.jpg  1920   1080 293499 215       0
+216 Untitled.jpg  1920   1080 293499 216       0
+217 Untitled.jpg  1920   1080 293499 217       0
+218 Untitled.jpg  1920   1080 293499 218       0
+219 Untitled.jpg  1920   1080 293499 219       0
+220 Untitled.jpg  1920   1080 293499 220       0
+221 Untitled.jpg  1920   1080 293499 221       0
+222 Untitled.jpg  1920   1080 293499 222       0
+223 Untitled.jpg  1920   1080 293499 223       0
+224 Untitled.jpg  1920   1080 293499 224       0
+225 Untitled.jpg  1920   1080 293499 225       0
+226 Untitled.jpg  1920   1080 293499 226       0
+227 Untitled.jpg  1920   1080 293499 227       0
+228 Untitled.jpg  1920   1080 293499 228       0
+229 Untitled.jpg  1920   1080 293499 229       0
+230 Untitled.jpg  1920   1080 293499 230       0
+231 Untitled.jpg  1920   1080 293499 231       0
+232 Untitled.jpg  1920   1080 293499 232       0
+233 Untitled.jpg  1920   1080 293499 233       0
+234 Untitled.jpg  1920   1080 293499 234       0
+235 Untitled.jpg  1920   1080 293499 235       0
+236 Untitled.jpg  1920   1080 293499 236       0
+237 Untitled.jpg  1920   1080 293499 237       0
+238 Untitled.jpg  1920   1080 293499 238       0
+239 Untitled.jpg  1920   1080 293499 239       0
+240 Untitled.jpg  1920   1080 293499 240       0
+241 Untitled.jpg  1920   1080 293499 241       0
+242 Untitled.jpg  1920   1080 293499 242       0
+243 Untitled.jpg  1920   1080 293499 243       0
+244 Untitled.jpg  1920   1080 293499 244       0
+245 Untitled.jpg  1920   1080 293499 245       0
+246 Untitled.jpg  1920   1080 293499 246       0
+247 Untitled.jpg  1920   1080 293499 247       0
+248 Untitled.jpg  1920   1080 293499 248       0
+249 Untitled.jpg  1920   1080 293499 249       0
+250 Untitled.jpg  1920   1080 293499 250       0
+251 Untitled.jpg  1920   1080 293499 251       0
+252 Untitled.jpg  1920   1080 293499 252       0
+253 Untitled.jpg  1920   1080 293499 253       0
+254 Untitled.jpg  1920   1080 293499 254       0
+255 Untitled.jpg  1920   1080 293499 255       0
+256 Untitled.jpg  1920   1080 293499 256       0
+257 Untitled.jpg  1920   1080 293499 257       0
+258 Untitled.jpg  1920   1080 293499 258       0
+259 Untitled.jpg  1920   1080 293499 259       0
+260 Untitled.jpg  1920   1080 293499 260       0
+261 Untitled.jpg  1920   1080 293499 261       0
+262 Untitled.jpg  1920   1080 293499 262       0
+263 Untitled.jpg  1920   1080 293499 263       0
+264 Untitled.jpg  1920   1080 293499 264       0
+265 Untitled.jpg  1920   1080 293499 265       0
+266 Untitled.jpg  1920   1080 293499 266       0
+267 Untitled.jpg  1920   1080 293499 267       0
+268 Untitled.jpg  1920   1080 293499 268       0
+269 Untitled.jpg  1920   1080 293499 269       0
+270 Untitled.jpg  1920   1080 293499 270       0
+271 Untitled.jpg  1920   1080 293499 271       0
+272 Untitled.jpg  1920   1080 293499 272       0
+273 Untitled.jpg  1920   1080 293499 273       0
+274 Untitled.jpg  1920   1080 293499 274       0
+275 Untitled.jpg  1920   1080 293499 275       0
+276 Untitled.jpg  1920   1080 293499 276       0
+277 Untitled.jpg  1920   1080 293499 277       0
+278 Untitled.jpg  1920   1080 293499 278       0
+279 Untitled.jpg  1920   1080 293499 279       0
+280 Untitled.jpg  1920   1080 293499 280       0
+281 Untitled.jpg  1920   1080 293499 281       0
+282 Untitled.jpg  1920   1080 293499 282       0
+283 Untitled.jpg  1920   1080 293499 283       0
+284 Untitled.jpg  1920   1080 293499 284       0
+285 Untitled.jpg  1920   1080 293499 285       0
+286 Untitled.jpg  1920   1080 293499 286       0
+287 Untitled.jpg  1920   1080 293499 287       0
+288 Untitled.jpg  1920   1080 293499 288       0
+289 Untitled.jpg  1920   1080 293499 289       0
+290 Untitled.jpg  1920   1080 293499 290       0
+291 Untitled.jpg  1920   1080 293499 291       0
+292 Untitled.jpg  1920   1080 293499 292       0
+293 Untitled.jpg  1920   1080 293499 293       0
+294 Untitled.jpg  1920   1080 293499 294       0
+295 Untitled.jpg  1920   1080 293499 295       0
+296 Untitled.jpg  1920   1080 293499 296       0
+297 Untitled.jpg  1920   1080 293499 297       0
+298 Untitled.jpg  1920   1080 293499 298       0
+299 Untitled.jpg  1920   1080 293499 299       0
+300 Untitled.jpg  1920   1080 293499 300       0
+301 Untitled.jpg  1920   1080 293499 301       0
+302 Untitled.jpg  1920   1080 293499 302       0
+303 Untitled.jpg  1920   1080 293499 303       0
+304 Untitled.jpg  1920   1080 293499 304       0
+305 Untitled.jpg  1920   1080 293499 305       0
+306 Untitled.jpg  1920   1080 293499 306       0
+307 Untitled.jpg  1920   1080 293499 307       0
+308 Untitled.jpg  1920   1080 293499 308       0
+309 Untitled.jpg  1920   1080 293499 309       0
+310 Untitled.jpg  1920   1080 293499 310       0
+311 Untitled.jpg  1920   1080 293499 311       0
+312 Untitled.jpg  1920   1080 293499 312       0
+313 Untitled.jpg  1920   1080 293499 313       0
+314 Untitled.jpg  1920   1080 293499 314       0
+315 Untitled.jpg  1920   1080 293499 315       0
+316 Untitled.jpg  1920   1080 293499 316       0
+317 Untitled.jpg  1920   1080 293499 317       0
+318 Untitled.jpg  1920   1080 293499 318       0
+319 Untitled.jpg  1920   1080 293499 319       0
+320 Untitled.jpg  1920   1080 293499 320       0
+321 Untitled.jpg  1920   1080 293499 321       0
+322 Untitled.jpg  1920   1080 293499 322       0
+323 Untitled.jpg  1920   1080 293499 323       0
+324 Untitled.jpg  1920   1080 293499 324       0
+325 Untitled.jpg  1920   1080 293499 325       0
+326 Untitled.jpg  1920   1080 293499 326       0
+327 Untitled.jpg  1920   1080 293499 327       0
+328 Untitled.jpg  1920   1080 293499 328       0
+329 Untitled.jpg  1920   1080 293499 329       0
+330 Untitled.jpg  1920   1080 293499 330       0
+331 Untitled.jpg  1920   1080 293499 331       0
+332 Untitled.jpg  1920   1080 293499 332       0
+333 Untitled.jpg  1920   1080 293499 333       0
+334 Untitled.jpg  1920   1080 293499 334       0
+335 Untitled.jpg  1920   1080 293499 335       0
+336 Untitled.jpg  1920   1080 293499 336       0
+337 Untitled.jpg  1920   1080 293499 337       0
+338 Untitled.jpg  1920   1080 293499 338       0
+339 Untitled.jpg  1920   1080 293499 339       0
+340 Untitled.jpg  1920   1080 293499 340       0
+341 Untitled.jpg  1920   1080 293499 341       0
+342 Untitled.jpg  1920   1080 293499 342       0
+343 Untitled.jpg  1920   1080 293499 343       0
+344 Untitled.jpg  1920   1080 293499 344       0
+345 Untitled.jpg  1920   1080 293499 345       0
+346 Untitled.jpg  1920   1080 293499 346       0
+347 Untitled.jpg  1920   1080 293499 347       0
+348 Untitled.jpg  1920   1080 293499 348       0
+349 Untitled.jpg  1920   1080 293499 349       0
+350 Untitled.jpg  1920   1080 293499 350       0
+351 Untitled.jpg  1920   1080 293499 351       0
+352 Untitled.jpg  1920   1080 293499 352       0
+353 Untitled.jpg  1920   1080 293499 353       0
+354 Untitled.jpg  1920   1080 293499 354       0
+355 Untitled.jpg  1920   1080 293499 355       0
+356 Untitled.jpg  1920   1080 293499 356       0
+357 Untitled.jpg  1920   1080 293499 357       0
+358 Untitled.jpg  1920   1080 293499 358       0
+359 Untitled.jpg  1920   1080 293499 359       0
+360 Untitled.jpg  1920   1080 293499   1       0
+361 Untitled.jpg  1920   1080 293499   2       0
+362 Untitled.jpg  1920   1080 293499   3       0
+363 Untitled.jpg  1920   1080 293499   4       0
+364 Untitled.jpg  1920   1080 293499   5       0
+365 Untitled.jpg  1920   1080 293499   6       0
+366 Untitled.jpg  1920   1080 293499   7       0
+367 Untitled.jpg  1920   1080 293499   8       0
+368 Untitled.jpg  1920   1080 293499   9       0
+369 Untitled.jpg  1920   1080 293499  10       0
+370 Untitled.jpg  1920   1080 293499  11       0
+371 Untitled.jpg  1920   1080 293499  12       0
+372 Untitled.jpg  1920   1080 293499  13       0
+373 Untitled.jpg  1920   1080 293499  14       0
+374 Untitled.jpg  1920   1080 293499  15       0
+375 Untitled.jpg  1920   1080 293499  16       0
+376 Untitled.jpg  1920   1080 293499  17       0
+377 Untitled.jpg  1920   1080 293499  18       0
+378 Untitled.jpg  1920   1080 293499  19       0
+379 Untitled.jpg  1920   1080 293499  20       0
+380 Untitled.jpg  1920   1080 293499  21       0
+381 Untitled.jpg  1920   1080 293499  22       0
+382 Untitled.jpg  1920   1080 293499  23       0
+383 Untitled.jpg  1920   1080 293499  24       0
+384 Untitled.jpg  1920   1080 293499  25       0
+385 Untitled.jpg  1920   1080 293499  26       0
+386 Untitled.jpg  1920   1080 293499  27       0
+387 Untitled.jpg  1920   1080 293499  28       0
+388 Untitled.jpg  1920   1080 293499  29       0
+389 Untitled.jpg  1920   1080 293499  30       0
+390 Untitled.jpg  1920   1080 293499  31       0
+391 Untitled.jpg  1920   1080 293499  32       0
+392 Untitled.jpg  1920   1080 293499  33       0
+393 Untitled.jpg  1920   1080 293499  34       0
+394 Untitled.jpg  1920   1080 293499  35       0
+395 Untitled.jpg  1920   1080 293499  36       0
+396 Untitled.jpg  1920   1080 293499  37       0
+397 Untitled.jpg  1920   1080 293499  38       0
+398 Untitled.jpg  1920   1080 293499  39       0
+399 Untitled.jpg  1920   1080 293499  40       0
+400 Untitled.jpg  1920   1080 293499  41       0
+401 Untitled.jpg  1920   1080 293499  42       0
+402 Untitled.jpg  1920   1080 293499  43       0
+403 Untitled.jpg  1920   1080 293499  44       0
+404 Untitled.jpg  1920   1080 293499  45       0
+405 Untitled.jpg  1920   1080 293499  46       0
+406 Untitled.jpg  1920   1080 293499  47       0
+407 Untitled.jpg  1920   1080 293499  48       0
+408 Untitled.jpg  1920   1080 293499  49       0
+409 Untitled.jpg  1920   1080 293499  50       0
+410 Untitled.jpg  1920   1080 293499  51       0
+411 Untitled.jpg  1920   1080 293499  52       0
+412 Untitled.jpg  1920   1080 293499  53       0
+413 Untitled.jpg  1920   1080 293499  54       0
+414 Untitled.jpg  1920   1080 293499  55       0
+415 Untitled.jpg  1920   1080 293499  56       0
+416 Untitled.jpg  1920   1080 293499  57       0
+417 Untitled.jpg  1920   1080 293499  58       0
+418 Untitled.jpg  1920   1080 293499  59       0
+419 Untitled.jpg  1920   1080 293499  60       0
+420 Untitled.jpg  1920   1080 293499  61       0
+421 Untitled.jpg  1920   1080 293499  62       0
+422 Untitled.jpg  1920   1080 293499  63       0
+423 Untitled.jpg  1920   1080 293499  64       0
+424 Untitled.jpg  1920   1080 293499  65       0
+425 Untitled.jpg  1920   1080 293499  66       0
+426 Untitled.jpg  1920   1080 293499  67       0
+427 Untitled.jpg  1920   1080 293499  68       0
+428 Untitled.jpg  1920   1080 293499  69       0
+429 Untitled.jpg  1920   1080 293499  70       0
+430 Untitled.jpg  1920   1080 293499  71       0
+431 Untitled.jpg  1920   1080 293499  72       0
+432 Untitled.jpg  1920   1080 293499  73       0
+433 Untitled.jpg  1920   1080 293499  74       0
+434 Untitled.jpg  1920   1080 293499  75       0
+435 Untitled.jpg  1920   1080 293499  76       0
+436 Untitled.jpg  1920   1080 293499  77       0
+437 Untitled.jpg  1920   1080 293499  78       0
+438 Untitled.jpg  1920   1080 293499  79       0
+439 Untitled.jpg  1920   1080 293499  80       0
+440 Untitled.jpg  1920   1080 293499  81       0
+441 Untitled.jpg  1920   1080 293499  82       0
+442 Untitled.jpg  1920   1080 293499  83       0
+443 Untitled.jpg  1920   1080 293499  84       0
+444 Untitled.jpg  1920   1080 293499  85       0
+445 Untitled.jpg  1920   1080 293499  86       0
+446 Untitled.jpg  1920   1080 293499  87       0
+447 Untitled.jpg  1920   1080 293499  88       0
+448 Untitled.jpg  1920   1080 293499  89       0
+449 Untitled.jpg  1920   1080 293499  90       0
+450 Untitled.jpg  1920   1080 293499  91       0
+451 Untitled.jpg  1920   1080 293499  92       0
+452 Untitled.jpg  1920   1080 293499  93       0
+453 Untitled.jpg  1920   1080 293499  94       0
+454 Untitled.jpg  1920   1080 293499  95       0
+455 Untitled.jpg  1920   1080 293499  96       0
+456 Untitled.jpg  1920   1080 293499  97       0
+457 Untitled.jpg  1920   1080 293499  98       0
+458 Untitled.jpg  1920   1080 293499  99       0
+459 Untitled.jpg  1920   1080 293499 100       0
+460 Untitled.jpg  1920   1080 293499 101       0
+461 Untitled.jpg  1920   1080 293499 102       0
+462 Untitled.jpg  1920   1080 293499 103       0
+463 Untitled.jpg  1920   1080 293499 104       0
+464 Untitled.jpg  1920   1080 293499 105       0
+465 Untitled.jpg  1920   1080 293499 106       0
+466 Untitled.jpg  1920   1080 293499 107       0
+467 Untitled.jpg  1920   1080 293499 108       0
+468 Untitled.jpg  1920   1080 293499 109       0
+469 Untitled.jpg  1920   1080 293499 110       0
+470 Untitled.jpg  1920   1080 293499 111       0
+471 Untitled.jpg  1920   1080 293499 112       0
+472 Untitled.jpg  1920   1080 293499 113       0
+473 Untitled.jpg  1920   1080 293499 114       0
+474 Untitled.jpg  1920   1080 293499 115       0
+475 Untitled.jpg  1920   1080 293499 116       0
+476 Untitled.jpg  1920   1080 293499 117       0
+477 Untitled.jpg  1920   1080 293499 118       0
+478 Untitled.jpg  1920   1080 293499 119       0
+479 Untitled.jpg  1920   1080 293499 120  293499
+480 Untitled.jpg  1920   1080 293499 121       0
+481 Untitled.jpg  1920   1080 293499 122       0
+482 Untitled.jpg  1920   1080 293499 123       0
+483 Untitled.jpg  1920   1080 293499 124       0
+484 Untitled.jpg  1920   1080 293499 125       0
+485 Untitled.jpg  1920   1080 293499 126       0
+486 Untitled.jpg  1920   1080 293499 127       0
+487 Untitled.jpg  1920   1080 293499 128       0
+488 Untitled.jpg  1920   1080 293499 129       0
+489 Untitled.jpg  1920   1080 293499 130       0
+490 Untitled.jpg  1920   1080 293499 131       0
+491 Untitled.jpg  1920   1080 293499 132       0
+492 Untitled.jpg  1920   1080 293499 133       0
+493 Untitled.jpg  1920   1080 293499 134       0
+494 Untitled.jpg  1920   1080 293499 135       0
+495 Untitled.jpg  1920   1080 293499 136       0
+496 Untitled.jpg  1920   1080 293499 137       0
+497 Untitled.jpg  1920   1080 293499 138       0
+498 Untitled.jpg  1920   1080 293499 139       0
+499 Untitled.jpg  1920   1080 293499 140       0
+500 Untitled.jpg  1920   1080 293499 141       0
+501 Untitled.jpg  1920   1080 293499 142       0
+502 Untitled.jpg  1920   1080 293499 143       0
+503 Untitled.jpg  1920   1080 293499 144       0
+504 Untitled.jpg  1920   1080 293499 145       0
+505 Untitled.jpg  1920   1080 293499 146       0
+506 Untitled.jpg  1920   1080 293499 147       0
+507 Untitled.jpg  1920   1080 293499 148       0
+508 Untitled.jpg  1920   1080 293499 149       0
+509 Untitled.jpg  1920   1080 293499 150       0
+510 Untitled.jpg  1920   1080 293499 151       0
+511 Untitled.jpg  1920   1080 293499 152       0
+512 Untitled.jpg  1920   1080 293499 153       0
+513 Untitled.jpg  1920   1080 293499 154       0
+514 Untitled.jpg  1920   1080 293499 155       0
+515 Untitled.jpg  1920   1080 293499 156       0
+516 Untitled.jpg  1920   1080 293499 157       0
+517 Untitled.jpg  1920   1080 293499 158       0
+518 Untitled.jpg  1920   1080 293499 159       0
+519 Untitled.jpg  1920   1080 293499 160       0
+520 Untitled.jpg  1920   1080 293499 161       0
+521 Untitled.jpg  1920   1080 293499 162       0
+522 Untitled.jpg  1920   1080 293499 163       0
+523 Untitled.jpg  1920   1080 293499 164       0
+524 Untitled.jpg  1920   1080 293499 165       0
+525 Untitled.jpg  1920   1080 293499 166       0
+526 Untitled.jpg  1920   1080 293499 167       0
+527 Untitled.jpg  1920   1080 293499 168       0
+528 Untitled.jpg  1920   1080 293499 169       0
+529 Untitled.jpg  1920   1080 293499 170       0
+530 Untitled.jpg  1920   1080 293499 171       0
+531 Untitled.jpg  1920   1080 293499 172       0
+532 Untitled.jpg  1920   1080 293499 173       0
+533 Untitled.jpg  1920   1080 293499 174       0
+534 Untitled.jpg  1920   1080 293499 175       0
+535 Untitled.jpg  1920   1080 293499 176       0
+536 Untitled.jpg  1920   1080 293499 177       0
+537 Untitled.jpg  1920   1080 293499 178       0
+538 Untitled.jpg  1920   1080 293499 179       0
+539 Untitled.jpg  1920   1080 293499 180       0
+540 Untitled.jpg  1920   1080 293499 181       0
+541 Untitled.jpg  1920   1080 293499 182       0
+542 Untitled.jpg  1920   1080 293499 183       0
+543 Untitled.jpg  1920   1080 293499 184       0
+544 Untitled.jpg  1920   1080 293499 185       0
+545 Untitled.jpg  1920   1080 293499 186       0
+546 Untitled.jpg  1920   1080 293499 187       0
+547 Untitled.jpg  1920   1080 293499 188       0
+548 Untitled.jpg  1920   1080 293499 189       0
+549 Untitled.jpg  1920   1080 293499 190       0
+550 Untitled.jpg  1920   1080 293499 191       0
+551 Untitled.jpg  1920   1080 293499 192       0
+552 Untitled.jpg  1920   1080 293499 193       0
+553 Untitled.jpg  1920   1080 293499 194       0
+554 Untitled.jpg  1920   1080 293499 195       0
+555 Untitled.jpg  1920   1080 293499 196       0
+556 Untitled.jpg  1920   1080 293499 197       0
+557 Untitled.jpg  1920   1080 293499 198       0
+558 Untitled.jpg  1920   1080 293499 199       0
+559 Untitled.jpg  1920   1080 293499 200       0
+560 Untitled.jpg  1920   1080 293499 201       0
+561 Untitled.jpg  1920   1080 293499 202       0
+562 Untitled.jpg  1920   1080 293499 203       0
+563 Untitled.jpg  1920   1080 293499 204       0
+564 Untitled.jpg  1920   1080 293499 205       0
+565 Untitled.jpg  1920   1080 293499 206       0
+566 Untitled.jpg  1920   1080 293499 207       0
+567 Untitled.jpg  1920   1080 293499 208       0
+568 Untitled.jpg  1920   1080 293499 209       0
+569 Untitled.jpg  1920   1080 293499 210       0
+570 Untitled.jpg  1920   1080 293499 211       0
+571 Untitled.jpg  1920   1080 293499 212       0
+572 Untitled.jpg  1920   1080 293499 213       0
+573 Untitled.jpg  1920   1080 293499 214       0
+574 Untitled.jpg  1920   1080 293499 215       0
+575 Untitled.jpg  1920   1080 293499 216       0
+576 Untitled.jpg  1920   1080 293499 217       0
+577 Untitled.jpg  1920   1080 293499 218       0
+578 Untitled.jpg  1920   1080 293499 219       0
+579 Untitled.jpg  1920   1080 293499 220       0
+580 Untitled.jpg  1920   1080 293499 221       0
+581 Untitled.jpg  1920   1080 293499 222       0
+582 Untitled.jpg  1920   1080 293499 223       0
+583 Untitled.jpg  1920   1080 293499 224       0
+584 Untitled.jpg  1920   1080 293499 225       0
+585 Untitled.jpg  1920   1080 293499 226       0
+586 Untitled.jpg  1920   1080 293499 227       0
+587 Untitled.jpg  1920   1080 293499 228       0
+588 Untitled.jpg  1920   1080 293499 229       0
+589 Untitled.jpg  1920   1080 293499 230       0
+590 Untitled.jpg  1920   1080 293499 231       0
+591 Untitled.jpg  1920   1080 293499 232       0
+592 Untitled.jpg  1920   1080 293499 233       0
+593 Untitled.jpg  1920   1080 293499 234       0
+594 Untitled.jpg  1920   1080 293499 235       0
+595 Untitled.jpg  1920   1080 293499 236       0
+596 Untitled.jpg  1920   1080 293499 237       0
+597 Untitled.jpg  1920   1080 293499 238       0
+598 Untitled.jpg  1920   1080 293499 239       0
+599 Untitled.jpg  1920   1080 293499 240       0
+600 Untitled.jpg  1920   1080 293499 241       0
+601 Untitled.jpg  1920   1080 293499 242       0
+602 Untitled.jpg  1920   1080 293499 243       0
+603 Untitled.jpg  1920   1080 293499 244       0
+604 Untitled.jpg  1920   1080 293499 245       0
+605 Untitled.jpg  1920   1080 293499 246       0
+606 Untitled.jpg  1920   1080 293499 247       0
+607 Untitled.jpg  1920   1080 293499 248       0
+608 Untitled.jpg  1920   1080 293499 249       0
+609 Untitled.jpg  1920   1080 293499 250       0
+610 Untitled.jpg  1920   1080 293499 251       0
+611 Untitled.jpg  1920   1080 293499 252       0
+612 Untitled.jpg  1920   1080 293499 253       0
+613 Untitled.jpg  1920   1080 293499 254       0
+614 Untitled.jpg  1920   1080 293499 255       0
+615 Untitled.jpg  1920   1080 293499 256       0
+616 Untitled.jpg  1920   1080 293499 257       0
+617 Untitled.jpg  1920   1080 293499 258       0
+618 Untitled.jpg  1920   1080 293499 259       0
+619 Untitled.jpg  1920   1080 293499 260       0
+620 Untitled.jpg  1920   1080 293499 261       0
+621 Untitled.jpg  1920   1080 293499 262       0
+622 Untitled.jpg  1920   1080 293499 263       0
+623 Untitled.jpg  1920   1080 293499 264       0
+624 Untitled.jpg  1920   1080 293499 265       0
+625 Untitled.jpg  1920   1080 293499 266       0
+626 Untitled.jpg  1920   1080 293499 267       0
+627 Untitled.jpg  1920   1080 293499 268       0
+628 Untitled.jpg  1920   1080 293499 269       0
+629 Untitled.jpg  1920   1080 293499 270       0
+630 Untitled.jpg  1920   1080 293499 271       0
+631 Untitled.jpg  1920   1080 293499 272       0
+632 Untitled.jpg  1920   1080 293499 273       0
+633 Untitled.jpg  1920   1080 293499 274       0
+634 Untitled.jpg  1920   1080 293499 275       0
+635 Untitled.jpg  1920   1080 293499 276       0
+636 Untitled.jpg  1920   1080 293499 277       0
+637 Untitled.jpg  1920   1080 293499 278       0
+638 Untitled.jpg  1920   1080 293499 279       0
+639 Untitled.jpg  1920   1080 293499 280       0
+640 Untitled.jpg  1920   1080 293499 281       0
+641 Untitled.jpg  1920   1080 293499 282       0
+642 Untitled.jpg  1920   1080 293499 283       0
+643 Untitled.jpg  1920   1080 293499 284       0
+644 Untitled.jpg  1920   1080 293499 285       0
+645 Untitled.jpg  1920   1080 293499 286       0
+646 Untitled.jpg  1920   1080 293499 287       0
+647 Untitled.jpg  1920   1080 293499 288       0
+648 Untitled.jpg  1920   1080 293499 289       0
+649 Untitled.jpg  1920   1080 293499 290       0
+650 Untitled.jpg  1920   1080 293499 291       0
+651 Untitled.jpg  1920   1080 293499 292       0
+652 Untitled.jpg  1920   1080 293499 293       0
+653 Untitled.jpg  1920   1080 293499 294       0
+654 Untitled.jpg  1920   1080 293499 295       0
+655 Untitled.jpg  1920   1080 293499 296       0
+656 Untitled.jpg  1920   1080 293499 297       0
+657 Untitled.jpg  1920   1080 293499 298       0
+658 Untitled.jpg  1920   1080 293499 299       0
+659 Untitled.jpg  1920   1080 293499 300       0
+660 Untitled.jpg  1920   1080 293499 301       0
+661 Untitled.jpg  1920   1080 293499 302       0
+662 Untitled.jpg  1920   1080 293499 303       0
+663 Untitled.jpg  1920   1080 293499 304       0
+664 Untitled.jpg  1920   1080 293499 305       0
+665 Untitled.jpg  1920   1080 293499 306       0
+666 Untitled.jpg  1920   1080 293499 307       0
+667 Untitled.jpg  1920   1080 293499 308       0
+668 Untitled.jpg  1920   1080 293499 309       0
+669 Untitled.jpg  1920   1080 293499 310       0
+670 Untitled.jpg  1920   1080 293499 311       0
+671 Untitled.jpg  1920   1080 293499 312       0
+672 Untitled.jpg  1920   1080 293499 313       0
+673 Untitled.jpg  1920   1080 293499 314       0
+674 Untitled.jpg  1920   1080 293499 315       0
+675 Untitled.jpg  1920   1080 293499 316       0
+676 Untitled.jpg  1920   1080 293499 317       0
+677 Untitled.jpg  1920   1080 293499 318       0
+678 Untitled.jpg  1920   1080 293499 319       0
+679 Untitled.jpg  1920   1080 293499 320       0
+680 Untitled.jpg  1920   1080 293499 321       0
+681 Untitled.jpg  1920   1080 293499 322       0
+682 Untitled.jpg  1920   1080 293499 323       0
+683 Untitled.jpg  1920   1080 293499 324       0
+684 Untitled.jpg  1920   1080 293499 325       0
+685 Untitled.jpg  1920   1080 293499 326       0
+686 Untitled.jpg  1920   1080 293499 327       0
+687 Untitled.jpg  1920   1080 293499 328       0
+688 Untitled.jpg  1920   1080 293499 329       0
+689 Untitled.jpg  1920   1080 293499 330       0
+690 Untitled.jpg  1920   1080 293499 331       0
+691 Untitled.jpg  1920   1080 293499 332       0
+692 Untitled.jpg  1920   1080 293499 333       0
+693 Untitled.jpg  1920   1080 293499 334       0
+694 Untitled.jpg  1920   1080 293499 335       0
+695 Untitled.jpg  1920   1080 293499 336       0
+696 Untitled.jpg  1920   1080 293499 337       0
+697 Untitled.jpg  1920   1080 293499 338       0
+698 Untitled.jpg  1920   1080 293499 339       0
+699 Untitled.jpg  1920   1080 293499 340       0
+700 Untitled.jpg  1920   1080 293499 341       0
+701 Untitled.jpg  1920   1080 293499 342       0
+702 Untitled.jpg  1920   1080 293499 343       0
+703 Untitled.jpg  1920   1080 293499 344       0
+704 Untitled.jpg  1920   1080 293499 345       0
+705 Untitled.jpg  1920   1080 293499 346       0
+706 Untitled.jpg  1920   1080 293499 347       0
+707 Untitled.jpg  1920   1080 293499 348       0
+708 Untitled.jpg  1920   1080 293499 349       0
+709 Untitled.jpg  1920   1080 293499 350       0
+710 Untitled.jpg  1920   1080 293499 351       0
+711 Untitled.jpg  1920   1080 293499 352       0
+712 Untitled.jpg  1920   1080 293499 353       0
+713 Untitled.jpg  1920   1080 293499 354       0
+714 Untitled.jpg  1920   1080 293499 355       0
+715 Untitled.jpg  1920   1080 293499 356       0
+716 Untitled.jpg  1920   1080 293499 357       0
+717 Untitled.jpg  1920   1080 293499 358       0
+718 Untitled.jpg  1920   1080 293499 359       0
+#+end_example
+
+*** Plot
+
+#+begin_src R :results output graphics :file img/test0-synthetic.png :exports both :width 1400 :height 600 :session
+y  %>%
+    mutate(Color.Code = H) %>%    
+    ggplot(aes(x = 1, y = H.count, fill=as.factor(Color.Code))) +#, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(axis.ticks = element_blank(),
+           legend.position = "none",
+           legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1))
+#+end_src
+
+#+RESULTS:
+[[file:img/test0-synthetic.png]]
+
 * Analysis of the AHS dataset
 ** Dataset overview
 I have downloaded the AHS dataset for the year of 2017 and put it in
