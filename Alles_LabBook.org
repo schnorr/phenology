@@ -6583,21 +6583,23 @@ triple histogram) would increase its complexity in a way that is not
 really necessary.
 
 The desired output for this new analysis would be a single histogram
-with 360 Hbins, in which each bin contains a tuple =(Smean, Vmean)=
-representing the mean values for S and V of the pixels that match the
-corresponding Hbin. The pixels count will be maintained so that I can
-know the height of each bin in the final CPM plot. A simplified
-verison of the output provided by =phenovisr= would be a =data.frame=
-that looks something like this:
+with 360 Hbins, in which each bin contains three values: the number of
+pixels contained in the bin (=HCount=), the mean value of S observed
+in these pixels (=SMean=) and the mean value of V observed in these
+pixels (=VMean=). The =HCount= value will be the one used to know the
+height of each bin in the final CPM plot. A simplified verison of the
+output provided by =phenovisr= would be a =data.frame= that looks
+something like this:
 
-| Image     | Pixels | Count | H | Value      |
-|-----------+--------+-------+---+------------|
-| image.png | 100000 | 10000 | 1 | (0.4, 0.8) |
-| image.png | 100000 | 10000 | 2 | (0.2, 0.7) |
-| image.png | 100000 | 10000 | 3 | (0.1, 0.7) |
+| Image     | UnmaskedPixels | H | HCount | SMean | VMean |
+|-----------+----------------+---+--------+-------+-------|
+| image.png |         100000 | 1 |   1234 |   0.4 |   0.2 |
+| image.png |         100000 | 2 |   4231 |   0.2 |   0.7 |
+| image.png |         100000 | 3 |    123 |   0.1 |   0.4 |
 
 With such an output, I will be able to plot the histogram with 360
-bins (=H=), the saturation component (=Value[0]=) and the value
-component (=Value[1]=).
+bins (=H=), the saturation component (=SMean=) and the value
+component (=VMean=).
 ** STARTED Build the extension in the =phenovisr= package
 - State "STARTED"    from "TODO"       [2018-11-05 Mon 09:06]
+
