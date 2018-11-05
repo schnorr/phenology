@@ -4500,6 +4500,7 @@ df.histograms
 #+end_src
 
 ** 2018-10-04 Organizing data manipulation procedures
+<<organized-analysis>>
 *** Overview
 
 The general data manipulation procedure involves four steps:
@@ -6600,6 +6601,274 @@ something like this:
 With such an output, I will be able to plot the histogram with 360
 bins (=H=), the saturation component (=SMean=) and the value
 component (=VMean=).
-** STARTED Build the extension in the =phenovisr= package
+** DONE Build the extension in the =phenovisr= package
+- State "DONE"       from "STARTED"    [2018-11-05 Mon 09:56]
 - State "STARTED"    from "TODO"       [2018-11-05 Mon 09:06]
+** Testing the new histograms
+Let's take a look at the new histograms. I copied the code structure from [[organized-analysis][this previous analysis]].
 
+*** Dependencies
+**** Installed from Cran
+In order to reproduce this analysis, you need the following packages:
+#+begin_src R :session new-hsv :results output :session :exports both
+install.packages(c('tidyverse', 'colorspace'), repos = 'http://cran.us.r-project.org')
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Installing packages into ‘/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5’
+(as ‘lib’ is unspecified)
+trying URL 'http://cran.us.r-project.org/src/contrib/tidyverse_1.2.1.tar.gz'
+Content type 'application/x-gzip' length 61647 bytes (60 KB)
+==================================================
+downloaded 60 KB
+
+trying URL 'http://cran.us.r-project.org/src/contrib/colorspace_1.3-2.tar.gz'
+Content type 'application/x-gzip' length 293433 bytes (286 KB)
+==================================================
+downloaded 286 KB
+
+,* installing *source* package ‘tidyverse’ ...
+,** package ‘tidyverse’ successfully unpacked and MD5 sums checked
+,** R
+,** inst
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,*** copying figures
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (tidyverse)
+,* installing *source* package ‘colorspace’ ...
+,** package ‘colorspace’ successfully unpacked and MD5 sums checked
+,** libs
+gcc -std=gnu99 -I"/usr/share/R/include" -DNDEBUG      -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c colorspace.c -o colorspace.o
+gcc -std=gnu99 -shared -L/usr/lib/R/lib -Wl,-z,relro -o colorspace.so colorspace.o -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/colorspace/libs
+,** R
+,** data
+,*** moving datasets to lazyload DB
+,** inst
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (colorspace)
+
+The downloaded source packages are in
+	‘/tmp/RtmpMzmOZA/downloaded_packages’
+#+end_example
+
+**** Phenovisr (Installed from GITHUB)
+#+begin_src R :results output :session :exports both
+library(devtools)
+install_github("schnorr/phenovisr");
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Downloading GitHub repo schnorr/phenovisr@master
+from URL https://api.github.com/repos/schnorr/phenovisr/zipball/master
+Installing phenovisr
+trying URL 'https://cloud.r-project.org/src/contrib/Rcpp_0.12.19.tar.gz'
+Content type 'application/x-gzip' length 3646456 bytes (3.5 MB)
+==================================================
+downloaded 3.5 MB
+
+Installing Rcpp
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL '/tmp/RtmpUQHibf/devtools255274ddec67/Rcpp'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘Rcpp’ ...
+,** package ‘Rcpp’ successfully unpacked and MD5 sums checked
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Date.cpp -o Date.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Module.cpp -o Module.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c Rcpp_init.cpp -o Rcpp_init.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c api.cpp -o api.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c attributes.cpp -o attributes.o
+g++  -I"/usr/share/R/include" -DNDEBUG -I../inst/include/     -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c barrier.cpp -o barrier.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o Rcpp.so Date.o Module.o Rcpp_init.o api.o attributes.o barrier.o -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/libs
+,** R
+,** inst
+,** tests
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** installing vignettes
+,** testing if installed package can be loaded
+,* DONE (Rcpp)
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet  \
+  CMD INSTALL  \
+  '/tmp/RtmpUQHibf/devtools25521c0b0782/schnorr-phenovisr-1926222'  \
+  --library='/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5' --install-tests 
+
+,* installing *source* package ‘phenovisr’ ...
+,** libs
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c RcppExports.cpp -o RcppExports.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c gcc.cpp -o gcc.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c jpeg_image.cpp -o jpeg_image.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c main.cpp -o main.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c metrics.cpp -o metrics.o
+g++  -I"/usr/share/R/include" -DNDEBUG -std=c++0x -I"/home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"    -fpic  -g -O2 -fdebug-prefix-map=/build/r-base-udh3fS/r-base-3.5.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g  -c rgb2hsv.cpp -o rgb2hsv.o
+g++ -shared -L/usr/lib/R/lib -Wl,-z,relro -o phenovisr.so RcppExports.o gcc.o jpeg_image.o main.o metrics.o rgb2hsv.o -ljpeg -L/usr/lib/R/lib -lR
+installing to /home/schnorr/R/x86_64-pc-linux-gnu-library/3.5/phenovisr/libs
+,** R
+,** byte-compile and prepare package for lazy loading
+,** help
+,*** installing help indices
+,** building package indices
+,** testing if installed package can be loaded
+,* DONE (phenovisr)
+#+end_example
+
+*** Masks
+
+Reading masks into a data.frame. Since this is still experimental, I
+will apply a single mask to make the process faster.
+
+#+name: masks
+#+begin_src R :session hsv-new :results output :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+df.masks
+#+end_src
+
+#+RESULTS: masks
+: # A tibble: 1 x 2
+:   Mask.Filename                                                 Mask          
+:   <chr>                                                         <chr>         
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+
+*** Pictures
+
+Capture names from all the sample images. There are 5281 pictures.
+
+#+name: peg
+#+begin_src R :session hsv-new :results output :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+# A tibble: 5,281 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+To make it faster, I'll plot images from 10AM relative to a single
+year. The 10AM pictures can be identified when the sequence number
+equals to one. I will not consider other pictures of the same day, for
+now. By doing so, we reduce our dataset for 122 pictures.
+
+#+begin_src R :session hsv-new :results output :exports both
+df.peg <- df.peg %>% 
+  mutate(Separator = Picture) %>%
+  separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
+  mutate(Sequence = as.numeric(Sequence)) %>%
+  mutate(Hour = as.numeric(Hour)) %>%
+  filter(Sequence == 1) %>%
+  filter(Hour == 10) %>%
+  select(Picture.Filename, Picture)
+df.peg
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_092_10_1.jpg 2014_092_10_1
+ 3 Output_PEG/2014/2014_093_10_1.jpg 2014_093_10_1
+ 4 Output_PEG/2014/2014_094_10_1.jpg 2014_094_10_1
+ 5 Output_PEG/2014/2014_095_10_1.jpg 2014_095_10_1
+ 6 Output_PEG/2014/2014_096_10_1.jpg 2014_096_10_1
+ 7 Output_PEG/2014/2014_097_10_1.jpg 2014_097_10_1
+ 8 Output_PEG/2014/2014_098_10_1.jpg 2014_098_10_1
+ 9 Output_PEG/2014/2014_099_10_1.jpg 2014_099_10_1
+10 Output_PEG/2014/2014_100_10_1.jpg 2014_100_10_1
+# ... with 112 more rows
+#+end_example
+
+*** Analysis
+**** Calculate the mean histogram and tidy the data
+
+Now let's get the =phenovisr= package to calculate the mean histogram
+with the new exported function.
+
+#+begin_src R :session hsv-new :results output :exports both
+options(crayon.enabled = FALSE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+
+gethist <- function(df, vGrain=10)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_mean_histogram(df %>% pull(Picture.Filename)) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms <- df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() %>%
+    # Cosmetics
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Seq"), convert=TRUE) %>%
+    mutate(Seq = as.integer(gsub(".jpg", "", Seq)))
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
+   Mask   Year   Day  Hour   Seq Width Height UnmaskedPixels     H HCount SMean
+   <chr> <int> <int> <int> <int> <int>  <int>          <int> <int>  <int> <int>
+ 1 Comu…  2014    91    10     1  1280    960         508770     1     32     0
+ 2 Comu…  2014    91    10     1  1280    960         508770     2    330     0
+ 3 Comu…  2014    91    10     1  1280    960         508770     3    318     0
+ 4 Comu…  2014    91    10     1  1280    960         508770     4    277     0
+ 5 Comu…  2014    91    10     1  1280    960         508770     5    772     0
+ 6 Comu…  2014    91    10     1  1280    960         508770     6    252     0
+ 7 Comu…  2014    91    10     1  1280    960         508770     7    368     0
+ 8 Comu…  2014    91    10     1  1280    960         508770     8    359     0
+ 9 Comu…  2014    91    10     1  1280    960         508770     9   1005     0
+10 Comu…  2014    91    10     1  1280    960         508770    10   1848     0
+# ... with 43,788 more rows, and 1 more variable: VMean <int>
+#+end_example
+
+It looks like =phenovisr= is forcing =SMean= and =VMean= to be integers. I will have to look into it later on. The rest of the output seems to be working fine.
