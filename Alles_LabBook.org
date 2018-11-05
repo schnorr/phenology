@@ -6192,6 +6192,7 @@ y  %>%
 [[file:img/test0-synthetic.png]]
 
 ** 2018-10-12 Converting image to HSV palette
+<<image-to-hsv>>
 From our tests on the JPEG reading and masking, we could not find any
 bugs that indicate incorrect reading of the image. The next step is to
 convert the original image to an HSV counterpart, to try and figure
@@ -6548,3 +6549,55 @@ plot.df %>%
 
 #+RESULTS:
 [[file:img/pen-ahs-st3.png]]
+* Extending the double histogram
+** Motivation
+From previous conversations with Comba and Lucas, we concluded that
+the histogram calculations for the =phenovisr= package are
+correct. However, the resulting histogram does not appear to be quite
+accurate in the color shades it displays. From the experiment in which
+I [[image-to-hsv][converted an image to the hsv hue]], I conlcuded that what might be
+missing for the histogram to be more representative of the picture is
+some information on the saturation (S) component from the HSV
+palette. This is what I will experiment with now.
+** Double histogram revisited
+Right now the =phenovisr= package exports a function to calculate a
+double histogram. This double histogram is organized as such:
+
+ - There are 360 bins, one for each H value in the HSV palette. For
+   simplicity, I will call these Hbins;
+ - Each Hbin unit contains 10 other bins (which I will call Vbins),
+   which contains the distribution of the V value for the respective H
+   given by the Hbin.
+
+The main limitation of this approach is that the S component (which
+indicates saturation) is completely lost. In order to be able to plot
+something with this data, then, we need to cap the saturation value to
+100%. The resulting histogram is, thus, completely saturated, which
+means that the plotted data does not correlate much with reality.
+** Extension proposal
+Right now I am leaning towards removing the double histogram
+completely. My motivation for doing so is that the Vbins information
+is not relevant for the end plot (the only information I use is the
+mode), and adding yet another dimension for the histogram (making it a
+triple histogram) would increase its complexity in a way that is not
+really necessary.
+
+The desired output for this new analysis would be a single histogram
+with 360 Hbins, in which each bin contains a tuple =(Smean, Vmean)=
+representing the mean values for S and V of the pixels that match the
+corresponding Hbin. The pixels count will be maintained so that I can
+know the height of each bin in the final CPM plot. A simplified
+verison of the output provided by =phenovisr= would be a =data.frame=
+that looks something like this:
+
+| Image     | Pixels | Count | H | Value      |
+|-----------+--------+-------+---+------------|
+| image.png | 100000 | 10000 | 1 | (0.4, 0.8) |
+| image.png | 100000 | 10000 | 2 | (0.2, 0.7) |
+| image.png | 100000 | 10000 | 3 | (0.1, 0.7) |
+
+With such an output, I will be able to plot the histogram with 360
+bins (=H=), the saturation component (=Value[0]=) and the value
+component (=Value[1]=).
+** STARTED Build the extension in the =phenovisr= package
+- State "STARTED"    from "TODO"       [2018-11-05 Mon 09:06]
