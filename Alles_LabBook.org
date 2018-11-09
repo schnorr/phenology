@@ -6601,7 +6601,7 @@ something like this:
 With such an output, I will be able to plot the histogram with 360
 bins (=H=), the saturation component (=SMean=) and the value
 component (=VMean=).
-** DONE Build the extension in the =phenovisr= package
+** Building the extension in the =phenovisr= package
 - State "DONE"       from "STARTED"    [2018-11-05 Mon 09:56]
 - State "STARTED"    from "TODO"       [2018-11-05 Mon 09:06]
 ** Testing the new histograms
@@ -6816,4 +6816,196 @@ considerations on the subject:
     need to consider the various degrees of blue, cyan, magenta and
     pink (to name a few) as relevant?
 
-** TODO Test HSV plot with the mode
+** Testing HSV plot with the mode
+I exported a new function from =phenovisr=:
+=phenovis_get_HSV_mode_histogram=. It calculates the mode for both S
+and V for each H bin, and returns the corresponding bin. Let's now use
+this to try and enhance our previous mean plot.
+*** Plotting S and V mode histograms
+Once again, I copied the code structure from previous analysis.
+**** Masks
+
+Reading masks into a data.frame. Since this is still experimental, I
+will apply a single mask to make the process faster.
+
+#+name: masks
+#+begin_src R :session hsv-mode :results output :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.masks <- tibble(Mask.Filename=list.files("data/70", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+df.masks
+#+end_src
+
+#+RESULTS: masks
+: # A tibble: 1 x 2
+:   Mask.Filename                                                 Mask          
+:   <chr>                                                         <chr>         
+: 1 data/70/a49c79-ab5d-43f4-99d8-5b9d609da83b/Comunidade-PEG.jpg Comunidade_PEG
+
+**** Pictures
+
+Capture names from all the sample images. There are 5281 pictures.
+
+#+name: peg
+#+begin_src R :session hsv-mode :results output :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture))
+df.peg
+#+end_src
+
+#+RESULTS: peg
+#+begin_example
+# A tibble: 5,281 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_091_10_2.jpg 2014_091_10_2
+ 3 Output_PEG/2014/2014_091_10_4.jpg 2014_091_10_4
+ 4 Output_PEG/2014/2014_091_10_5.jpg 2014_091_10_5
+ 5 Output_PEG/2014/2014_091_11_1.jpg 2014_091_11_1
+ 6 Output_PEG/2014/2014_091_11_2.jpg 2014_091_11_2
+ 7 Output_PEG/2014/2014_091_11_3.jpg 2014_091_11_3
+ 8 Output_PEG/2014/2014_091_12_1.jpg 2014_091_12_1
+ 9 Output_PEG/2014/2014_091_12_2.jpg 2014_091_12_2
+10 Output_PEG/2014/2014_091_12_3.jpg 2014_091_12_3
+# ... with 5,271 more rows
+#+end_example
+
+To make it faster, I'll plot images from 10AM relative to a single
+year. The 10AM pictures can be identified when the sequence number
+equals to one. I will not consider other pictures of the same day, for
+now. By doing so, we reduce our dataset for 122 pictures.
+
+#+begin_src R :session hsv-mode :results output :exports both
+df.peg <- df.peg %>% 
+  mutate(Separator = Picture) %>%
+  separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
+  mutate(Sequence = as.numeric(Sequence)) %>%
+  mutate(Hour = as.numeric(Hour)) %>%
+  filter(Sequence == 1) %>%
+  filter(Hour == 10) %>%
+  select(Picture.Filename, Picture)
+df.peg
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 122 x 2
+   Picture.Filename                  Picture      
+   <chr>                             <chr>        
+ 1 Output_PEG/2014/2014_091_10_1.jpg 2014_091_10_1
+ 2 Output_PEG/2014/2014_092_10_1.jpg 2014_092_10_1
+ 3 Output_PEG/2014/2014_093_10_1.jpg 2014_093_10_1
+ 4 Output_PEG/2014/2014_094_10_1.jpg 2014_094_10_1
+ 5 Output_PEG/2014/2014_095_10_1.jpg 2014_095_10_1
+ 6 Output_PEG/2014/2014_096_10_1.jpg 2014_096_10_1
+ 7 Output_PEG/2014/2014_097_10_1.jpg 2014_097_10_1
+ 8 Output_PEG/2014/2014_098_10_1.jpg 2014_098_10_1
+ 9 Output_PEG/2014/2014_099_10_1.jpg 2014_099_10_1
+10 Output_PEG/2014/2014_100_10_1.jpg 2014_100_10_1
+# ... with 112 more rows
+#+end_example
+**** Analysis
+***** Calculate the mean histogram and tidy the data
+
+Now let's get the =phenovisr= package to calculate the mean histogram
+with the new exported function.
+
+#+begin_src R :session hsv-mode :results output :exports both
+options(crayon.enabled = FALSE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+
+gethist <- function(df, vGrain=10)
+{
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_mode_histogram(df %>% pull(Picture.Filename)) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms <- df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() %>%
+    # Cosmetics
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Seq"), convert=TRUE) %>%
+    mutate(Seq = as.integer(gsub(".jpg", "", Seq)))
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
+   Mask   Year   Day  Hour   Seq Width Height UnmaskedPixels     H HCount SMode
+   <chr> <int> <int> <int> <int> <dbl>  <dbl>          <dbl> <dbl>  <dbl> <dbl>
+ 1 Comu…  2014    91    10     1 1280.   960.        508770.    1.    32. 0.300
+ 2 Comu…  2014    91    10     1 1280.   960.        508770.    2.   330. 0.200
+ 3 Comu…  2014    91    10     1 1280.   960.        508770.    3.   318. 0.200
+ 4 Comu…  2014    91    10     1 1280.   960.        508770.    4.   277. 0.200
+ 5 Comu…  2014    91    10     1 1280.   960.        508770.    5.   772. 0.200
+ 6 Comu…  2014    91    10     1 1280.   960.        508770.    6.   252. 0.200
+ 7 Comu…  2014    91    10     1 1280.   960.        508770.    7.   368. 0.300
+ 8 Comu…  2014    91    10     1 1280.   960.        508770.    8.   359. 0.300
+ 9 Comu…  2014    91    10     1 1280.   960.        508770.    9.  1005. 0.200
+10 Comu…  2014    91    10     1 1280.   960.        508770.   10.  1848. 0.200
+# ... with 43,788 more rows, and 1 more variable: VMode <dbl>
+#+end_example
+
+**** Plot
+
+Let's create the color palette
+#+BEGIN_SRC R :session hsv-mode :results output :exports both
+suppressMessages(library(colorspace))
+df.palette <- df.histograms %>%
+    mutate(Color = hex(HSV(H, SMode, VMode))) %>%
+    mutate(Code = as.character(Color)) %>%
+    select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+#+END_SRC
+
+#+RESULTS:
+
+And now let's plot the results
+#+begin_src R :session hsv-mode :results output graphics :file img/peg_mode_histogram.png :exports both :width 1400 :height 600
+df.histograms  %>%
+    mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
+    ggplot(aes(x = Day, y = HCount, fill=as.factor(Color))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins")
+    #coord_flip() +
+    #coord_cartesian(ylim=c(2.5e+5, 2.6e+5)) +
+#+end_src
+
+#+RESULTS:
+[[file:img/peg_mode_histogram.png]]
+*** TODO Interpreting these results...
