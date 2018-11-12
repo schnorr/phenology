@@ -5419,6 +5419,74 @@ suppressMessages(library(colorspace))
 options(crayon.enabled = FALSE)
 #+END_SRC
 
+*** AHS Pictures
+In order to speed up further analysis, let's real all images we have and keep
+it in a tibble in the current session
+
+#+BEGIN_SRC R :session pen-2017 :results output
+df.pen <- tibble(
+    Picture.Filename=list.files("PEN/AHS/2017/t24_d", pattern='jpg', recursive=TRUE, full.names=TRUE)
+) %>%
+    separate(Picture.Filename, sep = '/', into=c('A', 'B', 'C', 'D', 'Picture'), remove = FALSE) %>%
+    select(-A, -B, -C, -D) %>%
+    mutate(Picture = gsub('dc_2017_', '', Picture)) %>%
+    mutate(Picture = gsub('\\+0000_AHS_t24_d.jpg', '', Picture))
+df.pen
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 33 x 2
+   Picture.Filename                                       Picture 
+   <chr>                                                  <chr>   
+ 1 PEN/AHS/2017/t24_d/dc_2017_001_0500+0000_AHS_t24_d.jpg 001_0500
+ 2 PEN/AHS/2017/t24_d/dc_2017_001_0530+0000_AHS_t24_d.jpg 001_0530
+ 3 PEN/AHS/2017/t24_d/dc_2017_001_0600+0000_AHS_t24_d.jpg 001_0600
+ 4 PEN/AHS/2017/t24_d/dc_2017_001_0630+0000_AHS_t24_d.jpg 001_0630
+ 5 PEN/AHS/2017/t24_d/dc_2017_001_0700+0000_AHS_t24_d.jpg 001_0700
+ 6 PEN/AHS/2017/t24_d/dc_2017_001_0730+0000_AHS_t24_d.jpg 001_0730
+ 7 PEN/AHS/2017/t24_d/dc_2017_001_0800+0000_AHS_t24_d.jpg 001_0800
+ 8 PEN/AHS/2017/t24_d/dc_2017_001_0830+0000_AHS_t24_d.jpg 001_0830
+ 9 PEN/AHS/2017/t24_d/dc_2017_001_0900+0000_AHS_t24_d.jpg 001_0900
+10 PEN/AHS/2017/t24_d/dc_2017_001_0930+0000_AHS_t24_d.jpg 001_0930
+# ... with 23 more rows
+#+end_example
+
+Let's also compute the masks data frame join in here...
+#+BEGIN_SRC R :session pen-2017 :results output
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+    separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-Directory) %>%
+    mutate(dummy = TRUE)
+
+df.pen.masks <- df.pen %>% 
+    mutate(dummy = TRUE) %>%
+    left_join(df.masks, by=c('dummy')) %>%
+    select(-dummy)
+df.pen.masks
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 33 x 4
+   Picture.Filename                Picture Mask.Filename          Mask         
+   <chr>                           <chr>   <chr>                  <chr>        
+ 1 PEN/AHS/2017/t24_d/dc_2017_001… 001_05… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 2 PEN/AHS/2017/t24_d/dc_2017_001… 001_05… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 3 PEN/AHS/2017/t24_d/dc_2017_001… 001_06… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 4 PEN/AHS/2017/t24_d/dc_2017_001… 001_06… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 5 PEN/AHS/2017/t24_d/dc_2017_001… 001_07… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 6 PEN/AHS/2017/t24_d/dc_2017_001… 001_07… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 7 PEN/AHS/2017/t24_d/dc_2017_001… 001_08… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 8 PEN/AHS/2017/t24_d/dc_2017_001… 001_08… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+ 9 PEN/AHS/2017/t24_d/dc_2017_001… 001_09… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+10 PEN/AHS/2017/t24_d/dc_2017_001… 001_09… masks/dc_TKY_y18_d_ma… dc_TKY_y18_d…
+# ... with 23 more rows
+#+end_example
+
 *** First day of 2017
 
 While we wait for the rest of the dataset to download, let's start by
@@ -5524,16 +5592,16 @@ Expected 5 pieces. Additional pieces discarded in 118470 rows [1, 2, 3, 4, 5, 6,
 # A tibble: 118,470 x 10
    Year  Day   Time  Width Height  Pixels     H H.count     V V.count
    <chr> <chr> <chr> <int>  <int>   <int> <int>   <int> <dbl>   <int>
- 1 2017  001   0500   2272   1704 1288929     1       0     0       0
- 2 2017  001   0500   2272   1704 1288929     2       0     0       0
- 3 2017  001   0500   2272   1704 1288929     3       0     0       0
- 4 2017  001   0500   2272   1704 1288929     4       0     0       0
- 5 2017  001   0500   2272   1704 1288929     5       1     0       1
- 6 2017  001   0500   2272   1704 1288929     6      15     0      15
- 7 2017  001   0500   2272   1704 1288929     7       0     0       0
- 8 2017  001   0500   2272   1704 1288929     8       0     0       0
- 9 2017  001   0500   2272   1704 1288929     9       0     0       0
-10 2017  001   0500   2272   1704 1288929    10      11     0      11
+ 1 2017  001   0500   2272   1704 1288929     1       0    0.       0
+ 2 2017  001   0500   2272   1704 1288929     2       0    0.       0
+ 3 2017  001   0500   2272   1704 1288929     3       0    0.       0
+ 4 2017  001   0500   2272   1704 1288929     4       0    0.       0
+ 5 2017  001   0500   2272   1704 1288929     5       1    0.       1
+ 6 2017  001   0500   2272   1704 1288929     6      15    0.      15
+ 7 2017  001   0500   2272   1704 1288929     7       0    0.       0
+ 8 2017  001   0500   2272   1704 1288929     8       0    0.       0
+ 9 2017  001   0500   2272   1704 1288929     9       0    0.       0
+10 2017  001   0500   2272   1704 1288929    10      11    0.      11
 # ... with 118,460 more rows
 #+end_example
 
@@ -5554,16 +5622,16 @@ palette
 # A tibble: 3,600 x 5
        H     S     V Color.Code Color  
    <int> <dbl> <dbl>      <int> <chr>  
- 1     0     1     0          0 #000000
- 2     1     1     0         10 #000000
- 3     2     1     0         20 #000000
- 4     3     1     0         30 #000000
- 5     4     1     0         40 #000000
- 6     5     1     0         50 #000000
- 7     6     1     0         60 #000000
- 8     7     1     0         70 #000000
- 9     8     1     0         80 #000000
-10     9     1     0         90 #000000
+ 1     0    1.    0.          0 #000000
+ 2     1    1.    0.         10 #000000
+ 3     2    1.    0.         20 #000000
+ 4     3    1.    0.         30 #000000
+ 5     4    1.    0.         40 #000000
+ 6     5    1.    0.         50 #000000
+ 7     6    1.    0.         60 #000000
+ 8     7    1.    0.         70 #000000
+ 9     8    1.    0.         80 #000000
+10     9    1.    0.         90 #000000
 # ... with 3,590 more rows
 #+end_example
 
@@ -5583,21 +5651,21 @@ plot.df
 # A tibble: 41,976 x 10
    Year  Day   Time  Width Height  Pixels     H H.count     V V.count
    <chr> <chr> <chr> <int>  <int>   <int> <int>   <int> <dbl>   <int>
- 1 2017  001   0500   2272   1704 1288929     1       0     0       0
- 2 2017  001   0500   2272   1704 1288929     2       0     0       0
- 3 2017  001   0500   2272   1704 1288929     3       0     0       0
- 4 2017  001   0500   2272   1704 1288929     4       0     0       0
- 5 2017  001   0500   2272   1704 1288929     5       1     0       1
- 6 2017  001   0500   2272   1704 1288929     6      15     0      15
- 7 2017  001   0500   2272   1704 1288929     7       0     0       0
- 8 2017  001   0500   2272   1704 1288929     8       0     0       0
- 9 2017  001   0500   2272   1704 1288929     9       0     0       0
-10 2017  001   0500   2272   1704 1288929    10      11     0      11
+ 1 2017  001   0500   2272   1704 1288929     1       0    0.       0
+ 2 2017  001   0500   2272   1704 1288929     2       0    0.       0
+ 3 2017  001   0500   2272   1704 1288929     3       0    0.       0
+ 4 2017  001   0500   2272   1704 1288929     4       0    0.       0
+ 5 2017  001   0500   2272   1704 1288929     5       1    0.       1
+ 6 2017  001   0500   2272   1704 1288929     6      15    0.      15
+ 7 2017  001   0500   2272   1704 1288929     7       0    0.       0
+ 8 2017  001   0500   2272   1704 1288929     8       0    0.       0
+ 9 2017  001   0500   2272   1704 1288929     9       0    0.       0
+10 2017  001   0500   2272   1704 1288929    10      11    0.      11
 # ... with 41,966 more rows
 #+end_example
 
 **** Plot
-#+BEGIN_SRC R :session pen-2017 :results output graphics :file img/pen-ahs-st3.png :exports both :width 1400 :height 600
+#+BEGIN_SRC R :session pen-2017 :results output graphics :file img/pen-ahs-st3.png :exports both :width 600 :height 300
 library(ggplot2)
 plot.df %>%
     mutate(Color.Code = as.integer((H+V)*10)) %>%
@@ -5623,3 +5691,4 @@ plot.df %>%
 
 #+RESULTS:
 [[file:img/pen-ahs-st3.png]]
+*** Year of 2017, pictures at noon
