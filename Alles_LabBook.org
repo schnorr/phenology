@@ -21017,8 +21017,76 @@ df.histograms  %>%
 
 #+RESULTS:
 [[file:img/peg_mode_full.png]]
-* TODO Histograms with mean =gcc=
+* STARTED Histograms with mean =gcc=
 Comba suggested for me to try to plot a CPM using the original =gcc=
 separation (in pre defined beans), but changing the color palette:
 from his suggestion, I could define the color for each =gcc= bin as
 /the average color for all the pixels that fell into that =gcc= bin/.
+
+In order to do this, I will have to modify the =phenovisr= package to
+return not only the histogram for every image, but also a list of
+colors that will be used in each bin.
+
+#+BEGIN_SRC R :session gcc-analysis :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+options(crayon.enabled = FALSE)
+
+df.masks <- tibble(Mask.Filename=list.files(c("data/70"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    separate(Mask.Filename, sep="/", into=c("A", "B", "C", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-A, -B, -C)
+
+df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recursive=TRUE, full.names=TRUE)) %>%
+    separate(Picture.Filename, sep="/", into=c("A", "B", "Picture"), remove=FALSE) %>% select(-A, -B) %>%
+    mutate(Picture = gsub(".jpg", "", Picture)) %>% 
+    mutate(Separator = Picture) %>%
+    separate(Separator, sep='_', into=c('Year', 'Day', 'Hour', 'Sequence')) %>%
+    mutate(Sequence = as.numeric(Sequence)) %>%
+    mutate(Hour = as.numeric(Hour)) %>%
+    filter(Sequence == 1) %>%
+    filter(Hour == 13) %>%
+    select(Picture.Filename, Picture)
+
+gethist <- function(df, grain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.masks %>%
+    mutate(dummy=TRUE) %>%
+    group_by(Mask) %>%
+    left_join(df.peg %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
+    select(-dummy) %>%
+    do(gethist(.)) %>%
+    ungroup() %>%
+    # Cosmetics
+    separate(Name, sep="/", into=c("Dir", "Year", "Filename")) %>%
+    select(-Dir, -Year) %>%
+    separate(Filename, sep="_", into=c("Year", "Day", "Hour", "Seq"), convert=TRUE) %>%
+    mutate(Seq = as.integer(gsub(".jpg", "", Seq)))
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+|======================================================|100% ~0 s remaining     > # A tibble: 1,220 x 10
+   Mask            Year   Day  Hour   Seq Width Height Pixels variable value
+   <chr>          <int> <int> <int> <int> <int>  <int>  <int>    <int> <int>
+ 1 Comunidade_PEG  2014    91    13     1  1280    960 508770        0  6565
+ 2 Comunidade_PEG  2014    92    13     1  1280    960 508770        0  2711
+ 3 Comunidade_PEG  2014    93    13     1  1280    960 508770        0  4514
+ 4 Comunidade_PEG  2014    94    13     1  1280    960 508770        0  4970
+ 5 Comunidade_PEG  2014    95    13     1  1280    960 508770        0 10174
+ 6 Comunidade_PEG  2014    96    13     1  1280    960 508770        0  8933
+ 7 Comunidade_PEG  2014    97    13     1  1280    960 508770        0  6828
+ 8 Comunidade_PEG  2014    98    13     1  1280    960 508770        0  7451
+ 9 Comunidade_PEG  2014    99    13     1  1280    960 508770        0  8681
+10 Comunidade_PEG  2014   100    13     1  1280    960 508770        0  2313
+# ... with 1,210 more rows
+#+end_example
+
+
