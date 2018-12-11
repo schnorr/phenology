@@ -21027,9 +21027,14 @@ In order to do this, I will have to modify the =phenovisr= package to
 return not only the histogram for every image, but also a list of
 colors that will be used in each bin.
 
+After modifying =phenovisr=, I can call the new
+=phenovis_get_gcc_color_histogram= function.
+
 #+BEGIN_SRC R :session gcc-analysis :results output :exports both
 suppressMessages(library(tidyverse))
 suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+
 options(crayon.enabled = FALSE)
 
 df.masks <- tibble(Mask.Filename=list.files(c("data/70"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
@@ -21049,7 +21054,7 @@ df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recurs
     filter(Hour == 13) %>%
     select(Picture.Filename, Picture)
 
-gethist <- function(df, grain=10) {
+    gethist <- function(df, grain=100) {
     mask <- df %>% slice(1) %>% pull(Mask.Filename);
     phenovis_read_mask(mask);
     phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
@@ -21073,20 +21078,54 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-|======================================================|100% ~0 s remaining     > # A tibble: 1,220 x 10
-   Mask            Year   Day  Hour   Seq Width Height Pixels variable value
-   <chr>          <int> <int> <int> <int> <int>  <int>  <int>    <int> <int>
- 1 Comunidade_PEG  2014    91    13     1  1280    960 508770        0  6565
- 2 Comunidade_PEG  2014    92    13     1  1280    960 508770        0  2711
- 3 Comunidade_PEG  2014    93    13     1  1280    960 508770        0  4514
- 4 Comunidade_PEG  2014    94    13     1  1280    960 508770        0  4970
- 5 Comunidade_PEG  2014    95    13     1  1280    960 508770        0 10174
- 6 Comunidade_PEG  2014    96    13     1  1280    960 508770        0  8933
- 7 Comunidade_PEG  2014    97    13     1  1280    960 508770        0  6828
- 8 Comunidade_PEG  2014    98    13     1  1280    960 508770        0  7451
- 9 Comunidade_PEG  2014    99    13     1  1280    960 508770        0  8681
-10 Comunidade_PEG  2014   100    13     1  1280    960 508770        0  2313
-# ... with 1,210 more rows
+|======================================================|100% ~0 s remaining     > # A tibble: 12,200 x 13
+   Mask            Year   Day  Hour   Seq Width Height Pixels GCC_bin Bin_value
+   <chr>          <int> <int> <int> <int> <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      0.     6118.
+ 2 Comunidade_PEG  2014    92    13     1 1280.   960. 5.09e5      1.        4.
+ 3 Comunidade_PEG  2014    93    13     1 1280.   960. 5.09e5      2.        7.
+ 4 Comunidade_PEG  2014    94    13     1 1280.   960. 5.09e5      3.       24.
+ 5 Comunidade_PEG  2014    95    13     1 1280.   960. 5.09e5      4.       35.
+ 6 Comunidade_PEG  2014    96    13     1 1280.   960. 5.09e5      5.       64.
+ 7 Comunidade_PEG  2014    97    13     1 1280.   960. 5.09e5      6.       60.
+ 8 Comunidade_PEG  2014    98    13     1 1280.   960. 5.09e5      7.       76.
+ 9 Comunidade_PEG  2014    99    13     1 1280.   960. 5.09e5      8.       76.
+10 Comunidade_PEG  2014   100    13     1 1280.   960. 5.09e5      9.      101.
+# ... with 12,190 more rows, and 3 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>
 #+end_example
 
+Then plotting the result...
+#+BEGIN_SRC R :session gcc-analysis :results output  graphics :file img/gcc-mean-analysis.png :exports both :width 1400 :height 600
+df.palette <- df.histograms %>%
+    mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+    mutate(Code = as.character(Color)) %>%
+    select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+    mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+    ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("Day of the Year (2014)") +
+    ylab("Normalized size of bins")
+#+END_SRC
+
+#+RESULTS:
+[[file:img/gcc-mean-analysis.png]]
 
