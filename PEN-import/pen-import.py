@@ -2,15 +2,10 @@ import os
 import glob
 from shutil import copyfile
 
-input_directory = '/Users/alles/ExtensionHD/PEN/TKY/TKY_/public_html/original/dc/dc_2003'
+input_directory = '/Users/alles/ExtensionHD/PEN/TKY-2004'
 image_pattern = '/**/*.jpg'
 
-output_directory = '../PEN/TKY/'
-
-try:
-  os.mkdir(output_directory)
-except:
-  pass
+output_directory = '/Users/alles/ExtensionHD/PEN/TKY-2004-imported'
 
 files = glob.glob(input_directory + image_pattern, recursive=True)
 for file in files:

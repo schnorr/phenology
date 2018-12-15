@@ -21130,7 +21130,7 @@ df.histograms  %>%
 
 #+RESULTS:
 [[file:img/gcc-mean-analysis.png]]
-* STARTED Analysis of the TKY dataset
+* DONE Analysis of the TKY dataset (2003)
 ** Session startup
 Before we do anything, let's start by setting up the R session
 
@@ -21142,7 +21142,6 @@ options(crayon.enabled = FALSE)
 #+END_SRC
 
 #+RESULTS:
-: FALSE
 
 ** Dataset overview
 To get started with this dataset, let's take a look at the data that
@@ -21300,11 +21299,11 @@ df.final
 #+end_example
 ** Masks
 Let's read the mask into a dataframe. By inspecting the available
-masks manually, I eyeballed that the following one is the most
-accurate. In the future, I plan on making my own mask.
+masks manually, I eyeballed that there are no masks that fit in a very satisfiable way. I created my own mask, which is the one I will be using.
+
 #+BEGIN_SRC R :session tky :results output :exports both
 df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
-    filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_2.jpg') %>%
+    filter(Mask.Filename == 'masks/alles-tky-y18_d-mask.jpg') %>%
     separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
     mutate(Mask = gsub(".jpg", "", Mask)) %>%
     mutate(Mask = gsub("-", "_", Mask)) %>%
@@ -21314,10 +21313,39 @@ df.masks
 
 #+RESULTS:
 : # A tibble: 1 x 2
-:   Mask.Filename                         Mask                       
-:   <chr>                                 <chr>                      
-: 1 masks/dc_TKY_y18_d_mask_section_2.jpg dc_TKY_y18_d_mask_section_2
+:   Mask.Filename                  Mask                
+:   <chr>                          <chr>               
+: 1 masks/alles-tky-y18_d-mask.jpg alles_tky_y18_d_mask
 ** Computation and plot
+Let's now join the masks and pictures for the analysis.
+
+#+BEGIN_SRC R :session tky :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 28 x 7
+   Mask.Filename    Mask     Picture.Filename     Camera_ID Dataset  Year   Day
+   <chr>            <chr>    <chr>                <chr>     <chr>   <int> <int>
+ 1 masks/alles-tky… alles_t… PEN/TKY/dc_2003_273… y18_d     TKY      2003   273
+ 2 masks/alles-tky… alles_t… PEN/TKY/dc_2003_280… y18_d     TKY      2003   280
+ 3 masks/alles-tky… alles_t… PEN/TKY/dc_2003_281… y18_d     TKY      2003   281
+ 4 masks/alles-tky… alles_t… PEN/TKY/dc_2003_282… y18_d     TKY      2003   282
+ 5 masks/alles-tky… alles_t… PEN/TKY/dc_2003_283… y18_d     TKY      2003   283
+ 6 masks/alles-tky… alles_t… PEN/TKY/dc_2003_284… y18_d     TKY      2003   284
+ 7 masks/alles-tky… alles_t… PEN/TKY/dc_2003_285… y18_d     TKY      2003   285
+ 8 masks/alles-tky… alles_t… PEN/TKY/dc_2003_298… y18_d     TKY      2003   298
+ 9 masks/alles-tky… alles_t… PEN/TKY/dc_2003_299… y18_d     TKY      2003   299
+10 masks/alles-tky… alles_t… PEN/TKY/dc_2003_300… y18_d     TKY      2003   300
+# ... with 18 more rows
+#+end_example
+
 Now let's merge masks and images and calculate metrics.
 #+BEGIN_SRC R :session tky :results output :exports both
 gethist <- function(df, grain=100) {
@@ -21327,15 +21355,10 @@ gethist <- function(df, grain=100) {
         as_tibble()
 }
 
-df.histograms <- df.masks %>%
-  mutate(dummy=TRUE) %>%
-  group_by(Mask) %>%
-  left_join(df.final %>% mutate(dummy=TRUE), by=c("dummy")) %>% 
-  select(-dummy) %>%
+df.histograms <- df.joined %>%
   do(gethist(.)) %>%
-  ungroup() %>%
   # Cosmetics
-  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
   select(-Dir, -Subdir) %>%
   mutate(Filename = gsub('.jpg', '', Filename)) %>%
   mutate(Filename = gsub('dc_', '', Filename)) %>%
@@ -21352,49 +21375,221 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Error in eval_tidy(enquo(var), var_env) : 
-  object 'Picture.Filename' not found
-# A tibble: 43,798 x 13
-   Mask       Year   Day  Hour   Seq Width Height UnmaskedPixels Gcc_Mean     H
-   <chr>     <int> <int> <int> <int> <dbl>  <dbl>          <dbl>    <dbl> <dbl>
- 1 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    1.
- 2 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    2.
- 3 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    3.
- 4 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    4.
- 5 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    5.
- 6 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    6.
- 7 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    7.
- 8 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    8.
- 9 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN    9.
-10 Comunida…  2014    91    10     1 1280.   960.        508770.      NaN   10.
-# ... with 43,788 more rows, and 3 more variables: HCount <dbl>, SMode <dbl>,
-#   VMode <dbl>
+# A tibble: 2,800 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      0.        7.
+ 2 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      1.        0.
+ 3 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      2.        0.
+ 4 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      3.        0.
+ 5 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      4.        0.
+ 6 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      5.        0.
+ 7 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      6.        0.
+ 8 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      7.        0.
+ 9 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      8.        0.
+10 PEN/TKY…  2003   273 TKY     y18_d     1600.  1200. 7.06e5      9.        0.
+# ... with 2,790 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
 #+end_example
+
+
+And now let's plot it.
+#+BEGIN_SRC R :session tky :results output graphics :file img/tky-2003-11am.png :exports both :width 700 :height 400
+
+df.palette <- df.histograms %>%
+  mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+  mutate(Code = as.character(Color)) %>%
+  select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+  filter(Bin_value != 0) %>%
+  filter(GCC_bin >= 30) %>%
+  filter(GCC_bin <= 50) %>%
+  mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+  ggplot(aes(x = Name, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  scale_fill_manual(values = palette.list) +
+  geom_bar(stat='identity') +
+  theme_bw(base_size=16) +
+  theme(#axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(0, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  xlab("DOY") +
+  ylab("Normalized size of bins")
+#+END_SRC
+
+#+RESULTS:
+[[file:img/tky-2003-11am.png]]
+
+These results are looking neat, but unfortunately the sample size is
+too small. I will compute the data from 2014 next.
+* STARTED Analysis of the TKY dataset (2004)
+** Session startup
+Before we do anything, let's start by setting up the R session
+
+#+BEGIN_SRC R :session tky-2004
+suppressMessages(library(tidyverse))
+suppressMessages(library(colorspace))
+suppressMessages(library(phenovisr))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+** Dataset overview
+To get started with this dataset, let's take a look at the data that
+is available. Since the number of images on this dataset is quite
+large, I will analyze it from my external hard drive.
+
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+Let's see which camera IDs we have available.
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.images %>% group_by(Camera_ID) %>%
+  summarize(count = n())
+#+END_SRC
+
+The ID with most observations is the =f02_u=, which is taken from the
+floor of the forest facing upwards. The second ID with most
+observations is the =y18_d=, with pictures taken from the top of the
+tower, facing downwards. The correlation between ID and position is
+extracted from the metadata that can be found [[http://db.cger.nies.go.jp/JaLTER/ER_DataPapers/archives/2018/ERDP-2018-05/metadata][here]].
+
+Let's get only the pictures taken from the =y18_d= camera, which is
+the closest approach to match our current masks
+
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.images.selected <- df.images %>%
+  filter(Camera_ID == 'y18_d')
+
+df.images.selected
+#+END_SRC
+
+Let's see the distribution of hours (to get the largest sample of
+images taken in the same time).
+
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.images.selected %>% group_by(Hour) %>%
+  summarize(count = n()) %>%
+  ungroup() %>%
+  as.data.frame
+#+END_SRC
+
+Okay, it looks like there is no even distribution... For now let's use
+only the images from 11am, which are the most frequent
+
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.final <- df.images.selected %>% filter(Hour == 11) %>% select(Picture.Filename, Camera_ID, Dataset, Year, Day)
+df.final
+#+END_SRC
+
+** Masks
+Let's read the mask into a dataframe. By inspecting the available
+masks manually, I eyeballed that there are no masks that fit in a very satisfiable way. I created my own mask, which is the one I will be using.
+
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    filter(Mask.Filename == 'masks/alles-tky-y18_d-mask.jpg') %>%
+    separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-Directory)
+df.masks
+#+END_SRC
+
+** Computation and plot
+Let's now join the masks and pictures for the analysis.
+
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+Now let's merge masks and images and calculate metrics.
+#+BEGIN_SRC R :session tky-2004 :results output :exports both
+gethist <- function(df, grain=100) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+END_SRC
+
+And now let's plot it.
+#+BEGIN_SRC R :session tky-2004 :results output graphics :file img/tky-2004.png :exports both :width 700 :height 400
+
+df.palette <- df.histograms %>%
+  mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+  mutate(Code = as.character(Color)) %>%
+  select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+  filter(Bin_value != 0) %>%
+  filter(GCC_bin >= 30) %>%
+  filter(GCC_bin <= 50) %>%
+  mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+  ggplot(aes(x = Name, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  scale_fill_manual(values = palette.list) +
+  geom_bar(stat='identity') +
+  theme_bw(base_size=16) +
+  theme(#axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(0, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  xlab("DOY") +
+  ylab("Normalized size of bins")
+#+END_SRC
