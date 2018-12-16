@@ -21444,13 +21444,15 @@ suppressMessages(library(phenovisr))
 options(crayon.enabled = FALSE)
 #+END_SRC
 
+#+RESULTS:
+
 ** Dataset overview
 To get started with this dataset, let's take a look at the data that
 is available. Since the number of images on this dataset is quite
 large, I will analyze it from my external hard drive.
 
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
-df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY-2004"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
   separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
   select(-Dir, -Subdir) %>%
   mutate(Filename = gsub('.jpg', '', Filename)) %>%
@@ -21466,20 +21468,40 @@ df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY"), recursive=TRUE, pa
 df.images
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+# A tibble: 39,801 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_001_1207+09…  2004     1 TKY     y18_e        12      7
+ 3 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 4 PEN/TKY-2004/dc_2004_002_1216+09…  2004     2 TKY     y18_e        12     16
+ 5 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 6 PEN/TKY-2004/dc_2004_003_1225+09…  2004     3 TKY     y18_e        12     25
+ 7 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 8 PEN/TKY-2004/dc_2004_004_1234+09…  2004     4 TKY     y18_e        12     34
+ 9 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+10 PEN/TKY-2004/dc_2004_005_1243+09…  2004     5 TKY     y18_e        12     43
+# ... with 39,791 more rows
+#+end_example
+
 Let's see which camera IDs we have available.
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
 df.images %>% group_by(Camera_ID) %>%
   summarize(count = n())
 #+END_SRC
 
-The ID with most observations is the =f02_u=, which is taken from the
-floor of the forest facing upwards. The second ID with most
-observations is the =y18_d=, with pictures taken from the top of the
-tower, facing downwards. The correlation between ID and position is
-extracted from the metadata that can be found [[http://db.cger.nies.go.jp/JaLTER/ER_DataPapers/archives/2018/ERDP-2018-05/metadata][here]].
+#+RESULTS:
+: # A tibble: 3 x 2
+:   Camera_ID count
+:   <chr>     <int>
+: 1 y18_d      3202
+: 2 y18_e      3265
+: 3 y18_u     33334
 
 Let's get only the pictures taken from the =y18_d= camera, which is
-the closest approach to match our current masks
+the closest position to match our current masks
 
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
 df.images.selected <- df.images %>%
@@ -21487,6 +21509,24 @@ df.images.selected <- df.images %>%
 
 df.images.selected
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,202 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 3 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 4 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 5 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+ 6 PEN/TKY-2004/dc_2004_006_1228+09…  2004     6 TKY     y18_d        12     28
+ 7 PEN/TKY-2004/dc_2004_007_1236+09…  2004     7 TKY     y18_d        12     36
+ 8 PEN/TKY-2004/dc_2004_008_1243+09…  2004     8 TKY     y18_d        12     43
+ 9 PEN/TKY-2004/dc_2004_009_1250+09…  2004     9 TKY     y18_d        12     50
+10 PEN/TKY-2004/dc_2004_010_1257+09…  2004    10 TKY     y18_d        12     57
+# ... with 3,192 more rows
+#+end_example
 
 Let's see the distribution of hours (to get the largest sample of
 images taken in the same time).
@@ -21498,17 +21538,59 @@ df.images.selected %>% group_by(Hour) %>%
   as.data.frame
 #+END_SRC
 
-Okay, it looks like there is no even distribution... For now let's use
-only the images from 11am, which are the most frequent
+#+RESULTS:
+#+begin_example
+   Hour count
+1     3     1
+2     4    91
+3     5    92
+4     6   251
+5     7   302
+6     8    93
+7     9   301
+8    10   303
+9    11   103
+10   12   311
+11   13   322
+12   14   116
+13   15   309
+14   16   306
+15   17   104
+16   18    93
+17   19    88
+18   20    16
+#+end_example
+
+Okay, let's use images from 13h, since it is the one we have the most observations
 
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
-df.final <- df.images.selected %>% filter(Hour == 11) %>% select(Picture.Filename, Camera_ID, Dataset, Year, Day)
+df.final <- df.images.selected %>% filter(Hour == 13) %>% select(Picture.Filename, Camera_ID, Dataset, Year, Day)
 df.final
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+# A tibble: 322 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d… y18_d     TKY      2004    11
+ 2 PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d… y18_d     TKY      2004    12
+ 3 PEN/TKY-2004/dc_2004_013_1319+0900_TKY__y18_d… y18_d     TKY      2004    13
+ 4 PEN/TKY-2004/dc_2004_014_1326+0900_TKY__y18_d… y18_d     TKY      2004    14
+ 5 PEN/TKY-2004/dc_2004_015_1333+0900_TKY__y18_d… y18_d     TKY      2004    15
+ 6 PEN/TKY-2004/dc_2004_016_1340+0900_TKY__y18_d… y18_d     TKY      2004    16
+ 7 PEN/TKY-2004/dc_2004_017_1348+0900_TKY__y18_d… y18_d     TKY      2004    17
+ 8 PEN/TKY-2004/dc_2004_018_1355+0900_TKY__y18_d… y18_d     TKY      2004    18
+ 9 PEN/TKY-2004/dc_2004_063_1304+0900_TKY__y18_d… y18_d     TKY      2004    63
+10 PEN/TKY-2004/dc_2004_064_1309+0900_TKY__y18_d… y18_d     TKY      2004    64
+# ... with 312 more rows
+#+end_example
+
 ** Masks
 Let's read the mask into a dataframe. By inspecting the available
-masks manually, I eyeballed that there are no masks that fit in a very satisfiable way. I created my own mask, which is the one I will be using.
+masks manually, I eyeballed that there are no masks that fit in a very
+satisfiable way. I created my own mask, which is the one I will be
+using.
 
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
 df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
@@ -21519,6 +21601,12 @@ df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jp
     select(-Directory)
 df.masks
 #+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                  Mask                
+:   <chr>                          <chr>               
+: 1 masks/alles-tky-y18_d-mask.jpg alles_tky_y18_d_mask
 
 ** Computation and plot
 Let's now join the masks and pictures for the analysis.
@@ -21531,6 +21619,24 @@ df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
   ungroup()
 df.joined
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 322 x 7
+   Mask.Filename    Mask    Picture.Filename      Camera_ID Dataset  Year   Day
+   <chr>            <chr>   <chr>                 <chr>     <chr>   <int> <int>
+ 1 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    11
+ 2 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    12
+ 3 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    13
+ 4 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    14
+ 5 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    15
+ 6 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    16
+ 7 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    17
+ 8 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    18
+ 9 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    63
+10 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    64
+# ... with 312 more rows
+#+end_example
 
 Now let's merge masks and images and calculate metrics.
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
@@ -21558,6 +21664,328 @@ df.histograms <- df.joined %>%
   select(-Time)
 df.histograms
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+Image and Mask have different dimensions. Error.
+# A tibble: 32,200 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      0.        0.
+ 2 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      1.        0.
+ 3 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      2.        0.
+ 4 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      3.        0.
+ 5 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      4.        0.
+ 6 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      5.        0.
+ 7 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      6.        0.
+ 8 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      7.        0.
+ 9 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      8.        0.
+10 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      9.        0.
+# ... with 32,190 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
+#+end_example
 
 And now let's plot it.
 #+BEGIN_SRC R :session tky-2004 :results output graphics :file img/tky-2004.png :exports both :width 700 :height 400
@@ -21593,3 +22021,6 @@ df.histograms  %>%
   xlab("DOY") +
   ylab("Normalized size of bins")
 #+END_SRC
+
+#+RESULTS:
+[[file:img/tky-2004.png]]

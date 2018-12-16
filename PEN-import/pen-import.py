@@ -3,9 +3,9 @@ import glob
 from shutil import copyfile
 
 input_directory = '/Users/alles/ExtensionHD/PEN/TKY-2004'
-image_pattern = '/**/*.jpg'
+image_pattern = '/**/*y18*.jpg'
 
-output_directory = '/Users/alles/ExtensionHD/PEN/TKY-2004-imported'
+output_directory = '../PEN/TKY-2004'
 
 files = glob.glob(input_directory + image_pattern, recursive=True)
 for file in files:
