@@ -21433,8 +21433,12 @@ df.histograms  %>%
 
 These results are looking neat, but unfortunately the sample size is
 too small. I will compute the data from 2014 next.
-* STARTED Analysis of the TKY dataset (2004)
-** Session startup
+* DONE Analysis of the TKY dataset (2004)
+I discovered that the TKY dataset is divided in two sections, with
+different image sizes and masks. I will thus make two separate
+analysis.
+** First section
+*** Session startup
 Before we do anything, let's start by setting up the R session
 
 #+BEGIN_SRC R :session tky-2004
@@ -21446,7 +21450,7 @@ options(crayon.enabled = FALSE)
 
 #+RESULTS:
 
-** Dataset overview
+*** Dataset overview
 To get started with this dataset, let's take a look at the data that
 is available. Since the number of images on this dataset is quite
 large, I will analyze it from my external hard drive.
@@ -21586,7 +21590,7 @@ df.final
 # ... with 312 more rows
 #+end_example
 
-** Masks
+*** Masks
 Let's read the mask into a dataframe. By inspecting the available
 masks manually, I eyeballed that there are no masks that fit in a very
 satisfiable way. I created my own mask, which is the one I will be
@@ -21608,7 +21612,7 @@ df.masks
 :   <chr>                          <chr>               
 : 1 masks/alles-tky-y18_d-mask.jpg alles_tky_y18_d_mask
 
-** Computation and plot
+*** Computation and plot
 Let's now join the masks and pictures for the analysis.
 
 #+BEGIN_SRC R :session tky-2004 :results output :exports both
@@ -23023,5 +23027,1949 @@ df.histograms.part1  %>%
 
 #+RESULTS:
 [[file:img/tky-2004-part-1.png]]
+** Second section
+*** Session startup
+Before we do anything, let's start by setting up the R session
 
-Next, let's build the CPMs for doy 90 and above.
+#+BEGIN_SRC R :session tky-2004-2
+suppressMessages(library(tidyverse))
+suppressMessages(library(colorspace))
+suppressMessages(library(phenovisr))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+*** Dataset overview
+To get started with this dataset, let's take a look at the data that
+is available. Since the number of images on this dataset is quite
+large, I will analyze it from my external hard drive.
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY-2004"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 39,801 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_001_1207+09…  2004     1 TKY     y18_e        12      7
+ 3 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 4 PEN/TKY-2004/dc_2004_002_1216+09…  2004     2 TKY     y18_e        12     16
+ 5 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 6 PEN/TKY-2004/dc_2004_003_1225+09…  2004     3 TKY     y18_e        12     25
+ 7 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 8 PEN/TKY-2004/dc_2004_004_1234+09…  2004     4 TKY     y18_e        12     34
+ 9 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+10 PEN/TKY-2004/dc_2004_005_1243+09…  2004     5 TKY     y18_e        12     43
+# ... with 39,791 more rows
+#+end_example
+
+Let's see which camera IDs we have available.
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images %>% group_by(Camera_ID) %>%
+  summarize(count = n())
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 3 x 2
+:   Camera_ID count
+:   <chr>     <int>
+: 1 y18_d      3202
+: 2 y18_e      3265
+: 3 y18_u     33334
+
+Let's get only the pictures taken from the =y18_d= camera, which is
+the closest position to match our current masks
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images.selected <- df.images %>%
+  filter(Camera_ID == 'y18_d')
+
+df.images.selected
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,202 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 3 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 4 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 5 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+ 6 PEN/TKY-2004/dc_2004_006_1228+09…  2004     6 TKY     y18_d        12     28
+ 7 PEN/TKY-2004/dc_2004_007_1236+09…  2004     7 TKY     y18_d        12     36
+ 8 PEN/TKY-2004/dc_2004_008_1243+09…  2004     8 TKY     y18_d        12     43
+ 9 PEN/TKY-2004/dc_2004_009_1250+09…  2004     9 TKY     y18_d        12     50
+10 PEN/TKY-2004/dc_2004_010_1257+09…  2004    10 TKY     y18_d        12     57
+# ... with 3,192 more rows
+#+end_example
+
+Let's see the distribution of hours (to get the largest sample of
+images taken in the same time).
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images.selected %>% group_by(Hour) %>%
+  summarize(count = n()) %>%
+  ungroup() %>%
+  as.data.frame
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+   Hour count
+1     3     1
+2     4    91
+3     5    92
+4     6   251
+5     7   302
+6     8    93
+7     9   301
+8    10   303
+9    11   103
+10   12   311
+11   13   322
+12   14   116
+13   15   309
+14   16   306
+15   17   104
+16   18    93
+17   19    88
+18   20    16
+#+end_example
+
+Okay, let's use images from 13h, since it is the one we have the most
+observations. We also need to filter the images to consider only those
+from day 90 or more.
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.final <- df.images.selected %>% 
+  filter(Hour == 13) %>% 
+  filter(Day >= 90) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day)
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 301 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 PEN/TKY-2004/dc_2004_090_1300+0900_TKY__y18_d… y18_d     TKY      2004    90
+ 2 PEN/TKY-2004/dc_2004_090_1330+0900_TKY__y18_d… y18_d     TKY      2004    90
+ 3 PEN/TKY-2004/dc_2004_091_1300+0900_TKY__y18_d… y18_d     TKY      2004    91
+ 4 PEN/TKY-2004/dc_2004_091_1330+0900_TKY__y18_d… y18_d     TKY      2004    91
+ 5 PEN/TKY-2004/dc_2004_092_1300+0900_TKY__y18_d… y18_d     TKY      2004    92
+ 6 PEN/TKY-2004/dc_2004_092_1330+0900_TKY__y18_d… y18_d     TKY      2004    92
+ 7 PEN/TKY-2004/dc_2004_093_1300+0900_TKY__y18_d… y18_d     TKY      2004    93
+ 8 PEN/TKY-2004/dc_2004_093_1330+0900_TKY__y18_d… y18_d     TKY      2004    93
+ 9 PEN/TKY-2004/dc_2004_094_1300+0900_TKY__y18_d… y18_d     TKY      2004    94
+10 PEN/TKY-2004/dc_2004_094_1330+0900_TKY__y18_d… y18_d     TKY      2004    94
+# ... with 291 more rows
+#+end_example
+
+*** Masks
+Let's read the mask into a dataframe. By inspecting the available
+masks manually, I eyeballed that there are no masks that fit in a very
+satisfiable way. I created my own mask, which is the one I will be
+using.
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+    separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-Directory)
+df.masks
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+*** Computation and plot
+Let's now join the masks and pictures for the analysis.
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 301 x 7
+   Mask.Filename     Mask    Picture.Filename     Camera_ID Dataset  Year   Day
+   <chr>             <chr>   <chr>                <chr>     <chr>   <int> <int>
+ 1 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    90
+ 2 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    90
+ 3 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    91
+ 4 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    91
+ 5 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    92
+ 6 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    92
+ 7 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    93
+ 8 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    93
+ 9 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    94
+10 masks/dc_TKY_y18… dc_TKY… PEN/TKY-2004/dc_200… y18_d     TKY      2004    94
+# ... with 291 more rows
+#+end_example
+
+Now let's merge masks and images and calculate metrics.
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+gethist <- function(df, grain=100) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Processing image PEN/TKY-2004/dc_2004_090_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_090_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_091_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_091_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_092_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_092_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_093_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_093_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_094_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_094_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_095_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_095_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_096_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_096_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_097_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_097_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_098_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_098_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_099_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_100_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_100_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_101_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_101_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_102_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_102_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_103_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_103_1359+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_104_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_104_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_105_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_105_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_106_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_106_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_107_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_107_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_108_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_108_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_109_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_109_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_110_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_110_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_111_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_111_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_112_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_112_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_113_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_113_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_114_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_114_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_115_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_115_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_116_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_116_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_117_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_117_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_118_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_118_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_119_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_119_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_120_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_120_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_121_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_121_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_122_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_122_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_123_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_123_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_124_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_124_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_125_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_125_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_126_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_126_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_127_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_127_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_128_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_128_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_129_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_129_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_130_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_131_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_131_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_132_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_132_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_133_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_133_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_134_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_134_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_135_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_135_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_136_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_137_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_138_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_139_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_140_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_141_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_142_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_144_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_145_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_146_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_147_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_148_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_149_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_150_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_151_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_152_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_153_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_154_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_155_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_156_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_157_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_158_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_159_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_160_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_161_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_162_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_163_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_164_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_165_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_166_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_167_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_168_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_169_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_170_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_171_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_172_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_173_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_174_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_175_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_176_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_177_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_178_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_179_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_180_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_181_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_182_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_183_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_184_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_185_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_186_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_187_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_188_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_189_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_190_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_191_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_192_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_193_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_194_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_195_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_196_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_197_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_198_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_199_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_200_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_201_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_202_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_203_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_204_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_205_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_206_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_207_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_208_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_209_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_217_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_218_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_219_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_220_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_221_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_222_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_223_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_224_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_225_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_226_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_227_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_228_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_229_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_230_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_231_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_240_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_241_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_242_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_243_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_244_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_245_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_246_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_247_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_248_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_249_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_250_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_251_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_252_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_253_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_254_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_255_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_256_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_257_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_258_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_259_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_260_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_261_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_262_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_263_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_264_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_265_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_266_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_267_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_268_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_269_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_270_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_271_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_276_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_277_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_278_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_279_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_280_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_281_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_282_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_283_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_284_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_285_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_286_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_287_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_288_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_289_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_290_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_292_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_293_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_294_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_295_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_296_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_297_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_298_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_299_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_300_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_301_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_302_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_303_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_304_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_305_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_306_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_307_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_308_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_309_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_310_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_311_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_312_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_313_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_314_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_315_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_316_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_317_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_318_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_319_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_320_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_321_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_322_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_323_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_324_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_325_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_326_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_327_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_328_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_329_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_330_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_331_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_332_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_333_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_334_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_335_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_336_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_337_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_338_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_339_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_340_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_342_1306+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_342_1323+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_342_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_343_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_344_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_345_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_346_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_347_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_348_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_349_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_350_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_351_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_352_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_353_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_354_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_355_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_356_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_357_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_358_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_359_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_360_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_361_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_362_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_363_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_364_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_365_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_366_1330+0900_TKY__y18_d.jpg
+# A tibble: 30,100 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      0.        0.
+ 2 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      1.        0.
+ 3 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      2.        0.
+ 4 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      3.        0.
+ 5 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      4.        0.
+ 6 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      5.        0.
+ 7 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      6.        0.
+ 8 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      7.        0.
+ 9 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      8.        0.
+10 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      9.        0.
+# ... with 30,090 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot it.
+#+BEGIN_SRC R :session tky-2004-2 :results output graphics :file img/tky-2004-part-2.png :exports both :width 700 :height 400
+
+df.palette <- df.histograms %>%
+  mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+  mutate(Code = as.character(Color)) %>%
+  select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+  filter(Bin_value != 0) %>%
+  #filter(GCC_bin >= 30) %>%
+  #filter(GCC_bin <= 50) %>%
+  mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  scale_fill_manual(values = palette.list) +
+  geom_bar(stat='identity') +
+  theme_bw(base_size=16) +
+  theme(#axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(0, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  xlab("DOY") +
+  ylab("Normalized size of bins")
+#+END_SRC
+
+#+RESULTS:
+[[file:img/tky-2004-part-2.png]]
+
+I see that there are some days which have two or even three pictures
+for the same hour, and there are some days which have no pictures at
+all. I will probably need some pre-processing to determine which
+pictures to take into consideration.
+
+Let's take a look in the hourly distribution of pictures in our sample.
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  group_by(Hour) %>%
+  summarize(
+    total = n()
+  ) %>%
+  ungroup()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 18 x 2
+    Hour total
+   <int> <int>
+ 1     3     1
+ 2     4    91
+ 3     5    92
+ 4     6   251
+ 5     7   302
+ 6     8    93
+ 7     9   301
+ 8    10   303
+ 9    11   103
+10    12   311
+11    13   322
+12    14   116
+13    15   309
+14    16   306
+15    17   104
+16    18    93
+17    19    88
+18    20    16
+#+end_example
+
+I believe that if I consider images taken in between hours 12 and 13,
+I will be able to cover a larger amount of days. Let's try that.
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images.selected <- df.images %>% 
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12 | Hour == 13)
+
+df.images.selected
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 633 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 2 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 3 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+ 4 PEN/TKY-2004/dc_2004_006_1228+09…  2004     6 TKY     y18_d        12     28
+ 5 PEN/TKY-2004/dc_2004_007_1236+09…  2004     7 TKY     y18_d        12     36
+ 6 PEN/TKY-2004/dc_2004_008_1243+09…  2004     8 TKY     y18_d        12     43
+ 7 PEN/TKY-2004/dc_2004_009_1250+09…  2004     9 TKY     y18_d        12     50
+ 8 PEN/TKY-2004/dc_2004_010_1257+09…  2004    10 TKY     y18_d        12     57
+ 9 PEN/TKY-2004/dc_2004_011_1305+09…  2004    11 TKY     y18_d        13      5
+10 PEN/TKY-2004/dc_2004_012_1312+09…  2004    12 TKY     y18_d        13     12
+# ... with 623 more rows
+#+end_example
+
+Great. Now I will filter the resulting data.frame so that I have only
+one image per day. I will choose the first occurence in case there are
+multiple images for a single day.
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.images.unique <- df.images.selected %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+df.images.unique
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 289 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 2 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 3 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+ 4 PEN/TKY-2004/dc_2004_006_1228+09…  2004     6 TKY     y18_d        12     28
+ 5 PEN/TKY-2004/dc_2004_007_1236+09…  2004     7 TKY     y18_d        12     36
+ 6 PEN/TKY-2004/dc_2004_008_1243+09…  2004     8 TKY     y18_d        12     43
+ 7 PEN/TKY-2004/dc_2004_009_1250+09…  2004     9 TKY     y18_d        12     50
+ 8 PEN/TKY-2004/dc_2004_010_1257+09…  2004    10 TKY     y18_d        12     57
+ 9 PEN/TKY-2004/dc_2004_011_1305+09…  2004    11 TKY     y18_d        13      5
+10 PEN/TKY-2004/dc_2004_012_1312+09…  2004    12 TKY     y18_d        13     12
+# ... with 279 more rows
+#+end_example
+
+Now I have to remove the doys below 90
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.final <- df.images.unique %>%
+  filter(Day >= 90)
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 258 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_090_1200+09…  2004    90 TKY     y18_d        12      0
+ 2 PEN/TKY-2004/dc_2004_091_1200+09…  2004    91 TKY     y18_d        12      0
+ 3 PEN/TKY-2004/dc_2004_092_1200+09…  2004    92 TKY     y18_d        12      0
+ 4 PEN/TKY-2004/dc_2004_093_1200+09…  2004    93 TKY     y18_d        12      0
+ 5 PEN/TKY-2004/dc_2004_094_1200+09…  2004    94 TKY     y18_d        12      0
+ 6 PEN/TKY-2004/dc_2004_095_1200+09…  2004    95 TKY     y18_d        12      0
+ 7 PEN/TKY-2004/dc_2004_096_1200+09…  2004    96 TKY     y18_d        12      0
+ 8 PEN/TKY-2004/dc_2004_097_1200+09…  2004    97 TKY     y18_d        12      0
+ 9 PEN/TKY-2004/dc_2004_098_1200+09…  2004    98 TKY     y18_d        12      0
+10 PEN/TKY-2004/dc_2004_099_1300+09…  2004    99 TKY     y18_d        13      0
+# ... with 248 more rows
+#+end_example
+
+... and join it with the masks
+
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 258 x 9
+   Mask.Filename   Mask   Picture.Filename   Year   Day Dataset Camera_ID  Hour
+   <chr>           <chr>  <chr>             <int> <int> <chr>   <chr>     <int>
+ 1 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    90 TKY     y18_d        12
+ 2 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    91 TKY     y18_d        12
+ 3 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    92 TKY     y18_d        12
+ 4 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    93 TKY     y18_d        12
+ 5 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    94 TKY     y18_d        12
+ 6 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    95 TKY     y18_d        12
+ 7 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    96 TKY     y18_d        12
+ 8 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    97 TKY     y18_d        12
+ 9 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    98 TKY     y18_d        12
+10 masks/dc_TKY_y… dc_TK… PEN/TKY-2004/dc_…  2004    99 TKY     y18_d        13
+# ... with 248 more rows, and 1 more variable: Minute <int>
+#+end_example
+
+Now we have to calculate the histograms
+#+BEGIN_SRC R :session tky-2004-2 :results output :exports both
+gethist <- function(df, grain=100) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Processing image PEN/TKY-2004/dc_2004_090_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_091_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_092_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_093_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_094_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_095_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_096_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_097_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_098_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_099_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_100_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_101_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_102_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_103_1229+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_104_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_105_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_106_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_107_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_108_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_109_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_110_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_111_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_112_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_113_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_114_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_115_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_116_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_117_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_118_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_119_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_120_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_121_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_122_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_123_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_124_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_125_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_126_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_127_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_128_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_129_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_130_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_131_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_132_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_133_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_134_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_135_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_136_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_137_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_138_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_139_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_140_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_141_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_142_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_144_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_145_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_146_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_147_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_148_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_149_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_150_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_151_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_152_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_153_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_154_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_155_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_156_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_157_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_158_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_159_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_160_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_161_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_162_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_163_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_164_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_165_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_166_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_167_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_168_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_169_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_170_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_171_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_172_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_173_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_174_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_175_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_176_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_177_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_178_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_179_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_180_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_181_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_182_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_183_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_184_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_185_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_186_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_187_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_188_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_189_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_190_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_191_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_192_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_193_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_194_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_195_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_196_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_197_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_198_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_199_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_200_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_201_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_202_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_203_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_204_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_205_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_206_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_207_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_208_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_209_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_217_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_218_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_219_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_220_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_221_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_222_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_223_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_224_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_225_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_226_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_227_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_228_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_229_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_230_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_231_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_240_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_241_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_242_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_243_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_244_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_245_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_246_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_247_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_248_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_249_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_250_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_251_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_252_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_253_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_254_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_255_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_256_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_257_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_258_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_259_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_260_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_261_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_262_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_263_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_264_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_265_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_266_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_267_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_268_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_269_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_270_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_271_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_272_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_275_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_276_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_277_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_278_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_279_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_280_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_281_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_282_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_283_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_284_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_285_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_286_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_287_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_288_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_289_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_290_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_292_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_293_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_294_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_295_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_296_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_297_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_298_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_299_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_300_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_301_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_302_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_303_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_304_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_305_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_306_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_307_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_308_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_309_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_310_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_311_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_312_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_313_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_314_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_315_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_316_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_317_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_318_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_319_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_320_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_321_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_322_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_323_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_324_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_325_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_326_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_327_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_328_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_329_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_330_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_331_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_332_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_333_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_334_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_335_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_336_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_337_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_338_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_339_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_340_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_341_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_342_1306+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_343_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_344_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_345_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_346_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_347_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_348_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_349_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_350_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_351_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_352_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_353_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_354_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_355_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_356_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_357_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_358_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_359_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_360_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_361_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_362_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_363_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_364_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_365_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_366_1200+0900_TKY__y18_d.jpg
+# A tibble: 25,800 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      0.        0.
+ 2 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      1.        0.
+ 3 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      2.        0.
+ 4 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      3.        0.
+ 5 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      4.        0.
+ 6 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      5.        0.
+ 7 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      6.        0.
+ 8 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      7.        0.
+ 9 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      8.        0.
+10 PEN/TKY…  2004    90 TKY     y18_d     2272.  1704. 1.29e6      9.        0.
+# ... with 25,790 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
+#+end_example
+
+And finally plot the CPMs
+#+BEGIN_SRC R :session tky-2004-2 :results output graphics :file img/tky-2004-12pm-13pm.png :exports both :width 700 :height 400
+
+df.palette <- df.histograms %>%
+  mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+  mutate(Code = as.character(Color)) %>%
+  select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+  filter(Bin_value != 0) %>%
+  #filter(GCC_bin >= 30) %>%
+  #filter(GCC_bin <= 50) %>%
+  mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  scale_fill_manual(values = palette.list) +
+  geom_bar(stat='identity') +
+  theme_bw(base_size=16) +
+  theme(#axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(0, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  xlab("DOY") +
+  ylab("Normalized size of bins")
+#+END_SRC
+
+#+RESULTS:
+[[file:img/tky-2004-12pm-13pm.png]]
+** Merging two sections together
+I will merge the two sections together now. The idea is to use one
+mask (the smaller one) for images between doy 1 and 88 and the other
+mask for the remaining days. With that I expect to have a decent
+overview of the year of 2004.
+*** Session startup
+Before we do anything, let's start by setting up the R session
+
+#+BEGIN_SRC R :session tky-2004-full
+suppressMessages(library(tidyverse))
+suppressMessages(library(colorspace))
+suppressMessages(library(phenovisr))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+: FALSE
+
+*** Dataset overview
+Let's read all the images into the data frame
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY-2004"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 39,801 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_001_1207+09…  2004     1 TKY     y18_e        12      7
+ 3 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 4 PEN/TKY-2004/dc_2004_002_1216+09…  2004     2 TKY     y18_e        12     16
+ 5 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 6 PEN/TKY-2004/dc_2004_003_1225+09…  2004     3 TKY     y18_e        12     25
+ 7 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 8 PEN/TKY-2004/dc_2004_004_1234+09…  2004     4 TKY     y18_e        12     34
+ 9 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+10 PEN/TKY-2004/dc_2004_005_1243+09…  2004     5 TKY     y18_e        12     43
+# ... with 39,791 more rows
+#+end_example
+
+Now, we filter by the =y18_d= camera ID
+
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.images.selected <- df.images %>%
+  filter(Camera_ID == 'y18_d')
+
+df.images.selected
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 3,202 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 3 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 4 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 5 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+ 6 PEN/TKY-2004/dc_2004_006_1228+09…  2004     6 TKY     y18_d        12     28
+ 7 PEN/TKY-2004/dc_2004_007_1236+09…  2004     7 TKY     y18_d        12     36
+ 8 PEN/TKY-2004/dc_2004_008_1243+09…  2004     8 TKY     y18_d        12     43
+ 9 PEN/TKY-2004/dc_2004_009_1250+09…  2004     9 TKY     y18_d        12     50
+10 PEN/TKY-2004/dc_2004_010_1257+09…  2004    10 TKY     y18_d        12     57
+# ... with 3,192 more rows
+#+end_example
+
+Once again we will use the images from hours 12 and 13.
+
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.final <- df.images.selected %>% 
+  filter(Hour == 12 | Hour == 13) %>% 
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 289 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 PEN/TKY-2004/dc_2004_003_1206+0900_TKY__y18_d… y18_d     TKY      2004     3
+ 2 PEN/TKY-2004/dc_2004_004_1214+0900_TKY__y18_d… y18_d     TKY      2004     4
+ 3 PEN/TKY-2004/dc_2004_005_1221+0900_TKY__y18_d… y18_d     TKY      2004     5
+ 4 PEN/TKY-2004/dc_2004_006_1228+0900_TKY__y18_d… y18_d     TKY      2004     6
+ 5 PEN/TKY-2004/dc_2004_007_1236+0900_TKY__y18_d… y18_d     TKY      2004     7
+ 6 PEN/TKY-2004/dc_2004_008_1243+0900_TKY__y18_d… y18_d     TKY      2004     8
+ 7 PEN/TKY-2004/dc_2004_009_1250+0900_TKY__y18_d… y18_d     TKY      2004     9
+ 8 PEN/TKY-2004/dc_2004_010_1257+0900_TKY__y18_d… y18_d     TKY      2004    10
+ 9 PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d… y18_d     TKY      2004    11
+10 PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d… y18_d     TKY      2004    12
+# ... with 279 more rows
+#+end_example
+
+*** Masks
+Now I will read 2 masks, for the two separate sections. I will remove
+the invalid combinations (such as doy >= 90 and smaller mask) later on.
+
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    filter(
+      Mask.Filename == 'masks/alles-tky-y18_d-mask.jpg' | Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg'
+    ) %>%
+    separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-Directory)
+df.masks
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 2 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/alles-tky-y18_d-mask.jpg        alles_tky_y18_d_mask       
+: 2 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+*** Computation and plot
+Let's now join the masks and pictures for the analysis.
+
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 578 x 7
+   Mask.Filename    Mask    Picture.Filename      Camera_ID Dataset  Year   Day
+   <chr>            <chr>   <chr>                 <chr>     <chr>   <int> <int>
+ 1 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     3
+ 2 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     4
+ 3 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     5
+ 4 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     6
+ 5 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     7
+ 6 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     8
+ 7 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     9
+ 8 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    10
+ 9 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    11
+10 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    12
+# ... with 568 more rows
+#+end_example
+
+And filter off the combinations that make no sense
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.joined <- df.joined %>%
+  filter(Day != 89) %>%
+  filter(
+    (Mask == 'alles_tky_y18_d_mask' & Day <= 89) |
+    (Mask == 'dc_TKY_y18_d_mask_section_1' & Day >= 90)
+  )
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                           Mask Day
+1          alles_tky_y18_d_mask   3
+2          alles_tky_y18_d_mask   4
+3          alles_tky_y18_d_mask   5
+4          alles_tky_y18_d_mask   6
+5          alles_tky_y18_d_mask   7
+6          alles_tky_y18_d_mask   8
+7          alles_tky_y18_d_mask   9
+8          alles_tky_y18_d_mask  10
+9          alles_tky_y18_d_mask  11
+10         alles_tky_y18_d_mask  12
+11         alles_tky_y18_d_mask  13
+12         alles_tky_y18_d_mask  14
+13         alles_tky_y18_d_mask  15
+14         alles_tky_y18_d_mask  16
+15         alles_tky_y18_d_mask  17
+16         alles_tky_y18_d_mask  18
+17         alles_tky_y18_d_mask  60
+18         alles_tky_y18_d_mask  61
+19         alles_tky_y18_d_mask  62
+20         alles_tky_y18_d_mask  63
+21         alles_tky_y18_d_mask  64
+22         alles_tky_y18_d_mask  65
+23         alles_tky_y18_d_mask  66
+24         alles_tky_y18_d_mask  67
+25         alles_tky_y18_d_mask  68
+26         alles_tky_y18_d_mask  69
+27         alles_tky_y18_d_mask  70
+28         alles_tky_y18_d_mask  71
+29         alles_tky_y18_d_mask  72
+30         alles_tky_y18_d_mask  73
+31  dc_TKY_y18_d_mask_section_1  90
+32  dc_TKY_y18_d_mask_section_1  91
+33  dc_TKY_y18_d_mask_section_1  92
+34  dc_TKY_y18_d_mask_section_1  93
+35  dc_TKY_y18_d_mask_section_1  94
+36  dc_TKY_y18_d_mask_section_1  95
+37  dc_TKY_y18_d_mask_section_1  96
+38  dc_TKY_y18_d_mask_section_1  97
+39  dc_TKY_y18_d_mask_section_1  98
+40  dc_TKY_y18_d_mask_section_1  99
+41  dc_TKY_y18_d_mask_section_1 100
+42  dc_TKY_y18_d_mask_section_1 101
+43  dc_TKY_y18_d_mask_section_1 102
+44  dc_TKY_y18_d_mask_section_1 103
+45  dc_TKY_y18_d_mask_section_1 104
+46  dc_TKY_y18_d_mask_section_1 105
+47  dc_TKY_y18_d_mask_section_1 106
+48  dc_TKY_y18_d_mask_section_1 107
+49  dc_TKY_y18_d_mask_section_1 108
+50  dc_TKY_y18_d_mask_section_1 109
+51  dc_TKY_y18_d_mask_section_1 110
+52  dc_TKY_y18_d_mask_section_1 111
+53  dc_TKY_y18_d_mask_section_1 112
+54  dc_TKY_y18_d_mask_section_1 113
+55  dc_TKY_y18_d_mask_section_1 114
+56  dc_TKY_y18_d_mask_section_1 115
+57  dc_TKY_y18_d_mask_section_1 116
+58  dc_TKY_y18_d_mask_section_1 117
+59  dc_TKY_y18_d_mask_section_1 118
+60  dc_TKY_y18_d_mask_section_1 119
+61  dc_TKY_y18_d_mask_section_1 120
+62  dc_TKY_y18_d_mask_section_1 121
+63  dc_TKY_y18_d_mask_section_1 122
+64  dc_TKY_y18_d_mask_section_1 123
+65  dc_TKY_y18_d_mask_section_1 124
+66  dc_TKY_y18_d_mask_section_1 125
+67  dc_TKY_y18_d_mask_section_1 126
+68  dc_TKY_y18_d_mask_section_1 127
+69  dc_TKY_y18_d_mask_section_1 128
+70  dc_TKY_y18_d_mask_section_1 129
+71  dc_TKY_y18_d_mask_section_1 130
+72  dc_TKY_y18_d_mask_section_1 131
+73  dc_TKY_y18_d_mask_section_1 132
+74  dc_TKY_y18_d_mask_section_1 133
+75  dc_TKY_y18_d_mask_section_1 134
+76  dc_TKY_y18_d_mask_section_1 135
+77  dc_TKY_y18_d_mask_section_1 136
+78  dc_TKY_y18_d_mask_section_1 137
+79  dc_TKY_y18_d_mask_section_1 138
+80  dc_TKY_y18_d_mask_section_1 139
+81  dc_TKY_y18_d_mask_section_1 140
+82  dc_TKY_y18_d_mask_section_1 141
+83  dc_TKY_y18_d_mask_section_1 142
+84  dc_TKY_y18_d_mask_section_1 144
+85  dc_TKY_y18_d_mask_section_1 145
+86  dc_TKY_y18_d_mask_section_1 146
+87  dc_TKY_y18_d_mask_section_1 147
+88  dc_TKY_y18_d_mask_section_1 148
+89  dc_TKY_y18_d_mask_section_1 149
+90  dc_TKY_y18_d_mask_section_1 150
+91  dc_TKY_y18_d_mask_section_1 151
+92  dc_TKY_y18_d_mask_section_1 152
+93  dc_TKY_y18_d_mask_section_1 153
+94  dc_TKY_y18_d_mask_section_1 154
+95  dc_TKY_y18_d_mask_section_1 155
+96  dc_TKY_y18_d_mask_section_1 156
+97  dc_TKY_y18_d_mask_section_1 157
+98  dc_TKY_y18_d_mask_section_1 158
+99  dc_TKY_y18_d_mask_section_1 159
+100 dc_TKY_y18_d_mask_section_1 160
+101 dc_TKY_y18_d_mask_section_1 161
+102 dc_TKY_y18_d_mask_section_1 162
+103 dc_TKY_y18_d_mask_section_1 163
+104 dc_TKY_y18_d_mask_section_1 164
+105 dc_TKY_y18_d_mask_section_1 165
+106 dc_TKY_y18_d_mask_section_1 166
+107 dc_TKY_y18_d_mask_section_1 167
+108 dc_TKY_y18_d_mask_section_1 168
+109 dc_TKY_y18_d_mask_section_1 169
+110 dc_TKY_y18_d_mask_section_1 170
+111 dc_TKY_y18_d_mask_section_1 171
+112 dc_TKY_y18_d_mask_section_1 172
+113 dc_TKY_y18_d_mask_section_1 173
+114 dc_TKY_y18_d_mask_section_1 174
+115 dc_TKY_y18_d_mask_section_1 175
+116 dc_TKY_y18_d_mask_section_1 176
+117 dc_TKY_y18_d_mask_section_1 177
+118 dc_TKY_y18_d_mask_section_1 178
+119 dc_TKY_y18_d_mask_section_1 179
+120 dc_TKY_y18_d_mask_section_1 180
+121 dc_TKY_y18_d_mask_section_1 181
+122 dc_TKY_y18_d_mask_section_1 182
+123 dc_TKY_y18_d_mask_section_1 183
+124 dc_TKY_y18_d_mask_section_1 184
+125 dc_TKY_y18_d_mask_section_1 185
+126 dc_TKY_y18_d_mask_section_1 186
+127 dc_TKY_y18_d_mask_section_1 187
+128 dc_TKY_y18_d_mask_section_1 188
+129 dc_TKY_y18_d_mask_section_1 189
+130 dc_TKY_y18_d_mask_section_1 190
+131 dc_TKY_y18_d_mask_section_1 191
+132 dc_TKY_y18_d_mask_section_1 192
+133 dc_TKY_y18_d_mask_section_1 193
+134 dc_TKY_y18_d_mask_section_1 194
+135 dc_TKY_y18_d_mask_section_1 195
+136 dc_TKY_y18_d_mask_section_1 196
+137 dc_TKY_y18_d_mask_section_1 197
+138 dc_TKY_y18_d_mask_section_1 198
+139 dc_TKY_y18_d_mask_section_1 199
+140 dc_TKY_y18_d_mask_section_1 200
+141 dc_TKY_y18_d_mask_section_1 201
+142 dc_TKY_y18_d_mask_section_1 202
+143 dc_TKY_y18_d_mask_section_1 203
+144 dc_TKY_y18_d_mask_section_1 204
+145 dc_TKY_y18_d_mask_section_1 205
+146 dc_TKY_y18_d_mask_section_1 206
+147 dc_TKY_y18_d_mask_section_1 207
+148 dc_TKY_y18_d_mask_section_1 208
+149 dc_TKY_y18_d_mask_section_1 209
+150 dc_TKY_y18_d_mask_section_1 217
+151 dc_TKY_y18_d_mask_section_1 218
+152 dc_TKY_y18_d_mask_section_1 219
+153 dc_TKY_y18_d_mask_section_1 220
+154 dc_TKY_y18_d_mask_section_1 221
+155 dc_TKY_y18_d_mask_section_1 222
+156 dc_TKY_y18_d_mask_section_1 223
+157 dc_TKY_y18_d_mask_section_1 224
+158 dc_TKY_y18_d_mask_section_1 225
+159 dc_TKY_y18_d_mask_section_1 226
+160 dc_TKY_y18_d_mask_section_1 227
+161 dc_TKY_y18_d_mask_section_1 228
+162 dc_TKY_y18_d_mask_section_1 229
+163 dc_TKY_y18_d_mask_section_1 230
+164 dc_TKY_y18_d_mask_section_1 231
+165 dc_TKY_y18_d_mask_section_1 240
+166 dc_TKY_y18_d_mask_section_1 241
+167 dc_TKY_y18_d_mask_section_1 242
+168 dc_TKY_y18_d_mask_section_1 243
+169 dc_TKY_y18_d_mask_section_1 244
+170 dc_TKY_y18_d_mask_section_1 245
+171 dc_TKY_y18_d_mask_section_1 246
+172 dc_TKY_y18_d_mask_section_1 247
+173 dc_TKY_y18_d_mask_section_1 248
+174 dc_TKY_y18_d_mask_section_1 249
+175 dc_TKY_y18_d_mask_section_1 250
+176 dc_TKY_y18_d_mask_section_1 251
+177 dc_TKY_y18_d_mask_section_1 252
+178 dc_TKY_y18_d_mask_section_1 253
+179 dc_TKY_y18_d_mask_section_1 254
+180 dc_TKY_y18_d_mask_section_1 255
+181 dc_TKY_y18_d_mask_section_1 256
+182 dc_TKY_y18_d_mask_section_1 257
+183 dc_TKY_y18_d_mask_section_1 258
+184 dc_TKY_y18_d_mask_section_1 259
+185 dc_TKY_y18_d_mask_section_1 260
+186 dc_TKY_y18_d_mask_section_1 261
+187 dc_TKY_y18_d_mask_section_1 262
+188 dc_TKY_y18_d_mask_section_1 263
+189 dc_TKY_y18_d_mask_section_1 264
+190 dc_TKY_y18_d_mask_section_1 265
+191 dc_TKY_y18_d_mask_section_1 266
+192 dc_TKY_y18_d_mask_section_1 267
+193 dc_TKY_y18_d_mask_section_1 268
+194 dc_TKY_y18_d_mask_section_1 269
+195 dc_TKY_y18_d_mask_section_1 270
+196 dc_TKY_y18_d_mask_section_1 271
+197 dc_TKY_y18_d_mask_section_1 272
+198 dc_TKY_y18_d_mask_section_1 275
+199 dc_TKY_y18_d_mask_section_1 276
+200 dc_TKY_y18_d_mask_section_1 277
+201 dc_TKY_y18_d_mask_section_1 278
+202 dc_TKY_y18_d_mask_section_1 279
+203 dc_TKY_y18_d_mask_section_1 280
+204 dc_TKY_y18_d_mask_section_1 281
+205 dc_TKY_y18_d_mask_section_1 282
+206 dc_TKY_y18_d_mask_section_1 283
+207 dc_TKY_y18_d_mask_section_1 284
+208 dc_TKY_y18_d_mask_section_1 285
+209 dc_TKY_y18_d_mask_section_1 286
+210 dc_TKY_y18_d_mask_section_1 287
+211 dc_TKY_y18_d_mask_section_1 288
+212 dc_TKY_y18_d_mask_section_1 289
+213 dc_TKY_y18_d_mask_section_1 290
+214 dc_TKY_y18_d_mask_section_1 292
+215 dc_TKY_y18_d_mask_section_1 293
+216 dc_TKY_y18_d_mask_section_1 294
+217 dc_TKY_y18_d_mask_section_1 295
+218 dc_TKY_y18_d_mask_section_1 296
+219 dc_TKY_y18_d_mask_section_1 297
+220 dc_TKY_y18_d_mask_section_1 298
+221 dc_TKY_y18_d_mask_section_1 299
+222 dc_TKY_y18_d_mask_section_1 300
+223 dc_TKY_y18_d_mask_section_1 301
+224 dc_TKY_y18_d_mask_section_1 302
+225 dc_TKY_y18_d_mask_section_1 303
+226 dc_TKY_y18_d_mask_section_1 304
+227 dc_TKY_y18_d_mask_section_1 305
+228 dc_TKY_y18_d_mask_section_1 306
+229 dc_TKY_y18_d_mask_section_1 307
+230 dc_TKY_y18_d_mask_section_1 308
+231 dc_TKY_y18_d_mask_section_1 309
+232 dc_TKY_y18_d_mask_section_1 310
+233 dc_TKY_y18_d_mask_section_1 311
+234 dc_TKY_y18_d_mask_section_1 312
+235 dc_TKY_y18_d_mask_section_1 313
+236 dc_TKY_y18_d_mask_section_1 314
+237 dc_TKY_y18_d_mask_section_1 315
+238 dc_TKY_y18_d_mask_section_1 316
+239 dc_TKY_y18_d_mask_section_1 317
+240 dc_TKY_y18_d_mask_section_1 318
+241 dc_TKY_y18_d_mask_section_1 319
+242 dc_TKY_y18_d_mask_section_1 320
+243 dc_TKY_y18_d_mask_section_1 321
+244 dc_TKY_y18_d_mask_section_1 322
+245 dc_TKY_y18_d_mask_section_1 323
+246 dc_TKY_y18_d_mask_section_1 324
+247 dc_TKY_y18_d_mask_section_1 325
+248 dc_TKY_y18_d_mask_section_1 326
+249 dc_TKY_y18_d_mask_section_1 327
+250 dc_TKY_y18_d_mask_section_1 328
+251 dc_TKY_y18_d_mask_section_1 329
+252 dc_TKY_y18_d_mask_section_1 330
+253 dc_TKY_y18_d_mask_section_1 331
+254 dc_TKY_y18_d_mask_section_1 332
+255 dc_TKY_y18_d_mask_section_1 333
+256 dc_TKY_y18_d_mask_section_1 334
+257 dc_TKY_y18_d_mask_section_1 335
+258 dc_TKY_y18_d_mask_section_1 336
+259 dc_TKY_y18_d_mask_section_1 337
+260 dc_TKY_y18_d_mask_section_1 338
+261 dc_TKY_y18_d_mask_section_1 339
+262 dc_TKY_y18_d_mask_section_1 340
+263 dc_TKY_y18_d_mask_section_1 341
+264 dc_TKY_y18_d_mask_section_1 342
+265 dc_TKY_y18_d_mask_section_1 343
+266 dc_TKY_y18_d_mask_section_1 344
+267 dc_TKY_y18_d_mask_section_1 345
+268 dc_TKY_y18_d_mask_section_1 346
+269 dc_TKY_y18_d_mask_section_1 347
+270 dc_TKY_y18_d_mask_section_1 348
+271 dc_TKY_y18_d_mask_section_1 349
+272 dc_TKY_y18_d_mask_section_1 350
+273 dc_TKY_y18_d_mask_section_1 351
+274 dc_TKY_y18_d_mask_section_1 352
+275 dc_TKY_y18_d_mask_section_1 353
+276 dc_TKY_y18_d_mask_section_1 354
+277 dc_TKY_y18_d_mask_section_1 355
+278 dc_TKY_y18_d_mask_section_1 356
+279 dc_TKY_y18_d_mask_section_1 357
+280 dc_TKY_y18_d_mask_section_1 358
+281 dc_TKY_y18_d_mask_section_1 359
+282 dc_TKY_y18_d_mask_section_1 360
+283 dc_TKY_y18_d_mask_section_1 361
+284 dc_TKY_y18_d_mask_section_1 362
+285 dc_TKY_y18_d_mask_section_1 363
+286 dc_TKY_y18_d_mask_section_1 364
+287 dc_TKY_y18_d_mask_section_1 365
+288 dc_TKY_y18_d_mask_section_1 366
+#+end_example
+
+Now let's calculate metrics. Since the =phenovisr= mask is global, we
+need to do this operation in two parts.
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+
+gethist <- function(df, grain=100) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms.part1 <- df.joined %>%
+  filter(Day <= 89) %>%
+  do(gethist(.))
+
+df.histograms.part2 <- df.joined %>%
+  filter(Day >= 90) %>%
+  do(gethist(.))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Processing image PEN/TKY-2004/dc_2004_003_1206+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_004_1214+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_005_1221+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_006_1228+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_007_1236+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_008_1243+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_009_1250+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_010_1257+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_013_1319+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_014_1326+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_015_1333+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_016_1340+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_017_1348+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_018_1355+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_060_1248+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_061_1254+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_062_1259+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_063_1304+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_064_1309+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_065_1315+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_066_1320+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_067_1325+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_068_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_069_1336+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_070_1341+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_071_1346+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_072_1352+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_073_1357+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_090_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_091_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_092_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_093_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_094_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_095_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_096_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_097_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_098_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_099_1300+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_100_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_101_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_102_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_103_1229+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_104_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_105_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_106_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_107_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_108_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_109_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_110_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_111_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_112_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_113_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_114_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_115_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_116_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_117_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_118_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_119_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_120_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_121_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_122_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_123_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_124_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_125_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_126_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_127_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_128_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_129_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_130_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_131_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_132_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_133_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_134_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_135_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_136_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_137_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_138_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_139_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_140_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_141_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_142_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_144_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_145_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_146_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_147_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_148_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_149_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_150_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_151_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_152_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_153_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_154_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_155_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_156_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_157_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_158_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_159_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_160_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_161_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_162_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_163_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_164_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_165_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_166_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_167_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_168_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_169_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_170_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_171_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_172_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_173_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_174_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_175_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_176_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_177_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_178_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_179_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_180_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_181_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_182_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_183_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_184_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_185_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_186_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_187_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_188_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_189_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_190_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_191_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_192_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_193_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_194_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_195_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_196_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_197_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_198_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_199_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_200_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_201_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_202_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_203_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_204_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_205_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_206_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_207_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_208_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_209_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_217_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_218_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_219_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_220_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_221_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_222_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_223_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_224_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_225_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_226_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_227_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_228_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_229_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_230_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_231_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_240_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_241_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_242_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_243_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_244_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_245_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_246_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_247_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_248_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_249_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_250_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_251_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_252_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_253_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_254_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_255_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_256_1329+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_257_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_258_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_259_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_260_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_261_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_262_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_263_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_264_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_265_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_266_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_267_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_268_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_269_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_270_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_271_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_272_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_275_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_276_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_277_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_278_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_279_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_280_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_281_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_282_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_283_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_284_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_285_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_286_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_287_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_288_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_289_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_290_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_292_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_293_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_294_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_295_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_296_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_297_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_298_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_299_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_300_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_301_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_302_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_303_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_304_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_305_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_306_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_307_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_308_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_309_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_310_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_311_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_312_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_313_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_314_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_315_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_316_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_317_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_318_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_319_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_320_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_321_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_322_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_323_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_324_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_325_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_326_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_327_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_328_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_329_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_330_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_331_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_332_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_333_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_334_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_335_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_336_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_337_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_338_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_339_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_340_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_341_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_342_1306+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_343_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_344_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_345_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_346_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_347_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_348_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_349_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_350_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_351_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_352_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_353_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_354_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_355_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_356_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_357_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_358_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_359_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_360_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_361_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_362_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_363_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_364_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_365_1200+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_366_1200+0900_TKY__y18_d.jpg
+#+end_example
+
+Now we have to merge the two results
+#+BEGIN_SRC R :session tky-2004-full :results output :exports both
+df.histograms <- rbind(df.histograms.part1, df.histograms.part2) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 28,800 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      0.        0.
+ 2 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      1.        0.
+ 3 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      2.        0.
+ 4 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      3.        0.
+ 5 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      4.        0.
+ 6 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      5.        0.
+ 7 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      6.        0.
+ 8 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      7.        0.
+ 9 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      8.        0.
+10 PEN/TKY…  2004     3 TKY     y18_d     1600.  1200. 7.06e5      9.        0.
+# ... with 28,790 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot it.
+#+BEGIN_SRC R :session tky-2004-full :results output graphics :file img/tky-2004-full.png :exports both :width 700 :height 400
+
+df.palette <- df.histograms %>%
+  mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+  mutate(Code = as.character(Color)) %>%
+  select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+  filter(Bin_value != 0) %>%
+  mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  scale_fill_manual(values = palette.list) +
+  geom_bar(stat='identity') +
+  theme_bw(base_size=16) +
+  theme(#axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(0, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  xlab("DOY") +
+  ylab("Normalized size of bins")
+#+END_SRC
+
+#+RESULTS:
+[[file:img/tky-2004-full.png]]
