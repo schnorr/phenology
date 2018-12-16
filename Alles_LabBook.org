@@ -21667,308 +21667,1236 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
-Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_013_1319+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_014_1326+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_015_1333+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_016_1340+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_017_1348+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_018_1355+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_063_1304+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_064_1309+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_065_1315+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_066_1320+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_067_1325+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_068_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_069_1336+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_070_1341+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_071_1346+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_072_1352+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_073_1357+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_089_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_089_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_090_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_090_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_091_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_091_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_092_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_092_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_093_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_093_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_094_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_094_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_095_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_095_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_096_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_096_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_097_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_097_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_098_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_098_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_099_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_100_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_100_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_101_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_101_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_102_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_102_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_103_1329+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_103_1359+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_104_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_104_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_105_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_105_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_106_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_106_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_107_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_107_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_108_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_108_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_109_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_109_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_110_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_110_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_111_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_111_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_112_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_112_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_113_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_113_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_114_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_114_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_115_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_115_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_116_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_116_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_117_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_117_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_118_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_118_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_119_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_119_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_120_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_120_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_121_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_121_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_122_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_122_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_123_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_123_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_124_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_124_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_125_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_125_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_126_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_126_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_127_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_127_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_128_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_128_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_129_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_129_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_130_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_131_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_131_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_132_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_132_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_133_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_133_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_134_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_134_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_135_1300+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_135_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_136_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_137_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_138_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_139_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_140_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_141_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_142_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_144_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_145_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_146_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_147_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_148_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_149_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_150_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_151_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_152_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_153_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_154_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_155_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_156_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_157_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_158_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_159_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_160_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_161_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_162_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_163_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_164_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_165_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_166_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_167_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_168_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_169_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_170_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_171_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_172_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_173_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_174_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_175_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_176_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_177_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_178_1329+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_179_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_180_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_181_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_182_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_183_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_184_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_185_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_186_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_187_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_188_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_189_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_190_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_191_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_192_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_193_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_194_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_195_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_196_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_197_1329+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_198_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_199_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_200_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_201_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_202_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_203_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_204_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_205_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_206_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_207_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_208_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_209_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_217_1329+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_218_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_219_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_220_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_221_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_222_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_223_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_224_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_225_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_226_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_227_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_228_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_229_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_230_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_231_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_240_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_241_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_242_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_243_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_244_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_245_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_246_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_247_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_248_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_249_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_250_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_251_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_252_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_253_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_254_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_255_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_256_1329+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_257_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_258_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_259_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_260_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_261_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_262_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_263_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_264_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_265_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_266_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_267_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_268_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_269_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_270_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_271_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_276_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_277_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_278_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_279_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_280_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_281_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_282_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_283_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_284_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_285_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_286_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_287_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_288_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_289_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_290_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_292_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_293_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_294_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_295_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_296_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_297_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_298_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_299_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_300_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_301_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_302_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_303_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_304_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_305_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_306_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_307_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_308_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_309_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_310_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_311_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_312_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_313_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_314_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_315_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_316_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_317_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_318_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_319_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_320_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_321_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_322_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_323_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_324_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_325_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_326_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_327_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_328_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_329_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_330_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_331_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_332_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_333_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_334_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_335_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_336_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_337_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_338_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_339_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_340_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_342_1306+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_342_1323+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_342_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_343_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_344_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_345_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_346_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_347_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_348_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_349_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_350_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_351_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_352_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_353_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_354_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_355_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_356_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_357_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_358_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_359_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_360_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_361_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_362_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_363_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_364_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_365_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
+Image and Mask have different dimensions. Error.
+Processing image PEN/TKY-2004/dc_2004_366_1330+0900_TKY__y18_d.jpg
+Image has dimensions 2272x1704
+Mask has dimensions 1600x1200
 Image and Mask have different dimensions. Error.
 # A tibble: 32,200 x 15
    Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
@@ -21987,10 +22915,81 @@ Image and Mask have different dimensions. Error.
 #   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
 #+end_example
 
-And now let's plot it.
-#+BEGIN_SRC R :session tky-2004 :results output graphics :file img/tky-2004.png :exports both :width 700 :height 400
+It seems like this dataset has images of different dimensions. I added
+some logs in the =phenovisr= and verified that images from doy below
+89 are 1600x1200 and images from doy 89 and above are 2272x1704. Let's
+filter off the larger images (so that our current mask fits), then we
+can calculate the remaining histograms with another mask.
 
-df.palette <- df.histograms %>%
+#+BEGIN_SRC R :session tky-2004 :results output
+gethist <- function(df, grain=100) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms.part1 <- df.joined %>%
+  filter(Day < 89) %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms.part1
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Processing image PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_013_1319+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_014_1326+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_015_1333+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_016_1340+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_017_1348+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_018_1355+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_063_1304+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_064_1309+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_065_1315+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_066_1320+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_067_1325+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_068_1330+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_069_1336+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_070_1341+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_071_1346+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_072_1352+0900_TKY__y18_d.jpg
+Processing image PEN/TKY-2004/dc_2004_073_1357+0900_TKY__y18_d.jpg
+# A tibble: 1,900 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      0.        0.
+ 2 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      1.        0.
+ 3 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      2.        0.
+ 4 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      3.        0.
+ 5 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      4.        0.
+ 6 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      5.        0.
+ 7 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      6.        0.
+ 8 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      7.        0.
+ 9 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      8.        0.
+10 PEN/TKY…  2004    11 TKY     y18_d     1600.  1200. 7.06e5      9.        0.
+# ... with 1,890 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot it.
+#+BEGIN_SRC R :session tky-2004 :results output graphics :file img/tky-2004-part-1.png :exports both :width 700 :height 400
+
+df.palette <- df.histograms.part1 %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
   mutate(Code = as.character(Color)) %>%
   select(Color, Code)
@@ -21998,7 +22997,7 @@ df.palette <- df.histograms %>%
 palette.list <- as.character(df.palette$Color)
 names(palette.list) <- df.palette$Code
 
-df.histograms  %>%
+df.histograms.part1  %>%
   filter(Bin_value != 0) %>%
   filter(GCC_bin >= 30) %>%
   filter(GCC_bin <= 50) %>%
@@ -22023,4 +23022,6 @@ df.histograms  %>%
 #+END_SRC
 
 #+RESULTS:
-[[file:img/tky-2004.png]]
+[[file:img/tky-2004-part-1.png]]
+
+Next, let's build the CPMs for doy 90 and above.
