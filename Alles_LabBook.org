@@ -21130,7 +21130,7 @@ df.histograms  %>%
 
 #+RESULTS:
 [[file:img/gcc-mean-analysis.png]]
-* DONE Analysis of the TKY dataset (2003)
+* Analysis of the TKY dataset (2003)
 ** Session startup
 Before we do anything, let's start by setting up the R session
 
@@ -21433,7 +21433,7 @@ df.histograms  %>%
 
 These results are looking neat, but unfortunately the sample size is
 too small. I will compute the data from 2014 next.
-* DONE Analysis of the TKY dataset (2004)
+* Analysis of the TKY dataset (2004)
 I discovered that the TKY dataset is divided in two sections, with
 different image sizes and masks. I will thus make two separate
 analysis.
@@ -24973,3 +24973,716 @@ df.histograms  %>%
 
 #+RESULTS:
 [[file:img/tky-2004-full.png]]
+** Testing 2004-TKY with HSV palette
+For the previous experiments with the HSV color palette, I wasn't
+having much success. Later on, I discovered that it was basically
+because the PEG dataset (which I was using until then) was not
+actually good for visualizing patterns in color variation because the
+images are too similar across all the observations.
+
+In this section, I will revisit some analysis than I made previously
+(with not much success), to check whether anything changes.
+
+*** HSV with mean
+Session startup...
+#+BEGIN_SRC R :session hsv-tky :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Reading masks...
+#+begin_src R :session hsv-tky :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  filter(
+    Mask.Filename == 'masks/alles-tky-y18_d-mask.jpg' | Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg'
+  ) %>%
+  separate(Mask.Filename, sep="/", into=c("A", "Mask"), remove=FALSE) %>%
+  mutate(Mask = gsub(".jpg", "", Mask)) %>%
+  mutate(Mask = gsub("-", "_", Mask)) %>%
+  select(-A)
+df.masks
+#+end_src
+
+#+RESULTS:
+: # A tibble: 2 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/alles-tky-y18_d-mask.jpg        alles_tky_y18_d_mask       
+: 2 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Now we read all the images available
+
+#+BEGIN_SRC R :session hsv-tky :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY-2004"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 39,801 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_001_1207+09…  2004     1 TKY     y18_e        12      7
+ 3 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 4 PEN/TKY-2004/dc_2004_002_1216+09…  2004     2 TKY     y18_e        12     16
+ 5 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 6 PEN/TKY-2004/dc_2004_003_1225+09…  2004     3 TKY     y18_e        12     25
+ 7 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 8 PEN/TKY-2004/dc_2004_004_1234+09…  2004     4 TKY     y18_e        12     34
+ 9 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+10 PEN/TKY-2004/dc_2004_005_1243+09…  2004     5 TKY     y18_e        12     43
+# ... with 39,791 more rows
+#+end_example
+
+And filter them to get only the images that matter for this analysis
+#+BEGIN_SRC R :session hsv-tky :results output :exports both
+df.final <- df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12 | Hour == 13) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 289 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 PEN/TKY-2004/dc_2004_003_1206+0900_TKY__y18_d… y18_d     TKY      2004     3
+ 2 PEN/TKY-2004/dc_2004_004_1214+0900_TKY__y18_d… y18_d     TKY      2004     4
+ 3 PEN/TKY-2004/dc_2004_005_1221+0900_TKY__y18_d… y18_d     TKY      2004     5
+ 4 PEN/TKY-2004/dc_2004_006_1228+0900_TKY__y18_d… y18_d     TKY      2004     6
+ 5 PEN/TKY-2004/dc_2004_007_1236+0900_TKY__y18_d… y18_d     TKY      2004     7
+ 6 PEN/TKY-2004/dc_2004_008_1243+0900_TKY__y18_d… y18_d     TKY      2004     8
+ 7 PEN/TKY-2004/dc_2004_009_1250+0900_TKY__y18_d… y18_d     TKY      2004     9
+ 8 PEN/TKY-2004/dc_2004_010_1257+0900_TKY__y18_d… y18_d     TKY      2004    10
+ 9 PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d… y18_d     TKY      2004    11
+10 PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d… y18_d     TKY      2004    12
+# ... with 279 more rows
+#+end_example
+
+We then join the selected pictures with the masks, and filter off
+those combinations that make no sense.
+
+#+BEGIN_SRC R :session hsv-tky :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup() %>%
+  filter(Day != 89) %>%
+  filter(
+    (Mask == 'alles_tky_y18_d_mask' & Day <= 89) |
+    (Mask == 'dc_TKY_y18_d_mask_section_1' & Day >= 90)
+  )
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 288 x 7
+   Mask.Filename    Mask    Picture.Filename      Camera_ID Dataset  Year   Day
+   <chr>            <chr>   <chr>                 <chr>     <chr>   <int> <int>
+ 1 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     3
+ 2 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     4
+ 3 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     5
+ 4 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     6
+ 5 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     7
+ 6 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     8
+ 7 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     9
+ 8 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    10
+ 9 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    11
+10 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    12
+# ... with 278 more rows
+#+end_example
+
+Now let's calculate the mean histogram using =phenovisr=
+
+#+begin_src R :session hsv-tky :results output :exports both
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_mean_histogram(df %>% pull(Picture.Filename)) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms.part1 <- df.joined %>%
+  filter(Day <= 89) %>%
+  do(gethist(.))
+
+df.histograms.part2 <- df.joined %>%
+  filter(Day >= 90) %>%
+  do(gethist(.))
+
+df.histograms <- rbind(df.histograms.part1, df.histograms.part2) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 103,392 x 14
+   Name   Year   Day Dataset Camera_ID Width Height UnmaskedPixels     H HCount
+   <fct> <int> <int> <chr>   <chr>     <dbl>  <dbl>          <dbl> <dbl>  <dbl>
+ 1 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    1.    23.
+ 2 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    2.  9727.
+ 3 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    3. 11628.
+ 4 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    4.  5592.
+ 5 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    5. 26205.
+ 6 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    6.  4331.
+ 7 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    7.  4247.
+ 8 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    8.  3246.
+ 9 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    9. 30541.
+10 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.   10. 42489.
+# ... with 103,382 more rows, and 4 more variables: SMean <dbl>, VMean <dbl>,
+#   Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot the results
+#+begin_src R :session hsv-tky :results output graphics :file img/tky-2004-hsv.png :exports both :width 1400 :height 600
+df.palette <- df.histograms %>%
+    mutate(Color = hex(HSV(H, SMean, VMean))) %>%
+    mutate(Code = as.character(Color)) %>%
+    select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+    mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("DOY (2004)") +
+    ylab("Normalized size of bins")
+    #coord_flip() +
+    #coord_cartesian(ylim=c(2.5e+5, 2.6e+5)) +
+#+end_src
+
+#+RESULTS:
+[[file:img/tky-2004-hsv.png]]
+
+Okay, it looks like the results are finally looking good.
+*** HSV with mode
+Session startup...
+#+BEGIN_SRC R :session hsv-mode-tky :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Reading masks...
+#+begin_src R :session hsv-mode-tky :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  filter(
+    Mask.Filename == 'masks/alles-tky-y18_d-mask.jpg' | Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg'
+  ) %>%
+  separate(Mask.Filename, sep="/", into=c("A", "Mask"), remove=FALSE) %>%
+  mutate(Mask = gsub(".jpg", "", Mask)) %>%
+  mutate(Mask = gsub("-", "_", Mask)) %>%
+  select(-A)
+df.masks
+#+end_src
+
+#+RESULTS:
+: # A tibble: 2 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/alles-tky-y18_d-mask.jpg        alles_tky_y18_d_mask       
+: 2 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Now we read all the images available
+
+#+BEGIN_SRC R :session hsv-mode-tky :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY-2004"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 39,801 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_001_1207+09…  2004     1 TKY     y18_e        12      7
+ 3 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 4 PEN/TKY-2004/dc_2004_002_1216+09…  2004     2 TKY     y18_e        12     16
+ 5 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 6 PEN/TKY-2004/dc_2004_003_1225+09…  2004     3 TKY     y18_e        12     25
+ 7 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 8 PEN/TKY-2004/dc_2004_004_1234+09…  2004     4 TKY     y18_e        12     34
+ 9 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+10 PEN/TKY-2004/dc_2004_005_1243+09…  2004     5 TKY     y18_e        12     43
+# ... with 39,791 more rows
+#+end_example
+
+And filter them to get only the images that matter for this analysis
+#+BEGIN_SRC R :session hsv-mode-tky :results output :exports both
+df.final <- df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12 | Hour == 13) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 289 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 PEN/TKY-2004/dc_2004_003_1206+0900_TKY__y18_d… y18_d     TKY      2004     3
+ 2 PEN/TKY-2004/dc_2004_004_1214+0900_TKY__y18_d… y18_d     TKY      2004     4
+ 3 PEN/TKY-2004/dc_2004_005_1221+0900_TKY__y18_d… y18_d     TKY      2004     5
+ 4 PEN/TKY-2004/dc_2004_006_1228+0900_TKY__y18_d… y18_d     TKY      2004     6
+ 5 PEN/TKY-2004/dc_2004_007_1236+0900_TKY__y18_d… y18_d     TKY      2004     7
+ 6 PEN/TKY-2004/dc_2004_008_1243+0900_TKY__y18_d… y18_d     TKY      2004     8
+ 7 PEN/TKY-2004/dc_2004_009_1250+0900_TKY__y18_d… y18_d     TKY      2004     9
+ 8 PEN/TKY-2004/dc_2004_010_1257+0900_TKY__y18_d… y18_d     TKY      2004    10
+ 9 PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d… y18_d     TKY      2004    11
+10 PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d… y18_d     TKY      2004    12
+# ... with 279 more rows
+#+end_example
+
+We then join the selected pictures with the masks, and filter off
+those combinations that make no sense.
+
+#+BEGIN_SRC R :session hsv-mode-tky :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup() %>%
+  filter(Day != 89) %>%
+  filter(
+    (Mask == 'alles_tky_y18_d_mask' & Day <= 89) |
+    (Mask == 'dc_TKY_y18_d_mask_section_1' & Day >= 90)
+  )
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 288 x 7
+   Mask.Filename    Mask    Picture.Filename      Camera_ID Dataset  Year   Day
+   <chr>            <chr>   <chr>                 <chr>     <chr>   <int> <int>
+ 1 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     3
+ 2 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     4
+ 3 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     5
+ 4 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     6
+ 5 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     7
+ 6 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     8
+ 7 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     9
+ 8 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    10
+ 9 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    11
+10 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    12
+# ... with 278 more rows
+#+end_example
+
+Now let's calculate the mean histogram using =phenovisr=
+
+#+begin_src R :session hsv-mode-tky :results output :exports both
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_mode_histogram(df %>% pull(Picture.Filename)) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms.part1 <- df.joined %>%
+  filter(Day <= 89) %>%
+  do(gethist(.))
+
+df.histograms.part2 <- df.joined %>%
+  filter(Day >= 90) %>%
+  do(gethist(.))
+
+df.histograms <- rbind(df.histograms.part1, df.histograms.part2) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 103,392 x 14
+   Name   Year   Day Dataset Camera_ID Width Height UnmaskedPixels     H HCount
+   <fct> <int> <int> <chr>   <chr>     <dbl>  <dbl>          <dbl> <dbl>  <dbl>
+ 1 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    1.    23.
+ 2 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    2.  9727.
+ 3 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    3. 11628.
+ 4 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    4.  5592.
+ 5 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    5. 26205.
+ 6 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    6.  4331.
+ 7 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    7.  4247.
+ 8 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    8.  3246.
+ 9 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.    9. 30541.
+10 PEN/…  2004     3 TKY     y18_d     1600.  1200.        706368.   10. 42489.
+# ... with 103,382 more rows, and 4 more variables: SMode <dbl>, VMode <dbl>,
+#   Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot the results
+#+begin_src R :session hsv-mode-tky :results output graphics :file img/tky-2004-hsv-mode.png :exports both :width 1400 :height 600
+df.palette <- df.histograms %>%
+    mutate(Color = hex(HSV(H, SMode, VMode))) %>%
+    mutate(Code = as.character(Color)) %>%
+    select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+    mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("DOY(2004)") +
+    ylab("Normalized size of bins")
+#+end_src
+
+#+RESULTS:
+[[file:img/tky-2004-hsv-mode.png]]
+*** Pure HSV
+Session startup...
+#+BEGIN_SRC R :session hsv-pure-tky :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Reading masks...
+#+begin_src R :session hsv-pure-tky :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  filter(
+    Mask.Filename == 'masks/alles-tky-y18_d-mask.jpg' | Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg'
+  ) %>%
+  separate(Mask.Filename, sep="/", into=c("A", "Mask"), remove=FALSE) %>%
+  mutate(Mask = gsub(".jpg", "", Mask)) %>%
+  mutate(Mask = gsub("-", "_", Mask)) %>%
+  select(-A)
+df.masks
+#+end_src
+
+#+RESULTS:
+: # A tibble: 2 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/alles-tky-y18_d-mask.jpg        alles_tky_y18_d_mask       
+: 2 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Now we read all the images available
+
+#+BEGIN_SRC R :session hsv-pure-tky :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("PEN/TKY-2004"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 39,801 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 PEN/TKY-2004/dc_2004_001_1152+09…  2004     1 TKY     y18_d        11     52
+ 2 PEN/TKY-2004/dc_2004_001_1207+09…  2004     1 TKY     y18_e        12      7
+ 3 PEN/TKY-2004/dc_2004_002_1159+09…  2004     2 TKY     y18_d        11     59
+ 4 PEN/TKY-2004/dc_2004_002_1216+09…  2004     2 TKY     y18_e        12     16
+ 5 PEN/TKY-2004/dc_2004_003_1206+09…  2004     3 TKY     y18_d        12      6
+ 6 PEN/TKY-2004/dc_2004_003_1225+09…  2004     3 TKY     y18_e        12     25
+ 7 PEN/TKY-2004/dc_2004_004_1214+09…  2004     4 TKY     y18_d        12     14
+ 8 PEN/TKY-2004/dc_2004_004_1234+09…  2004     4 TKY     y18_e        12     34
+ 9 PEN/TKY-2004/dc_2004_005_1221+09…  2004     5 TKY     y18_d        12     21
+10 PEN/TKY-2004/dc_2004_005_1243+09…  2004     5 TKY     y18_e        12     43
+# ... with 39,791 more rows
+#+end_example
+
+And filter them to get only the images that matter for this analysis
+#+BEGIN_SRC R :session hsv-pure-tky :results output :exports both
+df.final <- df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12 | Hour == 13) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 289 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 PEN/TKY-2004/dc_2004_003_1206+0900_TKY__y18_d… y18_d     TKY      2004     3
+ 2 PEN/TKY-2004/dc_2004_004_1214+0900_TKY__y18_d… y18_d     TKY      2004     4
+ 3 PEN/TKY-2004/dc_2004_005_1221+0900_TKY__y18_d… y18_d     TKY      2004     5
+ 4 PEN/TKY-2004/dc_2004_006_1228+0900_TKY__y18_d… y18_d     TKY      2004     6
+ 5 PEN/TKY-2004/dc_2004_007_1236+0900_TKY__y18_d… y18_d     TKY      2004     7
+ 6 PEN/TKY-2004/dc_2004_008_1243+0900_TKY__y18_d… y18_d     TKY      2004     8
+ 7 PEN/TKY-2004/dc_2004_009_1250+0900_TKY__y18_d… y18_d     TKY      2004     9
+ 8 PEN/TKY-2004/dc_2004_010_1257+0900_TKY__y18_d… y18_d     TKY      2004    10
+ 9 PEN/TKY-2004/dc_2004_011_1305+0900_TKY__y18_d… y18_d     TKY      2004    11
+10 PEN/TKY-2004/dc_2004_012_1312+0900_TKY__y18_d… y18_d     TKY      2004    12
+# ... with 279 more rows
+#+end_example
+
+We then join the selected pictures with the masks, and filter off
+those combinations that make no sense.
+
+#+BEGIN_SRC R :session hsv-pure-tky :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup() %>%
+  filter(Day != 89) %>%
+  filter(
+    (Mask == 'alles_tky_y18_d_mask' & Day <= 89) |
+    (Mask == 'dc_TKY_y18_d_mask_section_1' & Day >= 90)
+  )
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 288 x 7
+   Mask.Filename    Mask    Picture.Filename      Camera_ID Dataset  Year   Day
+   <chr>            <chr>   <chr>                 <chr>     <chr>   <int> <int>
+ 1 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     3
+ 2 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     4
+ 3 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     5
+ 4 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     6
+ 5 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     7
+ 6 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     8
+ 7 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004     9
+ 8 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    10
+ 9 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    11
+10 masks/alles-tky… alles_… PEN/TKY-2004/dc_2004… y18_d     TKY      2004    12
+# ... with 278 more rows
+#+end_example
+
+#+begin_src R :session hsv-pure-tky :results output :exports both
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), vGrain) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms.part1 <- df.joined %>%
+  filter(Day <= 89) %>%
+  do(gethist(.))
+
+df.histograms.part2 <- df.joined %>%
+  filter(Day >= 90) %>%
+  do(gethist(.))
+
+df.histograms <- rbind(df.histograms.part1, df.histograms.part2) %>%
+  rename(H.count = Count) %>%
+  # V histogram is spread, let's gather it
+  gather(V, V.count, -Name, -Width, -Height, -Pixels, -H, -H.count) %>%
+  # Remove the V, convert to integer
+  mutate(V = as.integer(gsub("V", "", V))) %>%
+  # Map to [0,1], convert to double
+  mutate(V = as.numeric(round(V/9, 2))) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 1,033,920 x 14
+   Name    Year   Day Dataset Camera_ID Width Height Pixels     H H.count     V
+   <fct>  <int> <int> <chr>   <chr>     <int>  <int>  <int> <int>   <int> <dbl>
+ 1 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     1      23    0.
+ 2 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     2    9727    0.
+ 3 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     3   11628    0.
+ 4 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     4    5592    0.
+ 5 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     5   26205    0.
+ 6 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     6    4331    0.
+ 7 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     7    4247    0.
+ 8 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     8    3246    0.
+ 9 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     9   30541    0.
+10 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368    10   42489    0.
+# ... with 1,033,910 more rows, and 3 more variables: V.count <int>,
+#   Hour <int>, Minute <int>
+#+end_example
+
+We need to get rid of V values to work only with H.
+
+#+begin_src R :session hsv-pure-tky :results output :exports both
+df.pure.hsv <- df.histograms %>%
+    select(-V, -V.count) %>%
+    unique
+df.pure.hsv
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 103,392 x 12
+   Name    Year   Day Dataset Camera_ID Width Height Pixels     H H.count  Hour
+   <fct>  <int> <int> <chr>   <chr>     <int>  <int>  <int> <int>   <int> <int>
+ 1 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     1      23    12
+ 2 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     2    9727    12
+ 3 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     3   11628    12
+ 4 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     4    5592    12
+ 5 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     5   26205    12
+ 6 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     6    4331    12
+ 7 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     7    4247    12
+ 8 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     8    3246    12
+ 9 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368     9   30541    12
+10 PEN/T…  2004     3 TKY     y18_d      1600   1200 706368    10   42489    12
+# ... with 103,382 more rows, and 1 more variable: Minute <int>
+#+end_example
+
+And now let's plot the results
+#+begin_src R :session hsv-pure-tky :results output graphics :file img/tky-2004-pure-hsv.png :exports both :width 1400 :height 600
+palette <- expand.grid(
+    H = seq(0, 359),
+    S = 1,
+    V = 1) %>%
+    # The color code
+    mutate(Color.Code = as.factor(H)) %>%
+    # The color itself
+    mutate(Color = hex(HSV(H, S, V))) %>%
+    as_tibble
+
+palette.list <- as.character(palette$Color)
+names(palette.list) <- palette$Color.Code
+
+df.pure.hsv %>%
+    mutate(Color.Code = H) %>%    
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("DOY (2004)") +
+    ylab("Normalized size of bins")
+#+end_src
+
+#+RESULTS:
+[[file:img/tky-2004-pure-hsv.png]]
