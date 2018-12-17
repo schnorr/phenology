@@ -8,7 +8,7 @@ image_pattern = '/**/*y18*.jpg'
 output_directory = '../PEN/TKY-2004'
 
 files = glob.glob(input_directory + image_pattern, recursive=True)
-for file in files:
+for index, file in enumerate(files):
   output_file = os.path.join(output_directory, file.split('/')[-1])
   copyfile(file, os.path.join(output_directory,file.split('/')[-1]))
-  print('Copied file ' + file + ' to ' + output_file)
+  print('Copied file ' + file + ' to ' + output_file + ' (' + str(index) + '/' + str(len(files)-1) + ')')
