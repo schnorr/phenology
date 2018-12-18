@@ -26982,7 +26982,7 @@ Processing image PEN/tky-2005-y18_d-imported/dc_2005_365_1330+0900_TKY__y18_d.jp
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2005-gcc-mean :results output graphics :file img/tky-2005-gcc-mean.png :exports both :width 700 :height 400
+#+BEGIN_SRC R :session tky-2005-gcc-mean :results output graphics :file img/tky-2005-gcc-mean.png :exports both :width 1400 :height 800
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
