@@ -27329,7 +27329,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2006-hsv-h :results output graphics :file img/tky-2006-hsv-h.png :exports both :width 1400 :height 8100
+#+begin_src R :session tky-2006-hsv-h :results output graphics :file img/tky-2006-hsv-h.png :exports both :width 1400 :height 800
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -27566,7 +27566,7 @@ df.histograms  %>%
           legend.box.margin = margin(0,0,0,0),
           legend.title = element_blank()) +
     guides(fill = guide_legend(nrow = 1)) +
-    xlab("DOY (2005)") +
+    xlab("DOY (2006)") +
     ylab("Normalized size of bins")
     #coord_flip() +
     #coord_cartesian(ylim=c(2.5e+5, 2.6e+5)) +
@@ -28314,6 +28314,1312 @@ df.histograms  %>%
 
 #+RESULTS:
 [[file:img/tky-2006-gcc-mean.png]]
+
+** Year 2007
+Let's make an analysis of the year of 2007
+*** Dataset overview
+Startup...
+#+BEGIN_SRC R :session tky-overview :results output :exports both
+suppressMessages(library(tidyverse))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Now let's read the images we have into a tibble
+#+BEGIN_SRC R :session tky-overview :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("/Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 2,982 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         7     30
+ 2 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         9      0
+ 3 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        10     30
+ 4 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        12      0
+ 5 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        13     30
+ 6 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        15      0
+ 7 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        16     30
+ 8 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         7     30
+ 9 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         9      0
+10 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d        10     30
+# ... with 2,972 more rows
+#+end_example
+
+Let's check the time distribution
+#+BEGIN_SRC R :session tky-overview :results output :exports both
+df.images %>%
+  group_by(Hour, Minute) %>%
+  summarize(
+    total = n()
+  ) %>%
+  ungroup() %>%
+  as.data.frame
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+   Hour Minute total
+1     6      0   230
+2     7     30   359
+3     8     47     1
+4     9      0   359
+5     9     14     1
+6     9     30     1
+7     9     52     1
+8    10     30   358
+9    10     31     3
+10   12      0   361
+11   12      1     1
+12   13     30   358
+13   15      0   359
+14   16     30   358
+15   16     31     1
+16   18      0   230
+17   20      6     1
+#+end_example
+
+For this dataset, I will use the images taken at 12:00.
+
+*** HSV, static S and static V
+Session startup
+#+BEGIN_SRC R :session tky-2007-hsv-h :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Reading masks...
+#+begin_src R :session tky-2007-hsv-h :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+  separate(Mask.Filename, sep="/", into=c("A", "Mask"), remove=FALSE) %>%
+  mutate(Mask = gsub(".jpg", "", Mask)) %>%
+  mutate(Mask = gsub("-", "_", Mask)) %>%
+  select(-A)
+df.masks
+#+end_src
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Now we read all the images available
+#+BEGIN_SRC R :session tky-2007-hsv-h :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("/Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 2,982 x 10
+   Picture.Filename       A     B     C      Year   Day Dataset Camera_ID  Hour
+   <chr>                  <chr> <chr> <chr> <int> <int> <chr>   <chr>     <int>
+ 1 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d         7
+ 2 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d         9
+ 3 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d        10
+ 4 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d        12
+ 5 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d        13
+ 6 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d        15
+ 7 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     1 TKY     y18_d        16
+ 8 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     2 TKY     y18_d         7
+ 9 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     2 TKY     y18_d         9
+10 /Volumes/ExtensionHD/… ""    Volu… Exte…  2007     2 TKY     y18_d        10
+# ... with 2,972 more rows, and 1 more variable: Minute <int>
+#+end_example
+
+And filter them to get only the images that matter for this analysis
+#+BEGIN_SRC R :session tky-2007-hsv-h :results output :exports both
+df.final <- df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12) %>% 
+  filter(Minute == 0) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 361 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     1
+ 2 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     2
+ 3 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     3
+ 4 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     4
+ 5 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     5
+ 6 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     6
+ 7 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     7
+ 8 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     8
+ 9 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     9
+10 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007    10
+# ... with 351 more rows
+#+end_example
+
+We then join the selected pictures with the masks
+
+#+BEGIN_SRC R :session tky-2007-hsv-h :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 361 x 7
+   Mask.Filename    Mask   Picture.Filename       Camera_ID Dataset  Year   Day
+   <chr>            <chr>  <chr>                  <chr>     <chr>   <int> <int>
+ 1 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     1
+ 2 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     2
+ 3 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     3
+ 4 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     4
+ 5 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     5
+ 6 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     6
+ 7 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     7
+ 8 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     8
+ 9 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     9
+10 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007    10
+# ... with 351 more rows
+#+end_example
+
+#+begin_src R :session tky-2007-hsv-h :results output :exports both
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_double_histogram(phenovis_H(), df %>% pull(Picture.Filename), vGrain) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  rename(H.count = Count) %>%
+  # V histogram is spread, let's gather it
+  gather(V, V.count, -Name, -Width, -Height, -Pixels, -H, -H.count) %>%
+  # Remove the V, convert to integer
+  mutate(V = as.integer(gsub("V", "", V))) %>%
+  # Map to [0,1], convert to double
+  mutate(V = as.numeric(round(V/9, 2))) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 1,295,990 x 14
+   Name    Year   Day Dataset Camera_ID Width Height Pixels     H H.count     V
+   <fct>  <int> <int> <chr>   <chr>     <int>  <int>  <int> <int>   <int> <dbl>
+ 1 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     1       2    0.
+ 2 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     2     640    0.
+ 3 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     3    1983    0.
+ 4 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     4     817    0.
+ 5 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     5    7725    0.
+ 6 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     6     443    0.
+ 7 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     7     152    0.
+ 8 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     8      40    0.
+ 9 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     9    8189    0.
+10 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6    10    8826    0.
+# ... with 1,295,980 more rows, and 3 more variables: V.count <int>,
+#   Hour <int>, Minute <int>
+#+end_example
+
+We need to get rid of V values to work only with H.
+
+#+begin_src R :session tky-2007-hsv-h :results output :exports both
+df.pure.hsv <- df.histograms %>%
+    select(-V, -V.count) %>%
+    unique
+df.pure.hsv
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 129,599 x 12
+   Name    Year   Day Dataset Camera_ID Width Height Pixels     H H.count  Hour
+   <fct>  <int> <int> <chr>   <chr>     <int>  <int>  <int> <int>   <int> <int>
+ 1 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     1       2    12
+ 2 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     2     640    12
+ 3 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     3    1983    12
+ 4 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     4     817    12
+ 5 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     5    7725    12
+ 6 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     6     443    12
+ 7 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     7     152    12
+ 8 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     8      40    12
+ 9 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6     9    8189    12
+10 /Volu…  2007     1 TKY     y18_d      2272   1704 1.29e6    10    8826    12
+# ... with 129,589 more rows, and 1 more variable: Minute <int>
+#+end_example
+
+And now let's plot the results
+#+begin_src R :session tky-2007-hsv-h :results output graphics :file img/tky-2007-hsv-h.png :exports both :width 1400 :height 800
+palette <- expand.grid(
+    H = seq(0, 359),
+    S = 1,
+    V = 1) %>%
+    # The color code
+    mutate(Color.Code = as.factor(H)) %>%
+    # The color itself
+    mutate(Color = hex(HSV(H, S, V))) %>%
+    as_tibble
+
+palette.list <- as.character(palette$Color)
+names(palette.list) <- palette$Color.Code
+
+df.pure.hsv %>%
+    mutate(Color.Code = H) %>%    
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("DOY (2007)") +
+    ylab("Normalized size of bins")
+#+end_src
+
+#+RESULTS:
+[[file:img/tky-2007-hsv-h.png]]
+
+*** HSV with mean histogram
+Session startup...
+#+BEGIN_SRC R :session tky-2007-hsv-mean :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Reading masks...
+#+begin_src R :session tky-2007-hsv-mean :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+  separate(Mask.Filename, sep="/", into=c("A", "Mask"), remove=FALSE) %>%
+  mutate(Mask = gsub(".jpg", "", Mask)) %>%
+  mutate(Mask = gsub("-", "_", Mask)) %>%
+  select(-A)
+df.masks
+#+end_src
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Now we read all the images available
+
+#+BEGIN_SRC R :session tky-2007-hsv-mean :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("/Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 2,982 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         7     30
+ 2 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         9      0
+ 3 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        10     30
+ 4 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        12      0
+ 5 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        13     30
+ 6 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        15      0
+ 7 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        16     30
+ 8 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         7     30
+ 9 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         9      0
+10 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d        10     30
+# ... with 2,972 more rows
+#+end_example
+
+And filter them to get only the images that matter for this analysis
+#+BEGIN_SRC R :session tky-2007-hsv-mean :results output :exports both
+df.final <- df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 362 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     1
+ 2 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     2
+ 3 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     3
+ 4 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     4
+ 5 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     5
+ 6 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     6
+ 7 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     7
+ 8 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     8
+ 9 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     9
+10 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007    10
+# ... with 352 more rows
+#+end_example
+
+We then join the selected pictures with the masks
+
+#+BEGIN_SRC R :session tky-2007-hsv-mean :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 362 x 7
+   Mask.Filename    Mask   Picture.Filename       Camera_ID Dataset  Year   Day
+   <chr>            <chr>  <chr>                  <chr>     <chr>   <int> <int>
+ 1 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     1
+ 2 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     2
+ 3 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     3
+ 4 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     4
+ 5 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     5
+ 6 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     6
+ 7 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     7
+ 8 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     8
+ 9 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     9
+10 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007    10
+# ... with 352 more rows
+#+end_example
+
+Now let's calculate the mean histogram using =phenovisr=
+
+#+begin_src R :session tky-2007-hsv-mean :results output :exports both
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_mean_histogram(df %>% pull(Picture.Filename)) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 129,958 x 14
+   Name   Year   Day Dataset Camera_ID Width Height UnmaskedPixels     H HCount
+   <fct> <int> <int> <chr>   <chr>     <dbl>  <dbl>          <dbl> <dbl>  <dbl>
+ 1 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    1.     2.
+ 2 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    2.   640.
+ 3 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    3.  1983.
+ 4 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    4.   817.
+ 5 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    5.  7725.
+ 6 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    6.   443.
+ 7 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    7.   152.
+ 8 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    8.    40.
+ 9 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    9.  8189.
+10 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.   10.  8826.
+# ... with 129,948 more rows, and 4 more variables: SMean <dbl>, VMean <dbl>,
+#   Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot the results
+#+begin_src R :session tky-2007-hsv-mean :results output graphics :file img/tky-2007-hsv-mean.png :exports both :width 1400 :height 800
+df.palette <- df.histograms %>%
+    mutate(Color = hex(HSV(H, SMean, VMean))) %>%
+    mutate(Code = as.character(Color)) %>%
+    select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+    mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(#axis.ticks = element_blank(),
+          #axis.text = element_blank(),
+          plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("DOY (2007)") +
+    ylab("Normalized size of bins")
+    #coord_flip() +
+    #coord_cartesian(ylim=c(2.5e+5, 2.6e+5)) +
+#+end_src
+
+#+RESULTS:
+[[file:img/tky-2007-hsv-mean.png]]
+
+*** HSV with mode histogram
+Session startup...
+#+BEGIN_SRC R :session tky-2007-hsv-mode :results output :exports both
+suppressMessages(library(tidyverse))
+suppressMessages(library(phenovisr))
+suppressMessages(library(colorspace))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Reading masks...
+#+begin_src R :session tky-2007-hsv-mode :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+  separate(Mask.Filename, sep="/", into=c("A", "Mask"), remove=FALSE) %>%
+  mutate(Mask = gsub(".jpg", "", Mask)) %>%
+  mutate(Mask = gsub("-", "_", Mask)) %>%
+  select(-A)
+df.masks
+#+end_src
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Now we read all the images available
+
+#+BEGIN_SRC R :session tky-2007-hsv-mode :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("/Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 2,982 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         7     30
+ 2 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         9      0
+ 3 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        10     30
+ 4 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        12      0
+ 5 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        13     30
+ 6 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        15      0
+ 7 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        16     30
+ 8 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         7     30
+ 9 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         9      0
+10 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d        10     30
+# ... with 2,972 more rows
+#+end_example
+
+And filter them to get only the images that matter for this analysis
+#+BEGIN_SRC R :session tky-2007-hsv-mode :results output :exports both
+df.final <- df.images %>%
+  filter(Camera_ID == 'y18_d') %>%
+  filter(Hour == 12) %>%
+  filter(Minute == 00) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 361 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     1
+ 2 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     2
+ 3 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     3
+ 4 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     4
+ 5 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     5
+ 6 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     6
+ 7 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     7
+ 8 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     8
+ 9 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     9
+10 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007    10
+# ... with 351 more rows
+#+end_example
+
+We then join the selected pictures with the masks
+
+#+BEGIN_SRC R :session tky-2007-hsv-mode :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 361 x 7
+   Mask.Filename    Mask   Picture.Filename       Camera_ID Dataset  Year   Day
+   <chr>            <chr>  <chr>                  <chr>     <chr>   <int> <int>
+ 1 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     1
+ 2 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     2
+ 3 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     3
+ 4 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     4
+ 5 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     5
+ 6 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     6
+ 7 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     7
+ 8 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     8
+ 9 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     9
+10 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007    10
+# ... with 351 more rows
+#+end_example
+
+Now let's calculate the mean histogram using =phenovisr=
+
+#+begin_src R :session tky-2007-hsv-mode :results output :exports both
+gethist <- function(df, vGrain=10) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_HSV_mode_histogram(df %>% pull(Picture.Filename)) %>%
+        filter(H != 0) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+end_src
+
+#+RESULTS:
+#+begin_example
+# A tibble: 129,599 x 14
+   Name   Year   Day Dataset Camera_ID Width Height UnmaskedPixels     H HCount
+   <fct> <int> <int> <chr>   <chr>     <dbl>  <dbl>          <dbl> <dbl>  <dbl>
+ 1 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    1.     2.
+ 2 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    2.   640.
+ 3 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    3.  1983.
+ 4 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    4.   817.
+ 5 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    5.  7725.
+ 6 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    6.   443.
+ 7 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    7.   152.
+ 8 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    8.    40.
+ 9 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.    9.  8189.
+10 /Vol…  2007     1 TKY     y18_d     2272.  1704.       1288929.   10.  8826.
+# ... with 129,589 more rows, and 4 more variables: SMode <dbl>, VMode <dbl>,
+#   Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot the results
+#+begin_src R :session tky-2007-hsv-mode :results output graphics :file img/tky-2007-hsv-mode.png :exports both :width 1400 :height 800
+df.palette <- df.histograms %>%
+    mutate(Color = hex(HSV(H, SMode, VMode))) %>%
+    mutate(Code = as.character(Color)) %>%
+    select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+    mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    scale_fill_manual(values = palette.list) +
+    geom_bar(stat='identity') +
+    theme_bw(base_size=16) +
+    theme(plot.margin = unit(c(0,0,0,0), "cm"),
+          legend.spacing = unit(0, "mm"),
+          panel.grid = element_blank(),
+          legend.position = "none",
+          legend.justification = "left",
+          legend.box.spacing = unit(0, "pt"),
+          legend.box.margin = margin(0,0,0,0),
+          legend.title = element_blank()) +
+    guides(fill = guide_legend(nrow = 1)) +
+    xlab("DOY(2007)") +
+    ylab("Normalized size of bins")
+#+end_src
+
+#+RESULTS:
+[[file:img/tky-2007-hsv-mode.png]]
+
+*** GCC with mean color
+Let's start by setting up the R session
+#+BEGIN_SRC R :session tky-2007-gcc-mean
+suppressMessages(library(tidyverse))
+suppressMessages(library(colorspace))
+suppressMessages(library(phenovisr))
+options(crayon.enabled = FALSE)
+#+END_SRC
+
+#+RESULTS:
+
+Let's read all the images into the data frame
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output :exports both
+df.images <- tibble(Picture.Filename=list.files(c("/Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported"), recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+  separate(Picture.Filename, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.images
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 2,982 x 7
+   Picture.Filename                   Year   Day Dataset Camera_ID  Hour Minute
+   <chr>                             <int> <int> <chr>   <chr>     <int>  <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         7     30
+ 2 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d         9      0
+ 3 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        10     30
+ 4 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        12      0
+ 5 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        13     30
+ 6 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        15      0
+ 7 /Volumes/ExtensionHD/PEN/tky-200…  2007     1 TKY     y18_d        16     30
+ 8 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         7     30
+ 9 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d         9      0
+10 /Volumes/ExtensionHD/PEN/tky-200…  2007     2 TKY     y18_d        10     30
+# ... with 2,972 more rows
+#+end_example
+
+Now, we filter by the desired time of the day
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output :exports both
+df.final <- df.images %>% 
+  filter(Hour == 12) %>% 
+  filter(Minute == 00) %>%
+  select(Picture.Filename, Camera_ID, Dataset, Year, Day) %>%
+  group_by(Day) %>%
+  slice(1) %>%
+  ungroup()
+df.final
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 361 x 5
+   Picture.Filename                               Camera_ID Dataset  Year   Day
+   <chr>                                          <chr>     <chr>   <int> <int>
+ 1 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     1
+ 2 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     2
+ 3 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     3
+ 4 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     4
+ 5 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     5
+ 6 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     6
+ 7 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     7
+ 8 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     8
+ 9 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007     9
+10 /Volumes/ExtensionHD/PEN/tky-2007-y18_d-impor… y18_d     TKY      2007    10
+# ... with 351 more rows
+#+end_example
+
+Reading the mask...
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output :exports both
+df.masks <- tibble(Mask.Filename=list.files("masks", recursive=TRUE, pattern="jpg", full.names=TRUE)) %>%
+    filter(Mask.Filename == 'masks/dc_TKY_y18_d_mask_section_1.jpg') %>%
+    separate(Mask.Filename, sep="/", into=c("Directory", "Mask"), remove=FALSE) %>%
+    mutate(Mask = gsub(".jpg", "", Mask)) %>%
+    mutate(Mask = gsub("-", "_", Mask)) %>%
+    select(-Directory)
+df.masks
+#+END_SRC
+
+#+RESULTS:
+: # A tibble: 1 x 2
+:   Mask.Filename                         Mask                       
+:   <chr>                                 <chr>                      
+: 1 masks/dc_TKY_y18_d_mask_section_1.jpg dc_TKY_y18_d_mask_section_1
+
+Let's now join the masks and pictures for the analysis.
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output :exports both
+df.joined <- df.masks %>% mutate(dummy = TRUE) %>%
+  group_by(Mask) %>%
+  left_join(df.final %>% mutate(dummy = TRUE), by=c('dummy')) %>%
+  select(-dummy) %>%
+  ungroup()
+df.joined
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+# A tibble: 361 x 7
+   Mask.Filename    Mask   Picture.Filename       Camera_ID Dataset  Year   Day
+   <chr>            <chr>  <chr>                  <chr>     <chr>   <int> <int>
+ 1 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     1
+ 2 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     2
+ 3 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     3
+ 4 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     4
+ 5 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     5
+ 6 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     6
+ 7 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     7
+ 8 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     8
+ 9 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007     9
+10 masks/dc_TKY_y1… dc_TK… /Volumes/ExtensionHD/… y18_d     TKY      2007    10
+# ... with 351 more rows
+#+end_example
+
+Now let's calculate metrics. 
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output :exports both
+
+gethist <- function(df, grain=100) {
+    mask <- df %>% slice(1) %>% pull(Mask.Filename);
+    phenovis_read_mask(mask);
+    phenovis_get_gcc_color_histogram(df %>% pull(Picture.Filename), grain) %>%
+        as_tibble()
+}
+
+df.histograms <- df.joined %>%
+  do(gethist(.)) %>%
+  # Cosmetics
+  separate(Name, sep='/', into=c('A', 'B', 'C', 'Dir', 'Subdir', 'Filename'), remove=FALSE) %>%
+  select(-A, -B, -C, -Dir, -Subdir) %>%
+  mutate(Filename = gsub('.jpg', '', Filename)) %>%
+  mutate(Filename = gsub('dc_', '', Filename)) %>%
+  separate(Filename, sep='__', into=c('Filename', 'Camera_ID')) %>%
+  separate(Filename, sep='_', into=c('Year', 'Day', 'Time', 'Dataset')) %>%
+  mutate(Time = gsub('\\+.*', '', Time)) %>%
+  mutate(Hour = as.integer(substr(Time, 1, 2))) %>%
+  mutate(Minute = as.integer(substr(Time, 3, 4))) %>%
+  mutate(Year = as.integer(Year)) %>%
+  mutate(Day = as.integer(Day)) %>%
+  select(-Time)
+df.histograms
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_001_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_002_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_003_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_004_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_005_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_006_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_007_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_008_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_009_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_010_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_011_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_012_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_013_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_014_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_015_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_016_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_017_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_018_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_019_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_020_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_021_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_022_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_023_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_024_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_025_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_026_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_027_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_028_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_029_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_030_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_031_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_032_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_033_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_034_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_035_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_036_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_037_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_038_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_039_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_040_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_041_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_042_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_043_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_044_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_045_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_046_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_047_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_048_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_049_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_050_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_051_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_052_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_053_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_054_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_055_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_056_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_057_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_058_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_059_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_060_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_061_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_062_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_063_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_064_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_065_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_066_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_069_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_070_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_071_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_072_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_073_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_074_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_075_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_076_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_077_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_078_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_079_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_080_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_081_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_082_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_083_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_084_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_085_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_086_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_087_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_088_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_089_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_090_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_091_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_092_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_093_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_094_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_095_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_096_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_097_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_098_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_099_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_100_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_101_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_102_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_103_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_104_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_105_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_106_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_107_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_108_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_109_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_110_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_111_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_112_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_113_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_114_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_116_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_117_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_118_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_119_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_120_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_121_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_122_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_123_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_124_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_125_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_126_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_127_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_128_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_129_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_130_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_131_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_132_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_133_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_134_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_135_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_136_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_137_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_138_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_139_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_140_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_141_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_142_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_143_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_144_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_145_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_146_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_147_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_148_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_149_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_150_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_151_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_152_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_153_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_154_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_155_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_156_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_157_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_158_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_159_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_160_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_161_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_162_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_163_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_164_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_165_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_166_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_167_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_168_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_169_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_170_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_171_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_172_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_173_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_174_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_175_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_176_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_177_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_178_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_179_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_180_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_181_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_182_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_183_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_184_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_185_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_186_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_187_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_188_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_189_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_190_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_191_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_192_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_193_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_194_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_195_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_196_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_197_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_198_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_199_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_200_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_201_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_202_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_203_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_204_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_205_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_206_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_208_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_209_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_210_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_211_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_212_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_213_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_214_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_215_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_216_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_217_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_218_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_219_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_220_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_221_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_222_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_223_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_224_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_225_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_226_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_227_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_228_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_229_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_230_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_231_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_232_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_233_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_234_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_235_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_236_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_237_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_238_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_239_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_240_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_241_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_242_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_243_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_244_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_245_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_246_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_247_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_248_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_249_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_250_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_251_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_252_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_253_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_254_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_255_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_256_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_257_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_258_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_259_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_260_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_261_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_262_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_263_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_264_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_265_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_266_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_267_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_268_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_269_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_270_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_271_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_272_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_273_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_274_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_275_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_276_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_277_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_278_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_279_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_280_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_281_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_282_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_283_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_284_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_285_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_286_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_287_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_288_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_289_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_290_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_291_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_292_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_293_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_294_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_295_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_296_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_297_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_298_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_299_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_300_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_301_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_302_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_303_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_304_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_305_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_306_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_307_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_308_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_309_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_310_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_311_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_312_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_313_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_314_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_315_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_316_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_317_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_318_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_319_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_320_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_321_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_322_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_323_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_324_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_325_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_326_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_327_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_328_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_329_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_330_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_331_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_332_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_333_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_334_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_335_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_336_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_337_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_338_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_339_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_340_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_341_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_342_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_343_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_344_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_345_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_346_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_347_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_348_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_349_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_350_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_351_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_352_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_353_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_354_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_355_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_356_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_357_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_358_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_359_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_360_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_361_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_362_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_363_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_364_1200+0900_TKY__y18_d.jpg
+Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_365_1200+0900_TKY__y18_d.jpg
+# A tibble: 36,100 x 15
+   Name      Year   Day Dataset Camera_ID Width Height Pixels GCC_bin Bin_value
+   <fct>    <int> <int> <chr>   <chr>     <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
+ 1 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      0.        0.
+ 2 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      1.        0.
+ 3 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      2.        0.
+ 4 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      3.        0.
+ 5 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      4.        0.
+ 6 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      5.        0.
+ 7 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      6.        0.
+ 8 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      7.        0.
+ 9 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      8.        0.
+10 /Volume…  2007     1 TKY     y18_d     2272.  1704. 1.29e6      9.        0.
+# ... with 36,090 more rows, and 5 more variables: Bin_color_r <dbl>,
+#   Bin_color_g <dbl>, Bin_color_b <dbl>, Hour <int>, Minute <int>
+#+end_example
+
+And now let's plot it.
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output graphics :file img/tky-2007-gcc-mean.png :exports both :width 1400 :height 800
+
+df.palette <- df.histograms %>%
+  mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
+  mutate(Code = as.character(Color)) %>%
+  select(Color, Code)
+
+palette.list <- as.character(df.palette$Color)
+names(palette.list) <- df.palette$Code
+
+df.histograms  %>%
+  filter(Bin_value != 0) %>%
+  mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  scale_fill_manual(values = palette.list) +
+  geom_bar(stat='identity') +
+  theme_bw(base_size=16) +
+  theme(#axis.ticks = element_blank(),
+        #axis.text = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm"),
+        legend.spacing = unit(0, "mm"),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        legend.justification = "left",
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin = margin(0,0,0,0),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1)) +
+  xlab("DOY (2007)") +
+  ylab("Normalized size of bins")
+#+END_SRC
+
+#+RESULTS:
+[[file:img/tky-2007-gcc-mean.png]]
 
 * New analysis of the AHS dataset
 By looking at the images in the AHS Dataset, I created [[masks/alles-ahs-t24_d.jpg][this mask]] to
