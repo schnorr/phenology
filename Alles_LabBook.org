@@ -4944,8 +4944,7 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-
-|======================================================|100% ~0 s remaining     > # A tibble: 437,980 x 12
+|======================================================|100% ~0 s remaining     > # A tibble: 437,980 x 12
    Mask          Year   Day  Hour   Seq Width Height Pixels     H H.count     V
    <chr>        <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>
  1 Comunidade_…  2014    91    10     1  1280    960 508770     1      32    0.
@@ -4988,16 +4987,16 @@ names(palette.list) <- palette$Color.Code
 # A tibble: 360 x 5
        H     S     V Color.Code Color  
    <int> <dbl> <dbl> <fct>      <chr>  
- 1     0     1     1 0          #FF0000
- 2     1     1     1 1          #FF0400
- 3     2     1     1 2          #FF0800
- 4     3     1     1 3          #FF0D00
- 5     4     1     1 4          #FF1100
- 6     5     1     1 5          #FF1500
- 7     6     1     1 6          #FF1900
- 8     7     1     1 7          #FF1E00
- 9     8     1     1 8          #FF2200
-10     9     1     1 9          #FF2600
+ 1     0    1.    1. 0          #FF0000
+ 2     1    1.    1. 1          #FF0400
+ 3     2    1.    1. 2          #FF0800
+ 4     3    1.    1. 3          #FF0D00
+ 5     4    1.    1. 4          #FF1100
+ 6     5    1.    1. 5          #FF1500
+ 7     6    1.    1. 6          #FF1900
+ 8     7    1.    1. 7          #FF1E00
+ 9     8    1.    1. 8          #FF2200
+10     9    1.    1. 9          #FF2600
 # ... with 350 more rows
 #+end_example
 
@@ -5017,22 +5016,22 @@ st0.df <- df.histograms %>%
 # A tibble: 43,798 x 10
    Mask            Year   Day  Hour   Seq Width Height Pixels     H H.count
    <chr>          <int> <int> <int> <int> <int>  <int>  <int> <int>   <int>
- 1 Comunidade_PEG  2014    91    10     1  1280    960 508770     1       6
- 2 Comunidade_PEG  2014    91    10     1  1280    960 508770     2     152
- 3 Comunidade_PEG  2014    91    10     1  1280    960 508770     3     182
- 4 Comunidade_PEG  2014    91    10     1  1280    960 508770     4     166
- 5 Comunidade_PEG  2014    91    10     1  1280    960 508770     5     623
- 6 Comunidade_PEG  2014    91    10     1  1280    960 508770     6     212
- 7 Comunidade_PEG  2014    91    10     1  1280    960 508770     7     269
- 8 Comunidade_PEG  2014    91    10     1  1280    960 508770     8     292
- 9 Comunidade_PEG  2014    91    10     1  1280    960 508770     9     801
-10 Comunidade_PEG  2014    91    10     1  1280    960 508770    10    1479
+ 1 Comunidade_PEG  2014    91    10     1  1280    960 508770     1      32
+ 2 Comunidade_PEG  2014    91    10     1  1280    960 508770     2     330
+ 3 Comunidade_PEG  2014    91    10     1  1280    960 508770     3     318
+ 4 Comunidade_PEG  2014    91    10     1  1280    960 508770     4     277
+ 5 Comunidade_PEG  2014    91    10     1  1280    960 508770     5     772
+ 6 Comunidade_PEG  2014    91    10     1  1280    960 508770     6     252
+ 7 Comunidade_PEG  2014    91    10     1  1280    960 508770     7     368
+ 8 Comunidade_PEG  2014    91    10     1  1280    960 508770     8     359
+ 9 Comunidade_PEG  2014    91    10     1  1280    960 508770     9    1005
+10 Comunidade_PEG  2014    91    10     1  1280    960 508770    10    1848
 # ... with 43,788 more rows
 #+end_example
 
 ***** Plot
 
-#+begin_src R :results output graphics :file img/peg_2014-122-st1-v3.png :exports both :width 1400 :height 600 :session
+#+begin_src R :results output graphics :file img/peg_2014-122-st1-v3.png :exports both :width 1400 :height 800 :session
 st0.df  %>%
     mutate(Color.Code = H) %>%    
     ggplot(aes(x = Day, y = H.count, fill=as.factor(Color.Code))) +#, fill=as.factor(Color.Code))) +
@@ -5086,16 +5085,16 @@ names(palette.list) <- palette$Color.Code
 # A tibble: 3,600 x 5
        H     S     V Color.Code Color  
    <int> <dbl> <dbl>      <int> <chr>  
- 1     0     1     0          0 #000000
- 2     1     1     0         10 #000000
- 3     2     1     0         20 #000000
- 4     3     1     0         30 #000000
- 5     4     1     0         40 #000000
- 6     5     1     0         50 #000000
- 7     6     1     0         60 #000000
- 8     7     1     0         70 #000000
- 9     8     1     0         80 #000000
-10     9     1     0         90 #000000
+ 1     0    1.    0.          0 #000000
+ 2     1    1.    0.         10 #000000
+ 3     2    1.    0.         20 #000000
+ 4     3    1.    0.         30 #000000
+ 5     4    1.    0.         40 #000000
+ 6     5    1.    0.         50 #000000
+ 7     6    1.    0.         60 #000000
+ 8     7    1.    0.         70 #000000
+ 9     8    1.    0.         80 #000000
+10     9    1.    0.         90 #000000
 # ... with 3,590 more rows
 #+end_example
 ***** Data Manipulation (+ Confirm we have tidy data of H and V)
@@ -5160,19 +5159,19 @@ st1.df <- df.histograms %>%
 #+RESULTS:
 #+begin_example
 # A tibble: 437,980 x 12
-   Mask  Year   Day  Hour   Seq Width Height Pixels     H H.count     V V.count
-   <ch> <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>
- 1 Com…  2014    91    10     1  1280    960 508770     1       6     0       0
- 2 Com…  2014    91    10     1  1280    960 508770     2     152     0       7
- 3 Com…  2014    91    10     1  1280    960 508770     3     182     0      30
- 4 Com…  2014    91    10     1  1280    960 508770     4     166     0      65
- 5 Com…  2014    91    10     1  1280    960 508770     5     623     0      85
- 6 Com…  2014    91    10     1  1280    960 508770     6     212     0     137
- 7 Com…  2014    91    10     1  1280    960 508770     7     269     0     138
- 8 Com…  2014    91    10     1  1280    960 508770     8     292     0     157
- 9 Com…  2014    91    10     1  1280    960 508770     9     801     0      49
-10 Com…  2014    91    10     1  1280    960 508770    10    1479     0     366
-# ... with 437,970 more rows
+   Mask          Year   Day  Hour   Seq Width Height Pixels     H H.count     V
+   <chr>        <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>
+ 1 Comunidade_…  2014    91    10     1  1280    960 508770     1      32    0.
+ 2 Comunidade_…  2014    91    10     1  1280    960 508770     2     330    0.
+ 3 Comunidade_…  2014    91    10     1  1280    960 508770     3     318    0.
+ 4 Comunidade_…  2014    91    10     1  1280    960 508770     4     277    0.
+ 5 Comunidade_…  2014    91    10     1  1280    960 508770     5     772    0.
+ 6 Comunidade_…  2014    91    10     1  1280    960 508770     6     252    0.
+ 7 Comunidade_…  2014    91    10     1  1280    960 508770     7     368    0.
+ 8 Comunidade_…  2014    91    10     1  1280    960 508770     8     359    0.
+ 9 Comunidade_…  2014    91    10     1  1280    960 508770     9    1005    0.
+10 Comunidade_…  2014    91    10     1  1280    960 508770    10    1848    0.
+# ... with 437,970 more rows, and 1 more variable: V.count <int>
 #+end_example
 
 ***** Color tentatives
@@ -5198,33 +5197,33 @@ palette.list
 # A tibble: 10 x 11
      Day  Hour   Seq Width Height Pixels     H H.count     V V.count Color.Code
    <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>   <int>      <int>
- 1    91    10     1  1280    960 508770    32    7004  0        485        320
- 2    91    10     1  1280    960 508770    32    7004  0.11     917        321
- 3    91    10     1  1280    960 508770    32    7004  0.22    1414        322
- 4    91    10     1  1280    960 508770    32    7004  0.33    1097        323
- 5    91    10     1  1280    960 508770    32    7004  0.44    1040        324
- 6    91    10     1  1280    960 508770    32    7004  0.56     794        325
- 7    91    10     1  1280    960 508770    32    7004  0.67     584        326
- 8    91    10     1  1280    960 508770    32    7004  0.78     327        327
- 9    91    10     1  1280    960 508770    32    7004  0.89     166        328
-10    91    10     1  1280    960 508770    32    7004  1        180        330
+ 1    91    10     1  1280    960 508770    32    6511 0.        403        320
+ 2    91    10     1  1280    960 508770    32    6511 0.110     814        321
+ 3    91    10     1  1280    960 508770    32    6511 0.220    1217        322
+ 4    91    10     1  1280    960 508770    32    6511 0.330    1009        323
+ 5    91    10     1  1280    960 508770    32    6511 0.440     983        324
+ 6    91    10     1  1280    960 508770    32    6511 0.560     766        325
+ 7    91    10     1  1280    960 508770    32    6511 0.670     598        326
+ 8    91    10     1  1280    960 508770    32    6511 0.780     351        327
+ 9    91    10     1  1280    960 508770    32    6511 0.890     187        328
+10    91    10     1  1280    960 508770    32    6511 1.00      183        330
 # A tibble: 10 x 5
        H     S     V Color.Code Color  
    <int> <dbl> <dbl>      <int> <chr>  
- 1    32     0   0          320 #000000
- 2    32     0   0.1        321 #1A1A1A
- 3    32     0   0.2        322 #333333
- 4    32     0   0.3        323 #4D4D4D
- 5    32     0   0.4        324 #666666
- 6    32     0   0.5        325 #808080
- 7    32     0   0.6        326 #999999
- 8    32     0   0.7        327 #B3B3B3
- 9    32     0   0.8        328 #CCCCCC
-10    32     0   0.9        329 #E6E6E6
+ 1    32    1. 0.           320 #000000
+ 2    32    1. 0.100        321 #1A0E00
+ 3    32    1. 0.200        322 #331B00
+ 4    32    1. 0.300        323 #4D2900
+ 5    32    1. 0.400        324 #663600
+ 6    32    1. 0.500        325 #804400
+ 7    32    1. 0.600        326 #995200
+ 8    32    1. 0.700        327 #B35F00
+ 9    32    1. 0.800        328 #CC6D00
+10    32    1. 0.900        329 #E67A00
       320       321       322       323       324       325       326       327 
-"#000000" "#1A1A1A" "#333333" "#4D4D4D" "#666666" "#808080" "#999999" "#B3B3B3" 
+"#000000" "#1A0E00" "#331B00" "#4D2900" "#663600" "#804400" "#995200" "#B35F00" 
       328       329 
-"#CCCCCC" "#E6E6E6"
+"#CC6D00" "#E67A00"
 #+end_example
 
 ***** Plot
@@ -5358,6 +5357,7 @@ st3.df  %>%
 
 #+RESULTS:
 [[file:img/peg_2014-122-st3-v3.png]]
+
 ** 2018-10-09 Meeting with Comba
 We discussed the results and strategies obtained so far (PEG dataset
 with HSV color palette). Comba pointed out that Roger's past work
@@ -6808,8 +6808,7 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-
-|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
+|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
    Mask   Year   Day  Hour   Seq Width Height UnmaskedPixels     H HCount SMean
    <chr> <int> <int> <int> <int> <dbl>  <dbl>          <dbl> <dbl>  <dbl> <dbl>
  1 Comu…  2014    91    10     1 1280.   960.        508770.    1.    32. 0.377
@@ -6837,6 +6836,7 @@ to store the values. Changing those to =NumericMatrix= and
 
 Let's create the color palette
 #+BEGIN_SRC R :session hsv-new :results output :exports both
+suppressMessages(library(colorspace))
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -6846,8 +6846,10 @@ palette.list <- as.character(df.palette$Color)
 names(palette.list) <- df.palette$Code
 #+END_SRC
 
+#+RESULTS:
+
 And now let's plot the results
-#+begin_src R :session hsv-new :results output graphics :file img/peg_mean_histogram.png :exports both :width 1400 :height 600
+#+begin_src R :session hsv-new :results output graphics :file img/peg_mean_histogram.png :exports both :width 1400 :height 800
 suppressMessages(library(colorspace))
 
 df.histograms  %>%
@@ -7095,8 +7097,7 @@ alongside the HSV histogram (a geom point or geom line would do). This
 would be useful to verify whether there is an actual pattern in this
 dataset.
 
-*** DONE Calculate the histograms from pictures taken at noon
-- State "DONE"       from "TODO"       [2018-12-05 Wed 19:39]
+*** Calculate the histograms from pictures taken at noon
 Once again, I copied the code structure from previous analysis.
 **** Masks
 
@@ -7184,6 +7185,7 @@ df.peg
 10 Output_PEG/2014/2014_100_12_1.jpg 2014_100_12_1
 # ... with 112 more rows
 #+end_example
+
 **** Analysis
 ***** Calculate the mean histogram and tidy the data
 
@@ -7224,16 +7226,16 @@ df.histograms
 |======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
    Mask   Year   Day  Hour   Seq Width Height UnmaskedPixels     H HCount SMode
    <chr> <int> <int> <int> <int> <dbl>  <dbl>          <dbl> <dbl>  <dbl> <dbl>
- 1 Comu…  2014    91    12     1 1280.   960.        508770.    1.     0. 1.00 
- 2 Comu…  2014    91    12     1 1280.   960.        508770.    2.    42. 0.200
- 3 Comu…  2014    91    12     1 1280.   960.        508770.    3.    97. 0.200
- 4 Comu…  2014    91    12     1 1280.   960.        508770.    4.    67. 0.200
- 5 Comu…  2014    91    12     1 1280.   960.        508770.    5.   436. 0.200
- 6 Comu…  2014    91    12     1 1280.   960.        508770.    6.    88. 0.300
- 7 Comu…  2014    91    12     1 1280.   960.        508770.    7.    73. 0.300
- 8 Comu…  2014    91    12     1 1280.   960.        508770.    8.    65. 0.300
- 9 Comu…  2014    91    12     1 1280.   960.        508770.    9.   762. 0.200
-10 Comu…  2014    91    12     1 1280.   960.        508770.   10.  1043. 0.200
+ 1 Comu…  2014    91    12     1 1280.   960.        508770.    1.     1. 1.00 
+ 2 Comu…  2014    91    12     1 1280.   960.        508770.    2.    77. 0.200
+ 3 Comu…  2014    91    12     1 1280.   960.        508770.    3.   135. 0.200
+ 4 Comu…  2014    91    12     1 1280.   960.        508770.    4.    84. 0.200
+ 5 Comu…  2014    91    12     1 1280.   960.        508770.    5.   553. 0.200
+ 6 Comu…  2014    91    12     1 1280.   960.        508770.    6.    82. 0.200
+ 7 Comu…  2014    91    12     1 1280.   960.        508770.    7.   101. 0.200
+ 8 Comu…  2014    91    12     1 1280.   960.        508770.    8.    79. 0.300
+ 9 Comu…  2014    91    12     1 1280.   960.        508770.    9.   820. 0.200
+10 Comu…  2014    91    12     1 1280.   960.        508770.   10.  1154. 0.200
 # ... with 43,788 more rows, and 1 more variable: VMode <dbl>
 #+end_example
 
@@ -7254,7 +7256,7 @@ names(palette.list) <- df.palette$Code
 #+RESULTS:
 
 And now let's plot the results
-#+begin_src R :session hsv-noon :results output graphics :file img/peg_mode_noon.png :exports both :width 1400 :height 600
+#+begin_src R :session hsv-noon :results output graphics :file img/peg_mode_noon.png :exports both :width 1400 :height 800
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
     ggplot(aes(x = Day, y = HCount, fill=as.factor(Color))) +
@@ -7452,7 +7454,7 @@ df.gcc.mean %>%
     xlab('Day of the year (2014)') +
     ylab('Mean gcc') +
     ylim(0.3, 0.5) +
-    facet_grid(. ~ Hour, scales='free')
+    facet_grid(Hour ~ ., scales='free')
 #+END_SRC
 
 #+RESULTS:
@@ -7709,25 +7711,147 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
+Processing image Output_PEG/2014/2014_091_13_1.jpg
+Processing image Output_PEG/2014/2014_092_13_1.jpg
+Processing image Output_PEG/2014/2014_093_13_1.jpg
+Processing image Output_PEG/2014/2014_094_13_1.jpg
+Processing image Output_PEG/2014/2014_095_13_1.jpg
+Processing image Output_PEG/2014/2014_096_13_1.jpg
+Processing image Output_PEG/2014/2014_097_13_1.jpg
+Processing image Output_PEG/2014/2014_098_13_1.jpg
+Processing image Output_PEG/2014/2014_099_13_1.jpg
+Processing image Output_PEG/2014/2014_100_13_1.jpg
+Processing image Output_PEG/2014/2014_101_13_1.jpg
+Processing image Output_PEG/2014/2014_102_13_1.jpg
+Processing image Output_PEG/2014/2014_103_13_1.jpg
+Processing image Output_PEG/2014/2014_104_13_1.jpg
+Processing image Output_PEG/2014/2014_105_13_1.jpg
+Processing image Output_PEG/2014/2014_106_13_1.jpg
+Processing image Output_PEG/2014/2014_107_13_1.jpg
+Processing image Output_PEG/2014/2014_108_13_1.jpg
+Processing image Output_PEG/2014/2014_109_13_1.jpg
+Processing image Output_PEG/2014/2014_110_13_1.jpg
+Processing image Output_PEG/2014/2014_111_13_1.jpg
+Processing image Output_PEG/2014/2014_112_13_1.jpg
+Processing image Output_PEG/2014/2014_113_13_1.jpg
+Processing image Output_PEG/2014/2014_114_13_1.jpg
+Processing image Output_PEG/2014/2014_115_13_1.jpg
+Processing image Output_PEG/2014/2014_116_13_1.jpg
+Processing image Output_PEG/2014/2014_117_13_1.jpg
+Processing image Output_PEG/2014/2014_118_13_1.jpg
+Processing image Output_PEG/2014/2014_119_13_1.jpg
+Processing image Output_PEG/2014/2014_120_13_1.jpg
+Processing image Output_PEG/2014/2014_121_13_1.jpg
+Processing image Output_PEG/2014/2014_122_13_1.jpg
+Processing image Output_PEG/2014/2014_123_13_1.jpg
+Processing image Output_PEG/2014/2014_124_13_1.jpg
+Processing image Output_PEG/2014/2014_125_13_1.jpg
+Processing image Output_PEG/2014/2014_126_13_1.jpg
+Processing image Output_PEG/2014/2014_127_13_1.jpg
+Processing image Output_PEG/2014/2014_128_13_1.jpg
+Processing image Output_PEG/2014/2014_129_13_1.jpg
+Processing image Output_PEG/2014/2014_130_13_1.jpg
+Processing image Output_PEG/2014/2014_131_13_1.jpg
+Processing image Output_PEG/2014/2014_132_13_1.jpg
+Processing image Output_PEG/2014/2014_133_13_1.jpg
+Processing image Output_PEG/2014/2014_134_13_1.jpg
+Processing image Output_PEG/2014/2014_135_13_1.jpg
+Processing image Output_PEG/2014/2014_136_13_1.jpg
+Processing image Output_PEG/2014/2014_137_13_1.jpg
+Processing image Output_PEG/2014/2014_138_13_1.jpg
+Processing image Output_PEG/2014/2014_139_13_1.jpg
+Processing image Output_PEG/2014/2014_140_13_1.jpg
+Processing image Output_PEG/2014/2014_141_13_1.jpg
+Processing image Output_PEG/2014/2014_142_13_1.jpg
+Processing image Output_PEG/2014/2014_143_13_1.jpg
+Processing image Output_PEG/2014/2014_144_13_1.jpg
+Processing image Output_PEG/2014/2014_145_13_1.jpg
+Processing image Output_PEG/2014/2014_146_13_1.jpg
+Processing image Output_PEG/2014/2014_147_13_1.jpg
+Processing image Output_PEG/2014/2014_148_13_1.jpg
+Processing image Output_PEG/2014/2014_149_13_1.jpg
+Processing image Output_PEG/2014/2014_150_13_1.jpg
+Processing image Output_PEG/2014/2014_151_13_1.jpg
+Processing image Output_PEG/2014/2014_152_13_1.jpg
+Processing image Output_PEG/2014/2014_153_13_1.jpg
+Processing image Output_PEG/2014/2014_154_13_1.jpg
+Processing image Output_PEG/2014/2014_155_13_1.jpg
+Processing image Output_PEG/2014/2014_156_13_1.jpg
+Processing image Output_PEG/2014/2014_157_13_1.jpg
+Processing image Output_PEG/2014/2014_158_13_1.jpg
+Processing image Output_PEG/2014/2014_159_13_1.jpg
+Processing image Output_PEG/2014/2014_160_13_1.jpg
+Processing image Output_PEG/2014/2014_161_13_1.jpg
+Processing image Output_PEG/2014/2014_162_13_1.jpg
+Processing image Output_PEG/2014/2014_163_13_1.jpg
+Processing image Output_PEG/2014/2014_164_13_1.jpg
+Processing image Output_PEG/2014/2014_165_13_1.jpg
+Processing image Output_PEG/2014/2014_166_13_1.jpg
+Processing image Output_PEG/2014/2014_167_13_1.jpg
+Processing image Output_PEG/2014/2014_168_13_1.jpg
+Processing image Output_PEG/2014/2014_169_13_1.jpg
+Processing image Output_PEG/2014/2014_170_13_1.jpg
+Processing image Output_PEG/2014/2014_171_13_1.jpg
+Processing image Output_PEG/2014/2014_172_13_1.jpg
+Processing image Output_PEG/2014/2014_173_13_1.jpg
+Processing image Output_PEG/2014/2014_174_13_1.jpg
+Processing image Output_PEG/2014/2014_175_13_1.jpg
+Processing image Output_PEG/2014/2014_176_13_1.jpg
+Processing image Output_PEG/2014/2014_177_13_1.jpg
+Processing image Output_PEG/2014/2014_178_13_1.jpg
+Processing image Output_PEG/2014/2014_179_13_1.jpg
+Processing image Output_PEG/2014/2014_180_13_1.jpg
+Processing image Output_PEG/2014/2014_181_13_1.jpg
+Processing image Output_PEG/2014/2014_182_13_1.jpg
+Processing image Output_PEG/2014/2014_183_13_1.jpg
+Processing image Output_PEG/2014/2014_184_13_1.jpg
+Processing image Output_PEG/2014/2014_185_13_1.jpg
+Processing image Output_PEG/2014/2014_186_13_1.jpg
+Processing image Output_PEG/2014/2014_187_13_1.jpg
+Processing image Output_PEG/2014/2014_188_13_1.jpg
+Processing image Output_PEG/2014/2014_189_13_1.jpg
+Processing image Output_PEG/2014/2014_190_13_1.jpg
+Processing image Output_PEG/2014/2014_191_13_1.jpg
+Processing image Output_PEG/2014/2014_192_13_1.jpg
+Processing image Output_PEG/2014/2014_193_13_1.jpg
+Processing image Output_PEG/2014/2014_194_13_1.jpg
+Processing image Output_PEG/2014/2014_195_13_1.jpg
+Processing image Output_PEG/2014/2014_196_13_1.jpg
+Processing image Output_PEG/2014/2014_197_13_1.jpg
+Processing image Output_PEG/2014/2014_198_13_1.jpg
+Processing image Output_PEG/2014/2014_199_13_1.jpg
+Processing image Output_PEG/2014/2014_200_13_1.jpg
+Processing image Output_PEG/2014/2014_201_13_1.jpg
+Processing image Output_PEG/2014/2014_202_13_1.jpg
+Processing image Output_PEG/2014/2014_203_13_1.jpg
+Processing image Output_PEG/2014/2014_204_13_1.jpg
+Processing image Output_PEG/2014/2014_205_13_1.jpg
+Processing image Output_PEG/2014/2014_206_13_1.jpg
+Processing image Output_PEG/2014/2014_207_13_1.jpg
+Processing image Output_PEG/2014/2014_208_13_1.jpg
+Processing image Output_PEG/2014/2014_209_13_1.jpg
+Processing image Output_PEG/2014/2014_210_13_1.jpg
+Processing image Output_PEG/2014/2014_211_13_1.jpg
+Processing image Output_PEG/2014/2014_212_13_1.jpg
 |======================================================|100% ~0 s remaining     > # A tibble: 12,200 x 13
    Mask            Year   Day  Hour   Seq Width Height Pixels GCC_bin Bin_value
    <chr>          <int> <int> <int> <int> <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
  1 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      0.     6118.
- 2 Comunidade_PEG  2014    92    13     1 1280.   960. 5.09e5      1.        4.
- 3 Comunidade_PEG  2014    93    13     1 1280.   960. 5.09e5      2.        7.
- 4 Comunidade_PEG  2014    94    13     1 1280.   960. 5.09e5      3.       24.
- 5 Comunidade_PEG  2014    95    13     1 1280.   960. 5.09e5      4.       35.
- 6 Comunidade_PEG  2014    96    13     1 1280.   960. 5.09e5      5.       64.
- 7 Comunidade_PEG  2014    97    13     1 1280.   960. 5.09e5      6.       60.
- 8 Comunidade_PEG  2014    98    13     1 1280.   960. 5.09e5      7.       76.
- 9 Comunidade_PEG  2014    99    13     1 1280.   960. 5.09e5      8.       76.
-10 Comunidade_PEG  2014   100    13     1 1280.   960. 5.09e5      9.      101.
+ 2 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      1.        4.
+ 3 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      2.        7.
+ 4 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      3.       24.
+ 5 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      4.       35.
+ 6 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      5.       64.
+ 7 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      6.       60.
+ 8 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      7.       76.
+ 9 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      8.       76.
+10 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      9.      101.
 # ... with 12,190 more rows, and 3 more variables: Bin_color_r <dbl>,
 #   Bin_color_g <dbl>, Bin_color_b <dbl>
 #+end_example
 
 Then plotting the result...
-#+BEGIN_SRC R :session gcc-analysis :results output  graphics :file img/gcc-mean-analysis.png :exports both :width 1400 :height 600
+#+BEGIN_SRC R :session gcc-analysis :results output  graphics :file img/gcc-mean-analysis.png :exports both :width 1400 :height 800
 df.palette <- df.histograms %>%
     mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -7759,6 +7883,7 @@ df.histograms  %>%
 
 #+RESULTS:
 [[file:img/gcc-mean-analysis.png]]
+
 * Analysis of the TKY dataset
 ** Year 2003
 *** Session startup
