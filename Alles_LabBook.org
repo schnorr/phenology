@@ -7309,7 +7309,7 @@ df.peg <- tibble(Picture.Filename=list.files("Output_PEG", pattern="jpg", recurs
     mutate(Sequence = as.numeric(Sequence)) %>%
     mutate(Hour = as.numeric(Hour)) %>%
     filter(Sequence == 1) %>%
-    filter(Hour == 10) %>%
+    filter(Hour == 12) %>%
     select(Picture.Filename, Picture)
 
 get_mean_gcc <- function(df) {
@@ -7340,21 +7340,21 @@ df.gcc.mean
 |======================================================|100% ~0 s remaining     > # A tibble: 122 x 9
    Mask            Year   Day  Hour   Seq Width Height Unmasked_Pixels Mean_Gcc
    <chr>          <int> <int> <int> <int> <dbl>  <dbl>           <dbl>    <dbl>
- 1 Comunidade_PEG  2014    91    10     1 1280.   960.         508770.    0.348
- 2 Comunidade_PEG  2014    92    10     1 1280.   960.         508770.    0.350
- 3 Comunidade_PEG  2014    93    10     1 1280.   960.         508770.    0.348
- 4 Comunidade_PEG  2014    94    10     1 1280.   960.         508770.    0.351
- 5 Comunidade_PEG  2014    95    10     1 1280.   960.         508770.    0.352
- 6 Comunidade_PEG  2014    96    10     1 1280.   960.         508770.    0.351
- 7 Comunidade_PEG  2014    97    10     1 1280.   960.         508770.    0.349
- 8 Comunidade_PEG  2014    98    10     1 1280.   960.         508770.    0.350
- 9 Comunidade_PEG  2014    99    10     1 1280.   960.         508770.    0.349
-10 Comunidade_PEG  2014   100    10     1 1280.   960.         508770.    0.345
+ 1 Comunidade_PEG  2014    91    12     1 1280.   960.         508770.    0.346
+ 2 Comunidade_PEG  2014    92    12     1 1280.   960.         508770.    0.348
+ 3 Comunidade_PEG  2014    93    12     1 1280.   960.         508770.    0.351
+ 4 Comunidade_PEG  2014    94    12     1 1280.   960.         508770.    0.349
+ 5 Comunidade_PEG  2014    95    12     1 1280.   960.         508770.    0.348
+ 6 Comunidade_PEG  2014    96    12     1 1280.   960.         508770.    0.350
+ 7 Comunidade_PEG  2014    97    12     1 1280.   960.         508770.    0.351
+ 8 Comunidade_PEG  2014    98    12     1 1280.   960.         508770.    0.347
+ 9 Comunidade_PEG  2014    99    12     1 1280.   960.         508770.    0.346
+10 Comunidade_PEG  2014   100    12     1 1280.   960.         508770.    0.345
 # ... with 112 more rows
 #+end_example
 
 Now that we have the metrics, let's plot the mean gcc for every image...
-#+BEGIN_SRC R :session gcc-mean :results output graphics :file img/peg_gcc_mean.png :exports both :width 700 :height 300
+#+BEGIN_SRC R :session gcc-mean :results output graphics :file img/peg_gcc_mean.png :exports both :width 700 :height 400
 df.gcc.mean %>%
   ggplot(aes(x = Day, y = Mean_Gcc)) +
     geom_point() +
@@ -12759,7 +12759,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2005-hsv-h :results output graphics :file img/tky-2005-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2005-hsv-h :results output graphics :file img/tky-2005-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -12970,7 +12970,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2005-hsv-mean :results output graphics :file img/tky-2005-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2005-hsv-mean :results output graphics :file img/tky-2005-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -13180,7 +13180,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2005-hsv-mode :results output graphics :file img/tky-2005-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2005-hsv-mode :results output graphics :file img/tky-2005-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -13736,7 +13736,7 @@ Processing image PEN/tky-2005-y18_d-imported/dc_2005_365_1330+0900_TKY__y18_d.jp
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2005-gcc-mean :results output graphics :file img/tky-2005-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2005-gcc-mean :results output graphics :file img/tky-2005-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -14083,7 +14083,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2006-hsv-h :results output graphics :file img/tky-2006-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2006-hsv-h :results output graphics :file img/tky-2006-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -14294,7 +14294,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2006-hsv-mean :results output graphics :file img/tky-2006-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2006-hsv-mean :results output graphics :file img/tky-2006-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -14504,7 +14504,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2006-hsv-mode :results output graphics :file img/tky-2006-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2006-hsv-mode :results output graphics :file img/tky-2006-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -15034,7 +15034,7 @@ Processing image PEN/tky-2006-y18_d-imported/dc_2006_365_1200+0900_TKY__y18_d.jp
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2006-gcc-mean :results output graphics :file img/tky-2006-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2006-gcc-mean :results output graphics :file img/tky-2006-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -15358,7 +15358,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2007-hsv-h :results output graphics :file img/tky-2007-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2007-hsv-h :results output graphics :file img/tky-2007-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -15568,7 +15568,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2007-hsv-mean :results output graphics :file img/tky-2007-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2007-hsv-mean :results output graphics :file img/tky-2007-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -15778,7 +15778,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2007-hsv-mode :results output graphics :file img/tky-2007-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2007-hsv-mode :results output graphics :file img/tky-2007-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -16340,7 +16340,7 @@ Processing image /Volumes/ExtensionHD/PEN/tky-2007-y18_d-imported/dc_2007_365_12
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2007-gcc-mean :results output graphics :file img/tky-2007-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2007-gcc-mean :results output graphics :file img/tky-2007-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -16701,7 +16701,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2008-hsv-h :results output graphics :file img/tky-2008-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2008-hsv-h :results output graphics :file img/tky-2008-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -16911,7 +16911,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2008-hsv-mean :results output graphics :file img/tky-2008-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2008-hsv-mean :results output graphics :file img/tky-2008-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -17121,7 +17121,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2008-hsv-mode :results output graphics :file img/tky-2008-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2008-hsv-mode :results output graphics :file img/tky-2008-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -17679,7 +17679,7 @@ Processing image /Volumes/ExtensionHD/PEN/tky-2008-y18_d-imported/dc_2008_366_12
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2008-gcc-mean :results output graphics :file img/tky-2008-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2008-gcc-mean :results output graphics :file img/tky-2008-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -18006,7 +18006,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2009-hsv-h :results output graphics :file img/tky-2009-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2009-hsv-h :results output graphics :file img/tky-2009-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -18216,7 +18216,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2009-hsv-mean :results output graphics :file img/tky-2009-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2009-hsv-mean :results output graphics :file img/tky-2009-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -18426,7 +18426,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2009-hsv-mode :results output graphics :file img/tky-2009-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2009-hsv-mode :results output graphics :file img/tky-2009-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -18968,7 +18968,7 @@ Processing image /Volumes/ExtensionHD/PEN/tky-2009-y18_d-imported/dc_2009_365_12
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2009-gcc-mean :results output graphics :file img/tky-2009-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2009-gcc-mean :results output graphics :file img/tky-2009-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -19303,7 +19303,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2010-hsv-h :results output graphics :file img/tky-2010-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2010-hsv-h :results output graphics :file img/tky-2010-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -19513,7 +19513,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2010-hsv-mean :results output graphics :file img/tky-2010-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2010-hsv-mean :results output graphics :file img/tky-2010-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -19723,7 +19723,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2010-hsv-mode :results output graphics :file img/tky-2010-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2010-hsv-mode :results output graphics :file img/tky-2010-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -20276,7 +20276,7 @@ Processing image /Volumes/ExtensionHD/PEN/tky-2010-y18_d-imported/dc_2010_365_12
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2010-gcc-mean :results output graphics :file img/tky-2010-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2010-gcc-mean :results output graphics :file img/tky-2010-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -20592,7 +20592,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2011-hsv-h :results output graphics :file img/tky-2011-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2011-hsv-h :results output graphics :file img/tky-2011-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -20802,7 +20802,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2011-hsv-mean :results output graphics :file img/tky-2011-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2011-hsv-mean :results output graphics :file img/tky-2011-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -21012,7 +21012,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2011-hsv-mode :results output graphics :file img/tky-2011-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2011-hsv-mode :results output graphics :file img/tky-2011-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -21577,7 +21577,7 @@ Processing image /Volumes/ExtensionHD/PEN/tky-2011-y18_d-imported/dc_2011_365_12
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2011-gcc-mean :results output graphics :file img/tky-2011-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2011-gcc-mean :results output graphics :file img/tky-2011-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
@@ -21900,7 +21900,7 @@ df.pure.hsv
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2012-hsv-h :results output graphics :file img/tky-2012-hsv-h.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2012-hsv-h :results output graphics :file img/tky-2012-hsv-h.png :exports both :width 1400 :height 1400
 palette <- expand.grid(
     H = seq(0, 359),
     S = 1,
@@ -22110,7 +22110,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2012-hsv-mean :results output graphics :file img/tky-2012-hsv-mean.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2012-hsv-mean :results output graphics :file img/tky-2012-hsv-mean.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMean, VMean))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -22320,7 +22320,7 @@ df.histograms
 #+end_example
 
 And now let's plot the results
-#+begin_src R :session tky-2012-hsv-mode :results output graphics :file img/tky-2012-hsv-mode.png :exports both :width 1400 :height 800
+#+begin_src R :session tky-2012-hsv-mode :results output graphics :file img/tky-2012-hsv-mode.png :exports both :width 1400 :height 1400
 df.palette <- df.histograms %>%
     mutate(Color = hex(HSV(H, SMode, VMode))) %>%
     mutate(Code = as.character(Color)) %>%
@@ -22859,7 +22859,7 @@ Processing image /Volumes/ExtensionHD/PEN/tky-2012-y18_d-imported/dc_2012_366_12
 #+end_example
 
 And now let's plot it.
-#+BEGIN_SRC R :session tky-2012-gcc-mean :results output graphics :file img/tky-2012-gcc-mean.png :exports both :width 1400 :height 800
+#+BEGIN_SRC R :session tky-2012-gcc-mean :results output graphics :file img/tky-2012-gcc-mean.png :exports both :width 1400 :height 1400
 
 df.palette <- df.histograms %>%
   mutate(Color = hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b))) %>%
