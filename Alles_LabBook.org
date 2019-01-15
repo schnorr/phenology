@@ -4944,7 +4944,8 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-|======================================================|100% ~0 s remaining     > # A tibble: 437,980 x 12
+
+|======================================================|100% ~0 s remaining     > # A tibble: 437,980 x 12
    Mask          Year   Day  Hour   Seq Width Height Pixels     H H.count     V
    <chr>        <int> <int> <int> <int> <int>  <int>  <int> <int>   <int> <dbl>
  1 Comunidade_…  2014    91    10     1  1280    960 508770     1      32    0.
@@ -6808,7 +6809,8 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
+
+|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
    Mask   Year   Day  Hour   Seq Width Height UnmaskedPixels     H HCount SMean
    <chr> <int> <int> <int> <int> <dbl>  <dbl>          <dbl> <dbl>  <dbl> <dbl>
  1 Comu…  2014    91    10     1 1280.   960.        508770.    1.    32. 0.377
@@ -7223,7 +7225,8 @@ df.histograms
 
 #+RESULTS:
 #+begin_example
-|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
+
+|======================================================|100% ~0 s remaining     > # A tibble: 43,798 x 12
    Mask   Year   Day  Hour   Seq Width Height UnmaskedPixels     H HCount SMode
    <chr> <int> <int> <int> <int> <dbl>  <dbl>          <dbl> <dbl>  <dbl> <dbl>
  1 Comu…  2014    91    12     1 1280.   960.        508770.    1.     1. 1.00 
@@ -7337,7 +7340,8 @@ df.gcc.mean
 
 #+RESULTS:
 #+begin_example
-|======================================================|100% ~0 s remaining     > # A tibble: 122 x 9
+
+|======================================================|100% ~0 s remaining     > # A tibble: 122 x 9
    Mask            Year   Day  Hour   Seq Width Height Unmasked_Pixels Mean_Gcc
    <chr>          <int> <int> <int> <int> <dbl>  <dbl>           <dbl>    <dbl>
  1 Comunidade_PEG  2014    91    12     1 1280.   960.         508770.    0.346
@@ -7427,7 +7431,8 @@ df.gcc.mean
 
 #+RESULTS:
 #+begin_example
-|======================================================|100% ~0 s remaining     > # A tibble: 1,337 x 9
+
+|======================================================|100% ~0 s remaining     > # A tibble: 1,337 x 9
    Mask            Year   Day  Hour   Seq Width Height Unmasked_Pixels Mean_Gcc
    <chr>          <int> <int> <int> <int> <dbl>  <dbl>           <dbl>    <dbl>
  1 Comunidade_PEG  2014    91    10     1 1280.   960.         508770.    0.348
@@ -7561,7 +7566,17 @@ df.temp
 
 #+RESULTS:
 #+begin_example
-|=====                                                 | 10% ~31 m remaining    |==========                                            | 20% ~23 m remaining    |================                                      | 30% ~19 m remaining    |=====================                                 | 40% ~15 m remaining    |===========================                           | 50% ~12 m remaining    |================================                      | 60% ~10 m remaining    |=====================================                 | 70% ~7 m remaining     |===========================================           | 80% ~5 m remaining     |================================================      | 90% ~2 m remaining     |======================================================|100% ~0 s remaining     >     user   system  elapsed 
+
+|=====                                                 | 10% ~31 m remaining    
+|==========                                            | 20% ~23 m remaining    
+|================                                      | 30% ~19 m remaining    
+|=====================                                 | 40% ~15 m remaining    
+|===========================                           | 50% ~12 m remaining    
+|================================                      | 60% ~10 m remaining    
+|=====================================                 | 70% ~7 m remaining     
+|===========================================           | 80% ~5 m remaining     
+|================================================      | 90% ~2 m remaining     
+|======================================================|100% ~0 s remaining     >     user   system  elapsed 
 1405.584   27.362 1438.867
 # A tibble: 18,958,790 x 9
    Mask           Name     Width Height UnmaskedPixels     H HCount SMode VMode
@@ -7833,7 +7848,8 @@ Processing image Output_PEG/2014/2014_209_13_1.jpg
 Processing image Output_PEG/2014/2014_210_13_1.jpg
 Processing image Output_PEG/2014/2014_211_13_1.jpg
 Processing image Output_PEG/2014/2014_212_13_1.jpg
-|======================================================|100% ~0 s remaining     > # A tibble: 12,200 x 13
+
+|======================================================|100% ~0 s remaining     > # A tibble: 12,200 x 13
    Mask            Year   Day  Hour   Seq Width Height Pixels GCC_bin Bin_value
    <chr>          <int> <int> <int> <int> <dbl>  <dbl>  <dbl>   <dbl>     <dbl>
  1 Comunidade_PEG  2014    91    13     1 1280.   960. 5.09e5      0.     6118.
@@ -12775,7 +12791,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -12981,7 +12997,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -13191,7 +13207,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -13749,7 +13765,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -14099,7 +14115,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -14305,7 +14321,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -14515,7 +14531,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -15047,7 +15063,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -15374,7 +15390,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -15579,7 +15595,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -15789,7 +15805,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -16353,7 +16369,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -16717,7 +16733,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -16922,7 +16938,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -17132,7 +17148,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -17692,7 +17708,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -18022,7 +18038,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -18227,7 +18243,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -18437,7 +18453,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -18981,7 +18997,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -19319,7 +19335,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -19524,7 +19540,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -19734,7 +19750,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -20289,7 +20305,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -20608,7 +20624,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -20813,7 +20829,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -21023,7 +21039,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -21590,7 +21606,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -21916,7 +21932,7 @@ names(palette.list) <- palette$Color.Code
 
 df.pure.hsv %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -22121,7 +22137,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -22331,7 +22347,7 @@ names(palette.list) <- df.palette$Code
 
 df.histograms  %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -22872,7 +22888,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
@@ -23227,7 +23243,7 @@ names(palette.list) <- palette$Color.Code
 df.pure.hsv %>%
     filter(Year != 2015) %>%
     mutate(Color.Code = H) %>%    
-    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code))) +
+    ggplot(aes(x = Day, y = H.count/Pixels, fill=as.factor(Color.Code), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -23434,7 +23450,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
     filter(Year != 2015) %>%
     mutate(Color = as.character(hex(HSV(H, SMean, VMean)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -23643,7 +23659,7 @@ names(palette.list) <- df.palette$Code
 df.histograms  %>%
     filter(Year != 2015) %>%
     mutate(Color = as.character(hex(HSV(H, SMode, VMode)))) %>%
-    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color))) +
+    ggplot(aes(x = Day, y = HCount/UnmaskedPixels, fill=as.factor(Color), width=1)) +
     scale_fill_manual(values = palette.list) +
     geom_bar(stat='identity') +
     theme_bw(base_size=16) +
@@ -25823,7 +25839,7 @@ df.histograms  %>%
   filter(Year != 2015) %>%
   filter(Bin_value != 0) %>%
   mutate(Color = as.character(hex(RGB(Bin_color_r, Bin_color_g, Bin_color_b)))) %>%
-  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color))) +
+  ggplot(aes(x = Day, y = Bin_value/Pixels, fill=as.factor(Color), width=1)) +
   scale_fill_manual(values = palette.list) +
   geom_bar(stat='identity') +
   theme_bw(base_size=16) +
