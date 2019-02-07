@@ -2790,3 +2790,75 @@ dft.3 %>%
 
 #+RESULTS:
 [[file:img/PEG_2014_H_V_roi1_12H.png]]
+* 2019-02-07 Meeting with next steps
+
+The description of the metrics below must be reviewed by Alles.
+
+- Mathematical modeling with Jean-Marc; incorporate this work in your
+  master would be useful to understand more clearly (in an abstract
+  way) what is done in terms of data manipulation
+- PEG (brazilian cerrado): GCC is too flat to be analyzed
+  - Perhaps checking non-community masks would solve
+  - Perhaps take a larger dataset by contacting Patricia/Bruna
+- Review the TKY figures with the four "metrics"
+  1. HSV, static S and static V
+  2. HSV with mean histogram
+     - There is one histogram (for H)
+     - Color in the CPM is given by H, S and V. The H color is defined
+       by the H value itself. The S and V color, on the other hand,
+       are defined as the mean of S and mean of V using all pixels
+       that fall in the corresponding H bin.
+  3. HSV with mode histogram 
+     - There are three histograms (for H, S, and V).
+     - Color in the CPM is given by H, S and V. The H color is defined
+       by the H value itself. The S and V color, on the other hand,
+       are defined as the mode of S and mode of V using all pixels
+       that fall in the corresponding H bin.
+  4. GCC with mean color
+     - There is one histogram (of the GCC value)
+     - Color of one bin is dinamically defined by the mean RGB values
+       of all pixels that fall in a given bin.
+- Pre-processing (calculating these four metrics) is slow
+  - Make it parallel, either using Hadoop/Spark or with
+    parallel. The R parallel package might be easier to adapt to the
+    current code; while Hadoop/Spark might envolve more learning for
+    Alles.
+  - Transform the pre-processing in a preliminary step (let's call
+    it phase #1), with a checkpoint file that has all the metrics
+    calculated. And then have a phase #2 to visualize those
+    metrics. We can inspire ourselves based on the StarVZ method.
+  - When installing Hadoop/Spark, you might want to use RStudio
+    Server to make it easier the data ingestion in the worker nodes
+  - Use the gppd-hpc cluster by installing either Hadoop/Spark or the
+    R parallel package in there. See section 4.4
+    (http://gppd-hpc.inf.ufrgs.br/#orga451822) of the parque
+    documentation to learn how to make multi-partition reservations.
+- Reproducibility: it is important to remember this for your master
+  and paper because biologists are very concerned. The goal is to have
+  a GIT companion for your work (either master and/or paper). A step
+  forward has already been made by using a LabBook in the phenology
+  repo and with the phenovisr package.  
+- Related work: do an extended related work investigation to check for
+  new advancements. This will be useful when writing and might enrich
+  our metrics/methodology.
+
+Conclusion
+- The viz part has advanced very well, but we are facing a slow
+  procedure that now must be tackled by making the framework more
+  robust and parallel.
+
+Next steps
+1. Use more datasets (from the Japanese) using the four metrics
+2. Refactor the code to make it in two phases (make it parallel also)
+   - First phase is parallel
+3. Write some text regarding the four metrics
+
+Tentative schedule
+- Try to finish a full document about this work (the tip of the
+  iceberg) by May as a candidate submission for a journal (to be
+  defined)
+- Depending on the ambition (involves more experiments, perhaps
+  thinking about new metrics, other kinds of further parallelization),
+  attempt a second submission by September
+- Write the text of the thesis from July forward
+
