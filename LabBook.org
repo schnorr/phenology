@@ -2792,8 +2792,6 @@ dft.3 %>%
 [[file:img/PEG_2014_H_V_roi1_12H.png]]
 * 2019-02-07 Meeting with next steps
 
-The description of the metrics below must be reviewed by Alles.
-
 - Mathematical modeling with Jean-Marc; incorporate this work in your
   master would be useful to understand more clearly (in an abstract
   way) what is done in terms of data manipulation
@@ -2802,6 +2800,8 @@ The description of the metrics below must be reviewed by Alles.
   - Perhaps take a larger dataset by contacting Patricia/Bruna
 - Review the TKY figures with the four "metrics"
   1. HSV, static S and static V
+     - There is one histogram (for H)
+     - Color in the CPM is given by H, S and V. The H component is defined by the H value itself. S and V are kept fixed in 1.
   2. HSV with mean histogram
      - There is one histogram (for H)
      - Color in the CPM is given by H, S and V. The H color is defined
@@ -2809,11 +2809,12 @@ The description of the metrics below must be reviewed by Alles.
        are defined as the mean of S and mean of V using all pixels
        that fall in the corresponding H bin.
   3. HSV with mode histogram 
-     - There are three histograms (for H, S, and V).
+     - There is one histogram (for H, 360 bins) and two sub-histograms for each bin of H.
      - Color in the CPM is given by H, S and V. The H color is defined
-       by the H value itself. The S and V color, on the other hand,
-       are defined as the mode of S and mode of V using all pixels
-       that fall in the corresponding H bin.
+       by the H-bin value itself. S and V values are classified into
+       two other 10-bin histograms (for each H value), and the S and V
+       values for the color are defined by the respective S and V bins
+       with most observations, for each of the 360 H bins.
   4. GCC with mean color
      - There is one histogram (of the GCC value)
      - Color of one bin is dinamically defined by the mean RGB values
