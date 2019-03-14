@@ -2863,3 +2863,29 @@ Tentative schedule
   attempt a second submission by September
 - Write the text of the thesis from July forward
 
+* 2019-03-14 Meeting with next steps (again)
+
+Current situation and discussion
+- Parallel one-node framework using the =parallel= package
+  - For the TKY dataset, runtime decreases from 30s (seq) to 3s (par)
+  - We think that it might be useful to rerun preliminary tests using
+    linux drop caches, but we need root to do that
+- Nothing has been written so far regarding the report
+  - No related work investigation
+- Reproducibility
+  - There is now a DockerFile to make phenosvisr
+  - [ ] Lucas will send Guilherme the text of Boas Praticas from ERAD/RS 2019
+- Current phase 1 computes only one metric, but four are need so that
+  we can make exploratory analysis with ease
+- The Hadoop/Spark has not been explored
+
+Tips
+- [ ] Use scratch, make a slurm script to copy from you home too all scratches
+- [ ] Verify R version in all machines, talk to Lucas if it is not the case
+
+ORG templates
+- https://github.com/schnorr/wileyorg
+- https://github.com/schnorr/acmorg
+
+Very important TODO
+- Next meeting we shall see a full structure
