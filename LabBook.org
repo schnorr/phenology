@@ -2891,3 +2891,17 @@ ORG templates
 Very important TODO
 - Next meeting we shall see a full structure
 
+* 2019-03-26 Meeting with next steps
+
+Tasks for the next meeting (important)
+- [ ] Improve the structure following the discussions
+- [ ] Improve related work as discussed
+
+From previous meetings
+- [ ] Current phase 1 computes only one metric, but four are need so
+  that we can make exploratory analysis with ease
+- [ ] We think that it might be useful to rerun preliminary tests
+  using linux drop caches, but we need root to do that
+  - Ongoing, e-mail has been sent to gt-cluster
+- [ ] Use scratch, make a slurm script to copy from you home too all scratches
+
