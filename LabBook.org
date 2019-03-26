@@ -2874,14 +2874,15 @@ Current situation and discussion
   - No related work investigation
 - Reproducibility
   - There is now a DockerFile to make phenosvisr
-  - [ ] Lucas will send Guilherme the text of Boas Praticas from ERAD/RS 2019
+  - [X] Lucas will send Guilherme the text of Boas Praticas from ERAD/RS 2019
 - Current phase 1 computes only one metric, but four are need so that
   we can make exploratory analysis with ease
 - The Hadoop/Spark has not been explored
 
 Tips
 - [ ] Use scratch, make a slurm script to copy from you home too all scratches
-- [ ] Verify R version in all machines, talk to Lucas if it is not the case
+- [X] Verify R version in all machines, talk to Lucas if it is not the case
+  - There were discrepancies, Nesi has fixed.
 
 ORG templates
 - https://github.com/schnorr/wileyorg
