@@ -2943,4 +2943,66 @@ tibble(Inicio = seq(inicio, fim, by = '12 months')) %>%
 | 2018-01-01 | 2018-12-31 | TRUE |
 | 2019-01-01 | 2019-12-31 | TRUE |
 
+* 2019-04-23 Meeting
 
+Things that has been done
+- [X] _Preparing_ performance experiments in hype
+  - Waiting for cleareance of the queue
+- [X] Current phase 1 computes only one metric, but four are need so
+  that we can make exploratory analysis with ease
+
+Still TODO:
+- [ ] Use scratch, make a slurm script to copy from you home too all scratches
+- [ ] Gzip the checkpoing between two phases
+  - Use the =readr= package with ~write_csv~ and ~read_csv~
+  - ~fread~ from the data.table package is even faster
+- [ ] Create slurm script to more data from PhenoCom
+  - Teddy database (14 years)
+    - First batch: 2002-08-20 - 2008-12-31
+    - Second batch: 2009-01-01 - 2013-12-31
+    - Third batch: 2014-01-01 - 2015-12-31
+    - Fourth batch: 2016-01-01 - 2018-12-31
+    - Fifth batch: 2019-01-01 - 2019-03-27
+  - [ ] Problem: resolution is different from year to year
+
+Paper
+- [ ] write the paper, take one paragraph at a time
+- [ ] draw some preliminary images that occupy half a page
+
+Time on the lab
+- Tuesdays and Thursdays, until 11:30
+
+Journal candidates for submissions
+- FGCS
+- Some other depending on visualization contribution
+- Some other on phenology analysis
+
+Viz ideas
+- Think about the technical and semantic challenges to design a
+  "Circular CPM" as in https://www.flickr.com/photos/stevefaeembra/5349017221/in/photostream/
+- Make a long rectangle with a different ratio to improve CPM viz
+  - Vertically, there are facets per year
+
+Tentative schedule for master
+| Item | Time      | What                                                                 |
+|------+-----------+----------------------------------------------------------------------|
+| A    | May 14th  | All paper expect results is written                                  |
+| B    | June 11th | Paper is finished with results                                       |
+| C    | July 16th | Mathematical model is implemented in Workflow/PhenoVis + Experiments |
+
+If (C works)
+| Item | Time          | What                 |
+|------+---------------+----------------------|
+| C.1  | August 16th   | New paper script     |
+| C.2  | September 1st | Paper written        |
+| D    | October       | Dissertation writing |
+| E    | November      | Defense              |
+
+If (C does not work)
+| Item | Time        | What                                              |
+|------+-------------+---------------------------------------------------|
+| D    | August 16th | Preliminary deadline for writing the dissertation |
+| E    | October     | Defense                                           |
+
+Next meeting
+- 30/04 at 9AM
