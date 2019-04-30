@@ -3006,3 +3006,36 @@ If (C does not work)
 
 Next meeting
 - 30/04 at 9AM
+
+* 2019-04-30 Meeting
+
+Work
+- [X] Use scratch, make a slurm script to copy from you home too all scratches
+  - TKY, 2006 to 2012
+- [1/3] Gzip the checkpoing between two phases
+  - [ ] Use the =readr= package with ~write_csv~ and ~read_csv~
+  - [ ] ~fread~ from the data.table package is even faster
+  - [X] _Update_: There is a problem with ~write_csv~ regarding column names
+- [ ] Create Histogram for Teddy.
+  - Create slurm script to more data from PhenoCam
+  - Teddy database (14 years)
+    - First batch: 2002-08-20 - 2008-12-31
+    - Second batch: 2009-01-01 - 2013-12-31
+    - Third batch: 2014-01-01 - 2015-12-31
+    - Fourth batch: 2016-01-01 - 2018-12-31
+    - Fifth batch: 2019-01-01 - 2019-03-27
+  - [ ] Problem: resolution is different from year to year
+
+Paper
+- [ ] write the paper, take one paragraph at a time
+- [X] draw some preliminary images that occupy half a page
+
+
+Todo
+- [ ] Obtain performance metrics from current experiments
+- [ ] Text
+  - [ ] Review introduction, make a final version so Lucas can review
+  - [ ] Finish background and related work
+    - [ ] We can discuss in the next meeting
+  - [ ] Write the rest of the paper (at least until proposal)
+- [ ] Perhaps try to use another dataset (Teddy, remember?)
