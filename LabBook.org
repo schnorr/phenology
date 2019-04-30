@@ -3039,3 +3039,4 @@ Todo
     - [ ] We can discuss in the next meeting
   - [ ] Write the rest of the paper (at least until proposal)
 - [ ] Perhaps try to use another dataset (Teddy, remember?)
+  - [ ] Try many others, why not?
