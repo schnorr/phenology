@@ -3040,3 +3040,20 @@ Todo
   - [ ] Write the rest of the paper (at least until proposal)
 - [ ] Perhaps try to use another dataset (Teddy, remember?)
   - [ ] Try many others, why not?
+
+* 2019-05-07 Meeting
+
+Todo
+- [X] Obtain performance metrics from current experiments
+- [-] Text
+  - [X] Review introduction, make a final version so Lucas can review
+  - [X] Discuss Background/Related work
+  - [ ] Write the rest of the paper (at least until proposal)
+- [-] Perhaps try to use another dataset
+  - [X] (Teddy, remember?)
+  - [ ] Try many others, why not?
+
+New Todo
+- [ ] Perf. Analysis (perhaps do more experiments to enrich the analysis)
+- [ ] Finish background and related work
+
