@@ -3055,5 +3055,16 @@ Todo
 
 New Todo
 - [ ] Perf. Analysis (perhaps do more experiments to enrich the analysis)
-- [ ] Finish background and related work
+- [X] Finish background and related work
+
+* 2019-05-14 Meeting
+
+for Lucas
+- [ ] Review Background and Related Work
+- [X] Reworked some figures of Section 4
+
+for Guilherme
+- [ ] Write the rest of the paper
+- [ ] Perf. Analysis (perhaps do more experiments to enrich the analysis)
+
 
