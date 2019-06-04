@@ -3079,6 +3079,20 @@ for Guilherme
 - [ ] Detail the intervals shown in the GCC CPM plot
 - [ ] Add more technical details in the experimental testbed descriprion
 
+* 2019-06-04 Meeting
+
+for Lucas
+- [ ] Review Background and Related Work
+- [ ] All the rest except mathematical model
 
 
+for Guilherme
+- [ ] Write the rest of the paper
+- [ ] Perf. Analysis (perhaps do more experiments to enrich the analysis)
+  - First results from the TKY dataset
+  - Still running other datasets to either perf analysis + view
+- [ ] Detail the intervals shown in the GCC CPM plot
+- [ ] Add more technical details in the experimental testbed descriprion
+- [ ] Merge figures 4 and 5
+- [ ] Fig 3 should be vectorial
 
